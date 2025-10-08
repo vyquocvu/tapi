@@ -1,22 +1,14 @@
-import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
+import type { Todo } from './types/Todo'
+import './App.css'
 
-interface Todo {
-  id: string
-  title: string
-  completed: boolean
-  createdAt: string
-  updatedAt: string
-}
+const API_URL = 'http://localhost:3001/api'
 
-export const Route = createFileRoute('/')({
-  component: Home,
-})
-
-function Home() {
+function App() {
   const [todos, setTodos] = useState<Todo[]>([])
   const [newTodoTitle, setNewTodoTitle] = useState('')
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchTodos()
@@ -24,12 +16,15 @@ function Home() {
 
   const fetchTodos = async () => {
     try {
-      const response = await fetch('/api/todos')
+      const response = await fetch(`${API_URL}/todos`)
+      if (!response.ok) throw new Error('Failed to fetch todos')
       const data = await response.json()
       setTodos(data)
-      setLoading(false)
-    } catch (error) {
-      console.error('Error fetching todos:', error)
+      setError(null)
+    } catch (err) {
+      setError('Failed to load todos')
+      console.error(err)
+    } finally {
       setLoading(false)
     }
   }
@@ -39,45 +34,54 @@ function Home() {
     if (!newTodoTitle.trim()) return
 
     try {
-      const response = await fetch('/api/todos', {
+      const response = await fetch(`${API_URL}/todos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ title: newTodoTitle }),
       })
+      if (!response.ok) throw new Error('Failed to create todo')
       const newTodo = await response.json()
       setTodos([newTodo, ...todos])
       setNewTodoTitle('')
-    } catch (error) {
-      console.error('Error adding todo:', error)
+      setError(null)
+    } catch (err) {
+      setError('Failed to add todo')
+      console.error(err)
     }
   }
 
   const toggleTodo = async (id: string, completed: boolean) => {
     try {
-      const response = await fetch(`/api/todos/${id}`, {
+      const response = await fetch(`${API_URL}/todos/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ completed: !completed }),
       })
+      if (!response.ok) throw new Error('Failed to update todo')
       const updatedTodo = await response.json()
       setTodos(todos.map((todo) => (todo.id === id ? updatedTodo : todo)))
-    } catch (error) {
-      console.error('Error updating todo:', error)
+      setError(null)
+    } catch (err) {
+      setError('Failed to update todo')
+      console.error(err)
     }
   }
 
   const deleteTodo = async (id: string) => {
     try {
-      await fetch(`/api/todos/${id}`, {
+      const response = await fetch(`${API_URL}/todos/${id}`, {
         method: 'DELETE',
       })
+      if (!response.ok) throw new Error('Failed to delete todo')
       setTodos(todos.filter((todo) => todo.id !== id))
-    } catch (error) {
-      console.error('Error deleting todo:', error)
+      setError(null)
+    } catch (err) {
+      setError('Failed to delete todo')
+      console.error(err)
     }
   }
 
@@ -87,7 +91,7 @@ function Home() {
   if (loading) {
     return (
       <div className="container">
-        <p>Loading...</p>
+        <div className="loading">Loading...</div>
       </div>
     )
   }
@@ -95,7 +99,13 @@ function Home() {
   return (
     <div className="container">
       <h1>📝 Todo List</h1>
-      <p className="subtitle">A full-stack todo app with TanStack Start and Prisma</p>
+      <p className="subtitle">Full-stack app with React, Express, and Prisma</p>
+
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
 
       <form onSubmit={addTodo} className="add-todo-form">
         <input
@@ -115,9 +125,7 @@ function Home() {
           {activeTodos.length} active {activeTodos.length === 1 ? 'task' : 'tasks'}
         </span>
         <span>•</span>
-        <span>
-          {completedTodos.length} completed
-        </span>
+        <span>{completedTodos.length} completed</span>
       </div>
 
       {activeTodos.length > 0 && (
@@ -180,3 +188,5 @@ function Home() {
     </div>
   )
 }
+
+export default App

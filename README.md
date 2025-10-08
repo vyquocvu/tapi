@@ -1,6 +1,6 @@
 # VStack - Todo List App
 
-A full-stack todo list application built with TanStack Start, React, and Prisma.
+A full-stack todo list application built with React, Express.js, Vite, and Prisma.
 
 ## Features
 
@@ -14,10 +14,9 @@ A full-stack todo list application built with TanStack Start, React, and Prisma.
 
 ## Tech Stack
 
-- **Frontend**: React 18, TanStack Router
-- **Backend**: TanStack Start (file-based API routes)
+- **Frontend**: React 18, Vite
+- **Backend**: Express.js with TypeScript
 - **Database**: SQLite with Prisma ORM
-- **Build Tool**: Vinxi
 - **Language**: TypeScript
 
 ## Getting Started
@@ -52,18 +51,22 @@ npm run prisma:generate
 npm run prisma:migrate
 ```
 
-4. Start the development server:
+4. Start the development servers:
 ```bash
 npm run dev
 ```
 
-5. Open your browser and navigate to `http://localhost:3000`
+This will start both the Express API server (port 3001) and the Vite dev server (port 5173).
+
+5. Open your browser and navigate to `http://localhost:5173`
 
 ## Available Scripts
 
-- `npm run dev` - Start the development server
-- `npm run build` - Build the application for production
-- `npm run start` - Start the production server
+- `npm run dev` - Start both frontend and backend development servers
+- `npm run server` - Start only the Express API server
+- `npm run client` - Start only the Vite dev server
+- `npm run build` - Build the frontend for production
+- `npm run preview` - Preview the production build
 - `npm run prisma:generate` - Generate Prisma Client
 - `npm run prisma:migrate` - Run database migrations
 - `npm run prisma:studio` - Open Prisma Studio (database GUI)
@@ -72,24 +75,22 @@ npm run dev
 
 ```
 vstack/
-├── app/
+├── server/
 │   ├── routes/
-│   │   ├── api/
-│   │   │   └── todos/
-│   │   │       ├── $id.ts      # API route for individual todo operations
-│   │   │       └── todos.ts     # API route for todo list operations
-│   │   ├── __root.tsx           # Root route component
-│   │   └── index.tsx            # Home page with todo list
-│   ├── styles/
-│   │   └── app.css              # Application styles
-│   ├── utils/
-│   │   └── prisma.ts            # Prisma client singleton
-│   ├── client.tsx               # Client-side entry point
-│   ├── router.tsx               # Router configuration
-│   └── ssr.tsx                  # Server-side entry point
+│   │   └── todos.ts            # Todo API routes
+│   ├── prisma.ts               # Prisma client singleton
+│   └── index.ts                # Express server entry point
+├── src/
+│   ├── components/
+│   ├── types/
+│   │   └── Todo.ts             # TypeScript types
+│   ├── App.tsx                 # Main React component
+│   ├── App.css                 # Application styles
+│   └── main.tsx                # React entry point
 ├── prisma/
-│   └── schema.prisma            # Prisma schema definition
-├── app.config.ts                # TanStack Start configuration
+│   └── schema.prisma           # Prisma schema definition
+├── index.html                  # HTML template
+├── vite.config.ts              # Vite configuration
 ├── package.json
 └── tsconfig.json
 ```
