@@ -11,7 +11,7 @@ app.use(express.json())
 // Routes
 app.use('/api/todos', todosRouter)
 
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' })
 })
 

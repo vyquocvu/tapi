@@ -4,7 +4,7 @@ import prisma from '../prisma.js'
 const router = express.Router()
 
 // Get all todos
-router.get('/', async (req, res) => {
+router.get('/', async (_req, res) => {
   try {
     const todos = await prisma.todo.findMany({
       orderBy: { createdAt: 'desc' },
