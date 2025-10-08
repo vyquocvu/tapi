@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import type { Todo } from './types/Todo'
 import './App.css'
 
-const API_URL = 'http://localhost:3001/api'
+// Use /api for both development (via Vite proxy) and production (Vercel routing)
+const API_URL = '/api'
 
 function App() {
   const [todos, setTodos] = useState<Todo[]>([])

@@ -5,10 +5,17 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// For local development with SQLite
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
+
+// For production deployment on Vercel, use PostgreSQL:
+// datasource db {
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL")
+// }
 
 model Todo {
   id        String   @id @default(cuid())
