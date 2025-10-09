@@ -2,6 +2,7 @@ import { createRootRoute, Outlet, Link } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { AuthProvider, useAuth } from '../contexts/AuthContext'
 import '../app.css'
 
 const queryClient = new QueryClient({
@@ -17,22 +18,58 @@ export const Route = createRootRoute({
   component: RootComponent,
 })
 
-function RootComponent() {
+function Navigation() {
+  const { isAuthenticated, user, logout } = useAuth()
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <nav>
+    <nav>
+      <div>
         <Link to="/" activeProps={{ className: 'active' }}>
           Home
         </Link>
         <Link to="/about" activeProps={{ className: 'active' }}>
           About
         </Link>
-      </nav>
-      <div className="container">
-        <Outlet />
       </div>
-      <ReactQueryDevtools buttonPosition="bottom-left" />
-      <TanStackRouterDevtools position="bottom-right" />
+      <div>
+        {isAuthenticated ? (
+          <>
+            <span style={{ color: 'white', marginRight: '1rem' }}>
+              Welcome, {user?.name}
+            </span>
+            <button 
+              onClick={logout} 
+              style={{ 
+                background: 'transparent', 
+                border: '1px solid white',
+                padding: '0.3rem 0.8rem',
+                fontSize: '0.9rem'
+              }}
+            >
+              Logout
+            </button>
+          </>
+        ) : (
+          <Link to="/login" activeProps={{ className: 'active' }}>
+            Login
+          </Link>
+        )}
+      </div>
+    </nav>
+  )
+}
+
+function RootComponent() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Navigation />
+        <div className="container">
+          <Outlet />
+        </div>
+        <ReactQueryDevtools buttonPosition="bottom-left" />
+        <TanStackRouterDevtools position="bottom-right" />
+      </AuthProvider>
     </QueryClientProvider>
   )
 }
