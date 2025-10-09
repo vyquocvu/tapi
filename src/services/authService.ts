@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs'
-import prisma from '../db/prisma'
-import { generateToken } from '../server/auth'
+import prisma from '../db/prisma.js'
+import { generateToken } from '../server/auth.js'
 
 export interface LoginCredentials {
   email: string

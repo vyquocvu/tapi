@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { createContext, requireAuth } from '../src/server/context'
+import { createContext, requireAuth } from '../src/server/context.js'
 
 // Create a compatible request object for context creation
 function adaptVercelRequest(req: VercelRequest): any {

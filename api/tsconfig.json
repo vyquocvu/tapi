@@ -1,16 +1,19 @@
 {
-  "extends": "./tsconfig.json",
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "node",
-    "allowImportingTsExtensions": false,
-    "noEmit": false,
-    "outDir": ".vercel/output",
-    "rootDir": ".",
+    "lib": ["ES2022"],
+    "outDir": ".vercel/output/functions",
+    "rootDir": "..",
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": false,
+    "types": ["node"]
   },
-  "include": ["api/**/*", "src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules"]
 }
