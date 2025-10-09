@@ -2,6 +2,22 @@
 
 A fullstack web application built with **TanStack Start**, **TanStack Router**, **TanStack Query**, **Prisma**, and **SQLite**, demonstrating modern React development with type-safe routing, efficient data fetching, and JWT-based authentication.
 
+**✨ Now with Vercel serverless deployment support!** See [Quick Start Guide](./VERCEL_QUICK_START.md) for deployment instructions.
+
+## 📋 Table of Contents
+
+- [Features](#-features)
+- [Project Structure](#-project-structure)
+- [Installation](#-installation)
+- [Running the Application](#-running-the-application)
+- [Key Features Explained](#-key-features-explained)
+- [Testing the Application](#-testing-the-application)
+- [Database Management](#️-database-management)
+- [Deployment](#-deployment)
+  - [Deploy to Vercel](#deploy-to-vercel) ⭐
+  - [Deploy to Node Server](#deploy-to-node-server)
+- [Tech Stack](#️-tech-stack)
+
 ## 🚀 Features
 
 - **TanStack Router** - Type-safe file-based routing with protected routes
@@ -288,35 +304,125 @@ This will:
 
 ## 🚢 Deployment
 
+> 🌟 **NEW**: Full Vercel serverless deployment support with dedicated API functions!
+
 ### Deploy to Vercel
 
-1. **Install Vercel CLI**
-   ```bash
-   npm install -g vercel
-   ```
+This application is configured to work seamlessly with Vercel's serverless platform.
 
-2. **Deploy**
-   ```bash
-   vercel
-   ```
+#### Prerequisites
 
-3. **Environment Variables**
-   
-   Set these in Vercel dashboard:
-   - `DATABASE_URL` - Update to use a production database (PostgreSQL, MySQL, etc.)
-   - `JWT_SECRET` - Strong random secret for production
+1. A Vercel account (sign up at [vercel.com](https://vercel.com))
+2. A production database (PostgreSQL recommended - use [Neon](https://neon.tech), [Supabase](https://supabase.com), or [Vercel Postgres](https://vercel.com/storage/postgres))
 
-4. **Update Database Provider**
-   
-   For production, switch from SQLite to PostgreSQL:
-   
-   In `prisma/schema.prisma`:
-   ```prisma
-   datasource db {
-     provider = "postgresql"
-     url      = env("DATABASE_URL")
-   }
-   ```
+#### Step 1: Prepare Your Database
+
+**Switch from SQLite to PostgreSQL** for production. Update `prisma/schema.prisma`:
+
+```prisma
+datasource db {
+  provider = "postgresql"  // Changed from "sqlite"
+  url      = env("DATABASE_URL")
+}
+```
+
+#### Step 2: Set Up Environment Variables
+
+In your Vercel project dashboard, add these environment variables:
+
+- **`DATABASE_URL`** - Your PostgreSQL connection string
+  ```
+  postgresql://username:password@host:5432/database?schema=public
+  ```
+- **`JWT_SECRET`** - A strong random secret (at least 32 characters)
+  ```bash
+  # Generate a secure secret:
+  node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+  ```
+- **`NODE_ENV`** - Set to `production`
+
+#### Step 3: Deploy
+
+**Option A: Deploy via Vercel CLI**
+
+```bash
+# Install Vercel CLI
+npm install -g vercel
+
+# Deploy
+vercel
+```
+
+**Option B: Deploy via Git Integration**
+
+1. Push your code to GitHub/GitLab/Bitbucket
+2. Import your repository in Vercel dashboard
+3. Vercel will automatically detect the configuration and deploy
+
+#### Step 4: Run Database Migrations
+
+After deployment, run migrations on your production database:
+
+```bash
+# Set your production DATABASE_URL
+export DATABASE_URL="your-production-database-url"
+
+# Generate Prisma Client
+npx prisma generate
+
+# Deploy migrations
+npx prisma migrate deploy
+
+# Seed the database (optional)
+npx prisma db seed
+```
+
+Or use Vercel CLI:
+
+```bash
+vercel env pull .env.production
+DATABASE_URL="$(grep DATABASE_URL .env.production | cut -d '=' -f2-)" npx prisma migrate deploy
+```
+
+#### How It Works
+
+The application uses **Vercel Serverless Functions** for the API:
+
+- `/api/login.ts` - Handles user authentication
+- `/api/posts.ts` - Fetches posts from database
+- `/api/me.ts` - Returns authenticated user info
+- `/api/health.ts` - Health check endpoint
+
+The frontend is served as a static site with client-side routing via TanStack Router.
+
+#### Troubleshooting Vercel Deployment
+
+**Issue: API endpoints return 404**
+- Ensure the `/api` directory exists in your repository
+- Check that serverless functions have `.ts` extension
+- Verify `vercel.json` configuration is present
+
+**Issue: Database connection errors**
+- Verify `DATABASE_URL` environment variable is set correctly
+- Ensure your database allows connections from Vercel's IP addresses
+- Check that `prisma generate` ran successfully during build
+- Run `npx prisma migrate deploy` to apply migrations
+
+**Issue: JWT authentication fails**
+- Verify `JWT_SECRET` environment variable is set
+- Ensure the secret is the same across all deployments
+- Check that the Authorization header is being sent correctly
+
+**Logs and Debugging**
+- View real-time logs: `vercel logs <deployment-url>`
+- Check build logs in Vercel dashboard
+- All API endpoints include detailed error logging for troubleshooting
+
+**📖 For detailed deployment instructions, see [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md)**
+
+**📊 For architecture diagrams and flow charts, see [ARCHITECTURE_VERCEL.md](./ARCHITECTURE_VERCEL.md)**
+
+
 
 ### Deploy to Node Server
 
