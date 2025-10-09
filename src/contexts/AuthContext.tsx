@@ -3,6 +3,7 @@ import { createContext, useContext, useState, ReactNode } from 'react'
 interface User {
   email: string
   name: string
+  id?: number
 }
 
 interface AuthContextType {
@@ -18,22 +19,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
 
   const login = async (email: string, password: string) => {
-    // Mock login - in a real app, this would call an API
-    // For demo purposes, accept any email/password combination
-    await new Promise(resolve => setTimeout(resolve, 500)) // Simulate API call
-    
-    if (email && password) {
-      setUser({
-        email,
-        name: email.split('@')[0], // Use part before @ as name
-      })
-    } else {
-      throw new Error('Invalid credentials')
+    // Call the real API endpoint
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    })
+
+    const data = await response.json()
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || 'Invalid credentials')
     }
+
+    // Store token in sessionStorage for future requests
+    if (data.token) {
+      sessionStorage.setItem('authToken', data.token)
+    }
+
+    // Set user state
+    setUser({
+      id: data.user.id,
+      email: data.user.email,
+      name: data.user.email.split('@')[0],
+    })
   }
 
   const logout = () => {
     setUser(null)
+    sessionStorage.removeItem('authToken')
   }
 
   return (
