@@ -40,7 +40,7 @@ function LoginComponent() {
       <div className="card" style={{ maxWidth: '400px', margin: '2rem auto' }}>
         <h3>Sign In</h3>
         <p style={{ marginBottom: '1.5rem', color: '#7f8c8d' }}>
-          Enter any email and password to login (demo mode)
+          Enter your email and password to login
         </p>
         
         {error && <div className="error">{error}</div>}
@@ -79,10 +79,14 @@ function LoginComponent() {
       </div>
 
       <div className="info-box" style={{ maxWidth: '400px', margin: '1rem auto' }}>
-        <h3>💡 Demo Login</h3>
+        <h3>💡 Login Information</h3>
         <p>
-          This is a demonstration login page. Enter any email and password to sign in.
-          In a production app, this would authenticate against a real backend API.
+          This login page authenticates against a real backend API running on port 3001.
+        </p>
+        <p style={{ marginTop: '1rem' }}>
+          <strong>Demo credentials:</strong><br />
+          Email: demo@example.com<br />
+          Password: password123
         </p>
       </div>
     </div>

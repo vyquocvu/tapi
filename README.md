@@ -6,6 +6,7 @@ A full-stack application built with **TanStack Router** and **TanStack Query**, 
 
 - **TanStack Router** - Type-safe file-based routing
 - **TanStack Query** - Powerful data fetching and caching
+- **Backend API** - Express server with authentication endpoints
 - **TypeScript** - Full type safety
 - **Vite** - Lightning-fast development
 - **React Router DevTools** - Debug routing in development
@@ -18,9 +19,15 @@ A full-stack application built with **TanStack Router** and **TanStack Query**, 
  ├── routes/
  │   ├── __root.tsx          # Root layout with navigation and QueryClient
  │   ├── index.tsx            # Home page with TanStack Query data fetching
- │   └── about.tsx            # About page with comparison info
+ │   ├── about.tsx            # About page with comparison info
+ │   └── login.tsx            # Login page with authentication
+ ├── contexts/
+ │   └── AuthContext.tsx      # Authentication context and hooks
  ├── main.tsx                 # Client entry point
  └── app.css                  # Global styles
+/server
+ ├── api.js                   # Backend API server with login endpoint
+ └── README.md                # Server documentation
 ```
 
 ### Key Files Explained
@@ -31,9 +38,12 @@ A full-stack application built with **TanStack Router** and **TanStack Query**, 
   - Mock API integration
   - Automatic caching with configurable stale time
   - Error and loading states
+- **`login.tsx`**: Login page with authentication form that calls the backend API
+- **`AuthContext.tsx`**: Authentication context providing login/logout functionality and user state
 - **`about.tsx`**: Static about page with comparison of TanStack Start vs Next.js
 - **`main.tsx`**: Application entry point with router setup
 - **`app.css`**: Global styles for the application
+- **`server/api.js`**: Express backend server with `/api/login` endpoint for authentication
 
 ## 🛠️ Getting Started
 
@@ -50,13 +60,23 @@ npm install
 
 ### Development
 
-Start the development server:
+Start the backend API server (in one terminal):
+
+```bash
+node server/api.js
+```
+
+Start the frontend development server (in another terminal):
 
 ```bash
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`
+The frontend will be available at `http://localhost:5173` and will proxy API requests to `http://localhost:3001`
+
+**Demo credentials:**
+- Email: `demo@example.com` | Password: `password123`
+- Email: `user@test.com` | Password: `test123`
 
 ### Build
 

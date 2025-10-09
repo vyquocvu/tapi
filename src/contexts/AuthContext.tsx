@@ -18,17 +18,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
 
   const login = async (email: string, password: string) => {
-    // Mock login - in a real app, this would call an API
-    // For demo purposes, accept any email/password combination
-    await new Promise(resolve => setTimeout(resolve, 500)) // Simulate API call
-    
-    if (email && password) {
-      setUser({
-        email,
-        name: email.split('@')[0], // Use part before @ as name
+    // Call the backend API to authenticate
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       })
-    } else {
-      throw new Error('Invalid credentials')
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Login failed')
+      }
+
+      const data = await response.json()
+      
+      if (data.success && data.user) {
+        setUser({
+          email: data.user.email,
+          name: data.user.name,
+        })
+      } else {
+        throw new Error('Invalid response from server')
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error
+      }
+      throw new Error('Network error. Please try again.')
     }
   }
 
