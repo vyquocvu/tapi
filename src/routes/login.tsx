@@ -26,7 +26,7 @@ function LoginComponent() {
 
     try {
       await login(email, password)
-      navigate({ to: '/' })
+      navigate({ to: '/dashboard' })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
     } finally {
