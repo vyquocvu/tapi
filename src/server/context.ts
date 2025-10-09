@@ -1,5 +1,5 @@
 import type { Connect } from 'vite'
-import { verifyToken, extractTokenFromHeader, type JWTPayload } from './auth'
+import { verifyToken, extractTokenFromHeader, type JWTPayload } from './auth.js'
 
 export interface RequestContext {
   user: JWTPayload | null
