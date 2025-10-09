@@ -420,6 +420,8 @@ The frontend is served as a static site with client-side routing via TanStack Ro
 
 **📖 For detailed deployment instructions, see [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md)**
 
+**📊 For architecture diagrams and flow charts, see [ARCHITECTURE_VERCEL.md](./ARCHITECTURE_VERCEL.md)**
+
 
 
 ### Deploy to Node Server

@@ -403,6 +403,8 @@ psql $DATABASE_URL < backup.sql
 ## Support and Resources
 
 - **Vercel Documentation**: [vercel.com/docs](https://vercel.com/docs)
+- **Vercel Architecture Diagrams**: [ARCHITECTURE_VERCEL.md](./ARCHITECTURE_VERCEL.md)
+- **Quick Start Guide**: [VERCEL_QUICK_START.md](./VERCEL_QUICK_START.md)
 - **Prisma Documentation**: [prisma.io/docs](https://www.prisma.io/docs)
 - **TanStack Router**: [tanstack.com/router](https://tanstack.com/router)
 - **Project Issues**: [GitHub Issues](https://github.com/vyquocvu/vstack/issues)
