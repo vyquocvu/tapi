@@ -307,6 +307,8 @@ npm run preview
 # This simulates production environment
 ```
 
+**Note:** The `vite preview` command serves the static frontend only. API middleware does not run in preview mode. To test API functionality locally, use `npm run dev`. On Vercel, the serverless functions in `/api` will handle API requests automatically.
+
 ## Performance Optimization
 
 ### 1. Database Connection Pooling
