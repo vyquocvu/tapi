@@ -2,6 +2,22 @@
 
 A fullstack web application built with **TanStack Start**, **TanStack Router**, **TanStack Query**, **Prisma**, and **SQLite**, demonstrating modern React development with type-safe routing, efficient data fetching, and JWT-based authentication.
 
+**✨ Now with Vercel serverless deployment support!** See [Quick Start Guide](./VERCEL_QUICK_START.md) for deployment instructions.
+
+## 📋 Table of Contents
+
+- [Features](#-features)
+- [Project Structure](#-project-structure)
+- [Installation](#-installation)
+- [Running the Application](#-running-the-application)
+- [Key Features Explained](#-key-features-explained)
+- [Testing the Application](#-testing-the-application)
+- [Database Management](#️-database-management)
+- [Deployment](#-deployment)
+  - [Deploy to Vercel](#deploy-to-vercel) ⭐
+  - [Deploy to Node Server](#deploy-to-node-server)
+- [Tech Stack](#️-tech-stack)
+
 ## 🚀 Features
 
 - **TanStack Router** - Type-safe file-based routing with protected routes
@@ -287,6 +303,8 @@ This will:
 4. Run the seed script
 
 ## 🚢 Deployment
+
+> 🌟 **NEW**: Full Vercel serverless deployment support with dedicated API functions!
 
 ### Deploy to Vercel
 
