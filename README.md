@@ -6,6 +6,8 @@ A full-stack application built with **TanStack Router** and **TanStack Query**, 
 
 - **TanStack Router** - Type-safe file-based routing
 - **TanStack Query** - Powerful data fetching and caching
+- **Authentication** - Login system with API endpoint via Vite middleware
+- **Vite Middleware API** - Built-in API routes without separate server
 - **TypeScript** - Full type safety
 - **Vite** - Lightning-fast development
 - **React Router DevTools** - Debug routing in development
@@ -18,9 +20,15 @@ A full-stack application built with **TanStack Router** and **TanStack Query**, 
  ├── routes/
  │   ├── __root.tsx          # Root layout with navigation and QueryClient
  │   ├── index.tsx            # Home page with TanStack Query data fetching
- │   └── about.tsx            # About page with comparison info
+ │   ├── about.tsx            # About page with comparison info
+ │   └── login.tsx            # Login page with authentication
+ ├── contexts/
+ │   └── AuthContext.tsx      # Authentication context and state management
  ├── main.tsx                 # Client entry point
  └── app.css                  # Global styles
+/server
+ └── api-example.js           # Example API implementation (commented out)
+vite.config.ts                # Vite config with API middleware plugin
 ```
 
 ### Key Files Explained
@@ -56,7 +64,7 @@ Start the development server:
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`
+The app will be available at `http://localhost:5173`. The API endpoints are handled by Vite middleware directly, so there's no need to run a separate server.
 
 ### Build
 
@@ -80,7 +88,20 @@ npm run typecheck
 
 ## 🎯 What It Demonstrates
 
-### 1. Type-Safe File-Based Routing
+### 1. Authentication System
+
+Real login system with API endpoint via Vite middleware:
+- API endpoint at `/api/login` handled by Vite middleware plugin
+- AuthContext for managing authentication state
+- Protected routes and conditional navigation
+- Session token storage
+- Error handling for invalid credentials
+
+**Demo credentials:**
+- Email: `demo@user.com`
+- Password: `password`
+
+### 2. Type-Safe File-Based Routing
 
 Routes are automatically generated from the file structure in `src/routes/`:
 
@@ -90,7 +111,7 @@ Routes are automatically generated from the file structure in `src/routes/`:
 <Link to="/about">About</Link>
 ```
 
-### 2. Client-Side Data Fetching with TanStack Query
+### 3. Client-Side Data Fetching with TanStack Query
 
 Data is fetched and cached efficiently on the client:
 
@@ -101,15 +122,16 @@ const { data: posts, isLoading, error } = useQuery<Post[]>({
 })
 ```
 
-### 3. Automatic Route Generation
+### 4. Automatic Route Generation
 
 The TanStack Router plugin automatically generates the route tree from your file structure:
 
 - `src/routes/index.tsx` → `/`
 - `src/routes/about.tsx` → `/about`
+- `src/routes/login.tsx` → `/login`
 - `src/routes/__root.tsx` → Root layout for all routes
 
-### 4. Built-in DevTools
+### 5. Built-in DevTools
 
 Both TanStack Router and Query DevTools are included for debugging:
 - **Router DevTools**: See route tree, active routes, and params
@@ -154,10 +176,7 @@ Both TanStack Router and Query DevTools are included for debugging:
 
 **Next.js** offers more built-in features and conventions for rapid development, making it great for teams that want a complete solution with less configuration. It's opinionated about SSR/SSG from the start.
 
-## 🧪 Example Routes
-
-- `/` - Home page with cached posts data
-- `/about` - About page with comparison information
+### 5. Built-in DevTools
 
 ## 📝 Note on TanStack Start
 
