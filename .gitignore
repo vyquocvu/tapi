@@ -7,3 +7,8 @@ dist
 *.log
 *.timestamp_*.js
 package-lock.json
+
+# Database
+*.db
+*.db-journal
+prisma/migrations

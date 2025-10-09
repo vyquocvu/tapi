@@ -1,62 +1,120 @@
 # vstack
 
-A full-stack application built with **TanStack Router** and **TanStack Query**, demonstrating modern React development with type-safe routing and efficient data fetching.
+A fullstack web application built with **TanStack Start**, **TanStack Router**, **TanStack Query**, **Prisma**, and **SQLite**, demonstrating modern React development with type-safe routing, efficient data fetching, and JWT-based authentication.
 
 ## 🚀 Features
 
-- **TanStack Router** - Type-safe file-based routing
+- **TanStack Router** - Type-safe file-based routing with protected routes
 - **TanStack Query** - Powerful data fetching and caching
-- **Authentication** - Login system with API endpoint via Vite middleware
-- **Vite Middleware API** - Built-in API routes without separate server
-- **TypeScript** - Full type safety
-- **Vite** - Lightning-fast development
-- **React Router DevTools** - Debug routing in development
-- **React Query DevTools** - Inspect queries and cache
+- **Prisma + SQLite** - Type-safe database access with local SQLite for development
+- **JWT Authentication** - Secure authentication with JSON Web Tokens
+- **Protected Routes** - Dashboard route with authentication guards
+- **API Routes** - Built-in API endpoints via Vite middleware
+- **TypeScript** - Full type safety throughout the stack
+- **Vite** - Lightning-fast development experience
+- **React 18** - Latest React features
+- **DevTools** - Built-in Router and Query DevTools for debugging
 
-## 📁 Folder Structure
+## 📁 Project Structure
 
 ```
-/src
- ├── routes/
- │   ├── __root.tsx          # Root layout with navigation and QueryClient
- │   ├── index.tsx            # Home page with TanStack Query data fetching
- │   ├── about.tsx            # About page with comparison info
- │   └── login.tsx            # Login page with authentication
- ├── contexts/
- │   └── AuthContext.tsx      # Authentication context and state management
- ├── main.tsx                 # Client entry point
- └── app.css                  # Global styles
-/server
- └── api-example.js           # Example API implementation (commented out)
-vite.config.ts                # Vite config with API middleware plugin
+/vstack
+├── prisma/
+│   ├── schema.prisma        # Database schema (User, Post models)
+│   ├── seed.ts              # Database seeding script
+│   └── migrations/          # Database migrations
+├── src/
+│   ├── routes/
+│   │   ├── __root.tsx       # Root layout with navigation and providers
+│   │   ├── index.tsx        # Home page
+│   │   ├── about.tsx        # About page
+│   │   ├── login.tsx        # Login page
+│   │   └── dashboard/
+│   │       └── index.tsx    # Protected dashboard route
+│   ├── contexts/
+│   │   └── AuthContext.tsx  # Authentication context
+│   ├── db/
+│   │   └── prisma.ts        # Prisma client instance
+│   ├── server/
+│   │   ├── auth.ts          # JWT authentication helpers
+│   │   └── context.ts       # Request context helpers
+│   ├── services/
+│   │   ├── authService.ts   # Authentication business logic
+│   │   └── postService.ts   # Post business logic
+│   └── lib/
+│       ├── types.ts         # Shared TypeScript types
+│       ├── http.ts          # HTTP client utility
+│       └── queryClient.ts   # TanStack Query client config
+├── .env.example             # Environment variables template
+├── vite.config.ts           # Vite config with API middleware
+├── package.json             # Dependencies and scripts
+└── tsconfig.json            # TypeScript configuration
 ```
 
-### Key Files Explained
+## 🛠️ Tech Stack
 
-- **`__root.tsx`**: Root component with navigation, QueryClient provider, and devtools. Wraps all routes.
-- **`index.tsx`**: Home page demonstrating:
-  - Client-side data fetching with TanStack Query
-  - Mock API integration
-  - Automatic caching with configurable stale time
-  - Error and loading states
-- **`about.tsx`**: Static about page with comparison of TanStack Start vs Next.js
-- **`main.tsx`**: Application entry point with router setup
-- **`app.css`**: Global styles for the application
+### Frontend
+- **React 18** - UI library
+- **TanStack Router** - Type-safe routing
+- **TanStack Query** - Data fetching and caching
+- **TypeScript** - Type safety
 
-## 🛠️ Getting Started
+### Backend
+- **Prisma** - Type-safe ORM
+- **SQLite** - Database (local development)
+- **JWT** - Authentication
+- **bcryptjs** - Password hashing
+- **Vite Middleware** - API routes
+
+### Build Tools
+- **Vite** - Fast build tool and dev server
+- **TypeScript** - Type checking
+
+## 📦 Installation
 
 ### Prerequisites
-
 - Node.js 18+ 
 - npm, yarn, or pnpm
 
-### Installation
+### Setup Steps
 
-```bash
-npm install
-```
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd vstack
+   ```
 
-### Development
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Edit `.env` and update the following variables:
+   ```env
+   DATABASE_URL="file:./dev.db"
+   JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
+   ```
+
+4. **Set up the database**
+   ```bash
+   # Generate Prisma Client
+   npm run prisma:generate
+   
+   # Run migrations and seed the database
+   npm run prisma:migrate
+   
+   # Or run all database setup at once
+   npm run db:setup
+   ```
+
+## 🚀 Running the Application
+
+### Development Mode
 
 Start the development server:
 
@@ -66,7 +124,13 @@ npm run dev
 
 The app will be available at `http://localhost:5173`. The API endpoints are handled by Vite middleware directly, so there's no need to run a separate server.
 
-### Build
+### Demo Credentials
+
+Use these credentials to log in:
+- **Email:** `demo@user.com`
+- **Password:** `password`
+
+### Production Build
 
 Build for production:
 
@@ -74,46 +138,70 @@ Build for production:
 npm run build
 ```
 
-### Preview Production Build
+Preview the production build:
 
 ```bash
-npm run preview
+npm run start
 ```
 
-### Type Checking
+### Available Scripts
 
-```bash
-npm run typecheck
-```
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Preview production build
+- `npm run typecheck` - Run TypeScript type checking
+- `npm run prisma:generate` - Generate Prisma Client
+- `npm run prisma:migrate` - Run database migrations
+- `npm run prisma:studio` - Open Prisma Studio (database GUI)
+- `npm run prisma:seed` - Seed the database
+- `npm run db:setup` - Complete database setup (generate + migrate + seed)
 
-## 🎯 What It Demonstrates
+## 🎯 Key Features Explained
 
-### 1. Authentication System
+### 1. JWT-Based Authentication
 
-Real login system with API endpoint via Vite middleware:
-- API endpoint at `/api/login` handled by Vite middleware plugin
-- AuthContext for managing authentication state
-- Protected routes and conditional navigation
-- Session token storage
-- Error handling for invalid credentials
+The application uses JWT tokens for secure authentication:
 
-**Demo credentials:**
-- Email: `demo@user.com`
-- Password: `password`
+- **Login Flow**: User submits credentials → Server validates against database → JWT token generated → Token stored in sessionStorage
+- **Protected Routes**: Dashboard route checks for token before loading
+- **API Security**: Token sent with API requests via Authorization header
+- **Service Layer**: `authService.ts` handles login logic with bcrypt password verification
 
-### 2. Type-Safe File-Based Routing
+### 2. Protected Routes
 
-Routes are automatically generated from the file structure in `src/routes/`:
+The `/dashboard` route demonstrates route protection:
 
 ```typescript
-// Routes are type-safe
-<Link to="/">Home</Link>
-<Link to="/about">About</Link>
+export const Route = createFileRoute('/dashboard/')({
+  beforeLoad: async () => {
+    const token = sessionStorage.getItem('authToken')
+    if (!token) {
+      throw redirect({ to: '/login' })
+    }
+  },
+  component: DashboardComponent,
+})
 ```
 
-### 3. Client-Side Data Fetching with TanStack Query
+### 3. Database with Prisma + SQLite
 
-Data is fetched and cached efficiently on the client:
+- **Prisma Schema**: Defines `User` and `Post` models with relations
+- **Type Safety**: Generated Prisma Client provides fully typed database access
+- **Migrations**: Version-controlled database schema changes
+- **Seeding**: Automatic creation of demo user and posts
+
+### 4. API Routes via Vite Middleware
+
+API endpoints are implemented in `vite.config.ts`:
+
+- `POST /api/login` - User authentication
+- `GET /api/posts` - Fetch all posts
+- `GET /api/me` - Get current user (protected)
+- `GET /api/health` - Health check
+
+### 5. Type-Safe Data Fetching
+
+TanStack Query provides automatic caching and state management:
 
 ```typescript
 const { data: posts, isLoading, error } = useQuery<Post[]>({
@@ -122,79 +210,223 @@ const { data: posts, isLoading, error } = useQuery<Post[]>({
 })
 ```
 
-### 4. Automatic Route Generation
+### 6. Service Layer Architecture
 
-The TanStack Router plugin automatically generates the route tree from your file structure:
+Business logic is separated into service modules:
 
-- `src/routes/index.tsx` → `/`
-- `src/routes/about.tsx` → `/about`
-- `src/routes/login.tsx` → `/login`
-- `src/routes/__root.tsx` → Root layout for all routes
+- `authService.ts` - Authentication logic
+- `postService.ts` - Post CRUD operations
 
-### 5. Built-in DevTools
+This keeps routes and components clean and focused on presentation.
 
-Both TanStack Router and Query DevTools are included for debugging:
-- **Router DevTools**: See route tree, active routes, and params
-- **Query DevTools**: Inspect queries, mutations, and cache state
+## 🧪 Testing the Application
 
-## 📊 TanStack Router vs Next.js Routing
+### Test Login Flow
 
-### TanStack Router (This Project)
+1. Navigate to `http://localhost:5173/login`
+2. Enter credentials: `demo@user.com` / `password`
+3. Click "Login"
+4. You should be redirected to `/dashboard`
+5. Dashboard should display user info and posts from database
+
+### Test Protected Route
+
+1. Open a new incognito/private browser window
+2. Try to access `http://localhost:5173/dashboard` directly
+3. You should be redirected to `/login`
+4. After logging in, you'll be redirected back to `/dashboard`
+
+### Test API Endpoints
+
+You can test API endpoints directly:
+
+```bash
+# Health check
+curl http://localhost:5173/api/health
+
+# Login
+curl -X POST http://localhost:5173/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"demo@user.com","password":"password"}'
+
+# Get posts (requires token from login response)
+curl http://localhost:5173/api/posts \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+```
+
+## 🗄️ Database Management
+
+### Prisma Studio
+
+Open a GUI to view and edit your database:
+
+```bash
+npm run prisma:studio
+```
+
+This opens Prisma Studio at `http://localhost:5555`
+
+### Creating Migrations
+
+After modifying `prisma/schema.prisma`:
+
+```bash
+npm run prisma:migrate
+```
+
+### Resetting the Database
+
+```bash
+npx prisma migrate reset
+```
+
+This will:
+1. Drop the database
+2. Recreate it
+3. Run all migrations
+4. Run the seed script
+
+## 🚢 Deployment
+
+### Deploy to Vercel
+
+1. **Install Vercel CLI**
+   ```bash
+   npm install -g vercel
+   ```
+
+2. **Deploy**
+   ```bash
+   vercel
+   ```
+
+3. **Environment Variables**
+   
+   Set these in Vercel dashboard:
+   - `DATABASE_URL` - Update to use a production database (PostgreSQL, MySQL, etc.)
+   - `JWT_SECRET` - Strong random secret for production
+
+4. **Update Database Provider**
+   
+   For production, switch from SQLite to PostgreSQL:
+   
+   In `prisma/schema.prisma`:
+   ```prisma
+   datasource db {
+     provider = "postgresql"
+     url      = env("DATABASE_URL")
+   }
+   ```
+
+### Deploy to Node Server
+
+1. **Build the application**
+   ```bash
+   npm run build
+   ```
+
+2. **Set up production database**
+   ```bash
+   DATABASE_URL="your-production-db-url" npx prisma migrate deploy
+   ```
+
+3. **Start the server**
+   ```bash
+   npm run start
+   ```
+
+### Environment Variables for Production
+
+Make sure to set strong secrets in production:
+
+```env
+DATABASE_URL="postgresql://user:password@host:port/database"
+JWT_SECRET="use-a-strong-random-secret-at-least-32-characters"
+NODE_ENV="production"
+```
+
+## 📚 Architecture Overview
+
+### Authentication Flow
+
+```
+1. User submits login form
+2. POST /api/login with credentials
+3. authService validates against Prisma database
+4. bcrypt verifies password hash
+5. JWT token generated with user info
+6. Token returned to client
+7. Client stores token in sessionStorage
+8. Token sent with subsequent API requests
+9. Server validates token for protected routes
+```
+
+### Data Flow
+
+```
+Client → TanStack Query → API Route → Service Layer → Prisma → SQLite
+                                                              ↓
+Client ← JSON Response ← Middleware ← Business Logic ← Query ← Database
+```
+
+### Route Protection
+
+```
+User navigates to /dashboard
+        ↓
+beforeLoad hook executes
+        ↓
+Check for auth token in sessionStorage
+        ↓
+Token exists? → Load dashboard
+        ↓
+No token? → Redirect to /login
+```
+
+## 🆚 TanStack Start vs Next.js
+
+### TanStack Start (This Project)
 
 **Pros:**
-- Type-safe file-based routing
 - Framework agnostic - works with any React setup
+- More granular control over routing and data fetching
 - Seamless TanStack Query integration
-- Built-in search param handling
-- Loader functions for data fetching
-- Excellent TypeScript support
+- Explicit data loading with loaders
+- Type-safe routing with TypeScript
+- Flexible SSR/SSG options
 
-**Approach:**
-- Client-side routing with optional SSR
-- Routes generated from file structure
-- Data fetching via loaders or hooks
-- Full control over rendering strategy
+**Best for:**
+- Teams already using TanStack libraries
+- Projects requiring fine-grained control
+- SPAs with optional SSR
 
 ### Next.js
 
 **Pros:**
-- Larger ecosystem with more built-in features
-- Image and Font optimization out of the box
+- More opinionated with strong conventions
+- Larger ecosystem and community
+- Built-in optimizations (Image, Font)
 - Mature with extensive documentation
-- Strong conventions (App Router, Server Components)
+- Server Components (App Router)
 - Optimized for Vercel deployment
 
-**Approach:**
-- Server Components (App Router) or getServerSideProps/getStaticProps (Pages Router)
-- Automatic code splitting
-- Built-in caching strategies
-- File-system based routing
+**Best for:**
+- Teams wanting rapid development
+- Projects needing built-in features
+- Full SSR/SSG from the start
 
-### Key Difference
+## 🤝 Contributing
 
-**TanStack Router** provides granular control and is less opinionated, making it ideal for teams that want flexibility and already use TanStack libraries. It's perfect for SPAs and can be extended with SSR.
-
-**Next.js** offers more built-in features and conventions for rapid development, making it great for teams that want a complete solution with less configuration. It's opinionated about SSR/SSG from the start.
-
-### 5. Built-in DevTools
-
-## 📝 Note on TanStack Start
-
-This project was originally planned to use **TanStack Start** (the SSR framework), but due to version compatibility issues in the current TanStack Start packages, we've built a client-side application using **TanStack Router** instead. This still demonstrates all the key concepts:
-
-- Type-safe routing
-- TanStack Query for data fetching
-- File-based route generation
-- TypeScript throughout
-
-TanStack Start is in active development and once stable, would provide SSR/SSG capabilities similar to Next.js but with the TanStack ecosystem.
-
-## 📚 Learn More
-
-- [TanStack Router Docs](https://tanstack.com/router)
-- [TanStack Query Docs](https://tanstack.com/query)
-- [Vite Docs](https://vitejs.dev)
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📝 License
 
 MIT
+
+## 📞 Support
+
+For issues, questions, or contributions, please open an issue on GitHub.
+
+---
+
+Built with ❤️ using TanStack ecosystem
