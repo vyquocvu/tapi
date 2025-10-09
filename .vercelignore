@@ -1,0 +1,33 @@
+# Dependencies
+node_modules
+
+# Development files
+.env
+.env.local
+*.db
+*.db-journal
+
+# Build artifacts
+dist
+.vite
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Prisma
+prisma/migrations/migration_lock.toml
+
+# Testing
+coverage
+.nyc_output

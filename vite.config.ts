@@ -27,18 +27,26 @@ function apiPlugin() {
           req.on('end', async () => {
             try {
               const credentials = JSON.parse(body)
+              console.log('[Vite API /login] Attempting login for:', credentials.email)
               const result = await loginUser(credentials)
+
+              if (result.success) {
+                console.log('[Vite API /login] Login successful for:', credentials.email)
+              } else {
+                console.warn('[Vite API /login] Login failed for:', credentials.email, 'Error:', result.error)
+              }
 
               res.statusCode = result.success ? 200 : 401
               res.setHeader('Content-Type', 'application/json')
               res.end(JSON.stringify(result))
             } catch (error) {
-              console.error('Login error:', error)
+              console.error('[Vite API /login] Unexpected error:', error)
               res.statusCode = 500
               res.setHeader('Content-Type', 'application/json')
               res.end(JSON.stringify({
                 success: false,
                 error: 'Internal server error',
+                details: error instanceof Error ? error.message : 'Unknown error',
               }))
             }
           })
@@ -48,7 +56,9 @@ function apiPlugin() {
         // Handle GET /api/posts
         if (req.url === '/posts' && req.method === 'GET') {
           try {
+            console.log('[Vite API /posts] Fetching all posts')
             const posts = await getAllPosts()
+            console.log(`[Vite API /posts] Successfully fetched ${posts.length} posts`)
             res.statusCode = 200
             res.setHeader('Content-Type', 'application/json')
             res.end(JSON.stringify({
@@ -56,12 +66,13 @@ function apiPlugin() {
               data: posts,
             }))
           } catch (error) {
-            console.error('Posts fetch error:', error)
+            console.error('[Vite API /posts] Error fetching posts:', error)
             res.statusCode = 500
             res.setHeader('Content-Type', 'application/json')
             res.end(JSON.stringify({
               success: false,
               error: 'Failed to fetch posts',
+              details: error instanceof Error ? error.message : 'Unknown error',
             }))
           }
           return
@@ -70,9 +81,11 @@ function apiPlugin() {
         // Handle GET /api/me (protected route example)
         if (req.url === '/me' && req.method === 'GET') {
           try {
+            console.log('[Vite API /me] Authenticating user')
             const context = createContext(req)
             const user = requireAuth(context)
             
+            console.log('[Vite API /me] User authenticated:', user.email)
             res.statusCode = 200
             res.setHeader('Content-Type', 'application/json')
             res.end(JSON.stringify({
@@ -80,11 +93,13 @@ function apiPlugin() {
               data: { user },
             }))
           } catch (error) {
+            console.warn('[Vite API /me] Unauthorized access attempt')
             res.statusCode = 401
             res.setHeader('Content-Type', 'application/json')
             res.end(JSON.stringify({
               success: false,
               error: 'Unauthorized',
+              details: error instanceof Error ? error.message : 'Authentication required',
             }))
           }
           return
@@ -92,11 +107,13 @@ function apiPlugin() {
 
         // Handle GET /api/health
         if (req.url === '/health' && req.method === 'GET') {
+          console.log('[Vite API /health] Health check requested')
           res.statusCode = 200
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify({
             status: 'ok',
             timestamp: new Date().toISOString(),
+            environment: process.env.NODE_ENV || 'development',
           }))
           return
         }

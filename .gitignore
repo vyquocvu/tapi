@@ -8,6 +8,10 @@ dist
 *.timestamp_*.js
 package-lock.json
 
+# Vercel
+.vercel
+.vercel_build_output
+
 # Database
 *.db
 *.db-journal
