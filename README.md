@@ -6,8 +6,8 @@ A full-stack application built with **TanStack Router** and **TanStack Query**, 
 
 - **TanStack Router** - Type-safe file-based routing
 - **TanStack Query** - Powerful data fetching and caching
-- **Authentication** - Login system with real API endpoint
-- **Express API Server** - Backend API with authentication
+- **Authentication** - Login system with API endpoint via Vite middleware
+- **Vite Middleware API** - Built-in API routes without separate server
 - **TypeScript** - Full type safety
 - **Vite** - Lightning-fast development
 - **React Router DevTools** - Debug routing in development
@@ -27,9 +27,8 @@ A full-stack application built with **TanStack Router** and **TanStack Query**, 
  ├── main.tsx                 # Client entry point
  └── app.css                  # Global styles
 /server
- ├── api.js                   # Express API server with authentication
- ├── api-example.js           # Example API implementation
- └── README.md                # API documentation
+ └── api-example.js           # Example API implementation (commented out)
+vite.config.ts                # Vite config with API middleware plugin
 ```
 
 ### Key Files Explained
@@ -65,23 +64,7 @@ Start the development server:
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`
-
-**Start both frontend and API server:**
-
-```bash
-npm run dev:all
-```
-
-This will start:
-- Frontend dev server at `http://localhost:5173`
-- API server at `http://localhost:3001`
-
-**Start only the API server:**
-
-```bash
-npm run dev:server
-```
+The app will be available at `http://localhost:5173`. The API endpoints are handled by Vite middleware directly, so there's no need to run a separate server.
 
 ### Build
 
@@ -107,8 +90,8 @@ npm run typecheck
 
 ### 1. Authentication System
 
-Real login system with backend API:
-- Express API server with `/api/login` endpoint
+Real login system with API endpoint via Vite middleware:
+- API endpoint at `/api/login` handled by Vite middleware plugin
 - AuthContext for managing authentication state
 - Protected routes and conditional navigation
 - Session token storage
