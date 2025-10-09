@@ -1,0 +1,9 @@
+node_modules
+dist
+.vinxi
+.output
+.env
+.DS_Store
+*.log
+*.timestamp_*.js
+package-lock.json
