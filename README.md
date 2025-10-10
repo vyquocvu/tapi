@@ -130,12 +130,34 @@ A fullstack web application built with **TanStack Start**, **TanStack Router**, 
 
 ## 🚀 Running the Application
 
+> 🌟 **NEW**: Choose your runtime environment with `npm run choose`! Run on Node.js server or deploy to Vercel with a single command.
+
+### Quick Start - Choose Your Environment
+
+```bash
+# Show available environments
+npm run choose
+
+# Run on Node.js server (production)
+npm run choose nodejs
+
+# Deploy to Vercel (serverless)
+npm run choose vercel
+
+# Start development server
+npm run choose dev
+```
+
+📖 **For detailed environment documentation, see [RUN_ENVIRONMENTS.md](./RUN_ENVIRONMENTS.md)**
+
 ### Development Mode
 
 Start the development server:
 
 ```bash
 npm run dev
+# or
+npm run choose dev
 ```
 
 The app will be available at `http://localhost:5173`. The API endpoints are handled by Vite middleware directly, so there's no need to run a separate server.
@@ -162,9 +184,14 @@ npm run start
 
 ### Available Scripts
 
+- `npm run choose` - **Interactive environment selector**
+- `npm run choose nodejs` - **Run on Node.js server**
+- `npm run choose vercel` - **Deploy to Vercel**
+- `npm run choose dev` - **Start development server**
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run start` - Preview production build
+- `npm run start:node` - Start Node.js server directly
 - `npm run typecheck` - Run TypeScript type checking
 - `npm run prisma:generate` - Generate Prisma Client
 - `npm run prisma:migrate` - Run database migrations
@@ -305,6 +332,21 @@ This will:
 ## 🚢 Deployment
 
 > 🌟 **NEW**: Full Vercel serverless deployment support with dedicated API functions!
+> 🚀 **NEW**: Run on Node.js server with Express! Use `npm run choose nodejs` for traditional hosting.
+
+### Quick Deploy with Environment Selector
+
+The easiest way to deploy is using the environment selector:
+
+```bash
+# Deploy to Vercel
+npm run choose vercel
+
+# Run on Node.js server
+npm run choose nodejs
+```
+
+📖 **For detailed environment options, see [RUN_ENVIRONMENTS.md](./RUN_ENVIRONMENTS.md)**
 
 ### Deploy to Vercel
 
@@ -426,6 +468,24 @@ The frontend is served as a static site with client-side routing via TanStack Ro
 
 ### Deploy to Node Server
 
+> 🚀 **Quick Start**: `npm run choose nodejs` - Automatically builds and starts the server!
+
+The application includes a production-ready Express.js server for traditional hosting environments (VPS, Docker, etc.).
+
+#### Option A: Using the Environment Selector (Recommended)
+
+```bash
+npm run choose nodejs
+```
+
+This automatically:
+- Builds the application if needed
+- Starts the Express server on port 3000
+- Serves the frontend and API routes
+- Sets NODE_ENV to production
+
+#### Option B: Manual Steps
+
 1. **Build the application**
    ```bash
    npm run build
@@ -438,8 +498,30 @@ The frontend is served as a static site with client-side routing via TanStack Ro
 
 3. **Start the server**
    ```bash
-   npm run start
+   npm run start:node
+   # or
+   PORT=8080 npm run start:node  # Custom port
    ```
+
+#### Features
+
+- **Full-stack server**: Handles both API routes and frontend serving
+- **Express.js**: Production-ready, battle-tested framework
+- **Flexible database**: Works with SQLite, PostgreSQL, MySQL, etc.
+- **Custom port**: Set PORT environment variable
+- **Static file serving**: Automatically serves built frontend
+- **SPA routing**: Supports client-side routing with fallback
+
+#### Environment Variables
+
+Set these in your `.env` file or environment:
+
+```env
+DATABASE_URL="postgresql://user:password@host:port/database"
+JWT_SECRET="use-a-strong-random-secret-at-least-32-characters"
+NODE_ENV="production"
+PORT=3000  # Optional, defaults to 3000
+```
 
 ### Environment Variables for Production
 
