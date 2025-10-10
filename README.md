@@ -130,22 +130,34 @@ A fullstack web application built with **TanStack Start**, **TanStack Router**, 
 
 ## 🚀 Running the Application
 
-> 🌟 **NEW**: Choose your runtime environment with `npm run choose`! Run on Node.js server or deploy to Vercel with a single command.
+> 🌟 **NEW**: Configure your runtime environment in `.env` file! Run on Node.js server or deploy to Vercel by setting the `RUNTIME` variable.
 
-### Quick Start - Choose Your Environment
+### Quick Start - Configure Your Environment
+
+Set the `RUNTIME` environment variable in your `.env` file:
+
+```env
+# Choose one of: dev (default), node, vercel
+RUNTIME=dev
+```
+
+Then start the application:
 
 ```bash
-# Show available environments
-npm run choose
+npm start
+```
 
+**Or use convenience scripts:**
+
+```bash
 # Run on Node.js server (production)
-npm run choose nodejs
+npm run start:node
 
 # Deploy to Vercel (serverless)
-npm run choose vercel
+npm run start:vercel
 
-# Start development server
-npm run choose dev
+# Start development server (Vite)
+npm run dev
 ```
 
 📖 **For detailed environment documentation, see [RUN_ENVIRONMENTS.md](./RUN_ENVIRONMENTS.md)**
@@ -156,8 +168,6 @@ Start the development server:
 
 ```bash
 npm run dev
-# or
-npm run choose dev
 ```
 
 The app will be available at `http://localhost:5173`. The API endpoints are handled by Vite middleware directly, so there's no need to run a separate server.
@@ -176,22 +186,19 @@ Build for production:
 npm run build
 ```
 
-Preview the production build:
+Run the production build (runtime determined by `RUNTIME` env variable):
 
 ```bash
-npm run start
+npm start
 ```
 
 ### Available Scripts
 
-- `npm run choose` - **Interactive environment selector**
-- `npm run choose nodejs` - **Run on Node.js server**
-- `npm run choose vercel` - **Deploy to Vercel**
-- `npm run choose dev` - **Start development server**
+- `npm start` - **Start application (runtime based on RUNTIME env variable)**
+- `npm run start:node` - **Run on Node.js server**
+- `npm run start:vercel` - **Deploy to Vercel**
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
-- `npm run start` - Preview production build
-- `npm run start:node` - Start Node.js server directly
 - `npm run typecheck` - Run TypeScript type checking
 - `npm run prisma:generate` - Generate Prisma Client
 - `npm run prisma:migrate` - Run database migrations
@@ -332,18 +339,23 @@ This will:
 ## 🚢 Deployment
 
 > 🌟 **NEW**: Full Vercel serverless deployment support with dedicated API functions!
-> 🚀 **NEW**: Run on Node.js server with Express! Use `npm run choose nodejs` for traditional hosting.
+> 🚀 **NEW**: Run on Node.js server with Express! Set `RUNTIME=node` in your environment.
 
-### Quick Deploy with Environment Selector
+### Quick Deploy with Runtime Configuration
 
-The easiest way to deploy is using the environment selector:
+Configure the runtime in your environment:
 
 ```bash
 # Deploy to Vercel
-npm run choose vercel
+npm run start:vercel
 
 # Run on Node.js server
-npm run choose nodejs
+npm run start:node
+```
+
+Or set `RUNTIME` in your `.env` file and use:
+```bash
+npm start
 ```
 
 📖 **For detailed environment options, see [RUN_ENVIRONMENTS.md](./RUN_ENVIRONMENTS.md)**
@@ -468,23 +480,33 @@ The frontend is served as a static site with client-side routing via TanStack Ro
 
 ### Deploy to Node Server
 
-> 🚀 **Quick Start**: `npm run choose nodejs` - Automatically builds and starts the server!
+> 🚀 **Quick Start**: Set `RUNTIME=node` in your `.env` file and run `npm start`!
 
 The application includes a production-ready Express.js server for traditional hosting environments (VPS, Docker, etc.).
 
-#### Option A: Using the Environment Selector (Recommended)
+#### Option A: Using Runtime Environment Variable (Recommended)
+
+1. Set runtime in your `.env` file:
+   ```env
+   RUNTIME=node
+   NODE_ENV=production
+   PORT=3000
+   ```
+
+2. Start the server:
+   ```bash
+   npm start
+   ```
+
+#### Option B: Using Convenience Script
 
 ```bash
-npm run choose nodejs
+npm run start:node
 ```
 
-This automatically:
-- Builds the application if needed
-- Starts the Express server on port 3000
-- Serves the frontend and API routes
-- Sets NODE_ENV to production
+This automatically sets `RUNTIME=node` and starts the server.
 
-#### Option B: Manual Steps
+#### Option C: Manual Steps
 
 1. **Build the application**
    ```bash
@@ -496,11 +518,11 @@ This automatically:
    DATABASE_URL="your-production-db-url" npx prisma migrate deploy
    ```
 
-3. **Start the server**
+3. **Start the server directly**
    ```bash
-   npm run start:node
-   # or
-   PORT=8080 npm run start:node  # Custom port
+   NODE_ENV=production tsx server/index.ts
+   # or with custom port
+   PORT=8080 NODE_ENV=production tsx server/index.ts
    ```
 
 #### Features

@@ -1,53 +1,106 @@
-# Run Environment Selector
+# Run Environment Configuration
 
-This document describes how to use the run environment selector script to choose between different deployment environments for vStack.
+This document describes how to configure and run vStack in different runtime environments using environment variables.
 
 ## Overview
 
-The vStack application supports three different runtime environments:
+The vStack application supports three different runtime environments, configured via the `RUNTIME` environment variable:
 
 1. **Development (Vite)** - For local development with hot reload
 2. **Node.js (Express)** - For traditional server hosting (VPS, Docker, etc.)
 3. **Vercel (Serverless)** - For serverless deployment with auto-scaling
 
-## Usage
+## Configuration
 
-### Quick Start
+### Setting the Runtime
+
+Set the `RUNTIME` environment variable in your `.env` file:
+
+```env
+# Options: "dev" (default), "node", "vercel"
+RUNTIME=dev
+```
+
+Then start the application:
 
 ```bash
-# Show usage information
-npm run choose
+npm start
+```
 
-# Run on Node.js server
-npm run choose nodejs
+### Alternative: Use Convenience Scripts
 
-# Deploy to Vercel
-npm run choose vercel
+```bash
+# Development mode
+npm run dev
 
-# Start development server
-npm run choose dev
+# Node.js server
+npm run start:node
+
+# Vercel deployment
+npm run start:vercel
 ```
 
 ## Environment Details
 
-### 1. Node.js Environment
+### 1. Development Environment (RUNTIME=dev)
 
-**Best for:** Traditional hosting, VPS, Docker containers, self-hosted deployments
+**Best for:** Local development, testing, debugging
 
+**Configuration:**
+```env
+RUNTIME=dev
+PORT=5173
+NODE_ENV=development
+```
+
+**Start command:**
 ```bash
-npm run choose nodejs
+npm run dev
+# or
+npm start  # if RUNTIME=dev in .env
 ```
 
 **What it does:**
-- Automatically builds the application if not already built
+- Starts Vite development server with hot module reload
+- Uses API middleware for backend routes
+- Runs on http://localhost:5173
+- SQLite database for local development
+
+**Advantages:**
+- Instant hot reload
+- Fast development feedback
+- Built-in debugging tools
+- No build step required
+
+### 2. Node.js Environment (RUNTIME=node)
+
+**Best for:** Traditional hosting, VPS, Docker containers, self-hosted deployments
+
+**Configuration:**
+```env
+RUNTIME=node
+NODE_ENV=production
+PORT=3000
+DATABASE_URL="postgresql://user:password@host:port/database"
+JWT_SECRET="your-strong-secret"
+```
+
+**Start command:**
+```bash
+npm run start:node
+# or
+npm start  # if RUNTIME=node in .env
+```
+
+**What it does:**
 - Starts an Express.js server on port 3000 (or PORT environment variable)
 - Serves the built frontend from the `dist/` directory
 - Handles API requests through Express routes
-- Uses the database configured in your `.env` file
+- Uses the database configured in your environment
 
 **Requirements:**
-- Built application (`npm run build` - automatically handled)
-- Environment variables set in `.env` file
+- Built application (run `npm run build` first)
+- Environment variables set
 - Port 3000 available (or specify custom PORT)
 
 **Advantages:**
@@ -57,17 +110,23 @@ npm run choose nodejs
 - Easy to containerize with Docker
 - No vendor lock-in
 
-**Alternative Direct Command:**
-```bash
-npm run start:node
-```
-
-### 2. Vercel Environment
+### 3. Vercel Environment (RUNTIME=vercel)
 
 **Best for:** Serverless deployment, automatic scaling, zero-configuration hosting
 
+**Configuration:**
+```env
+RUNTIME=vercel
+NODE_ENV=production
+DATABASE_URL="postgresql://user:password@host:port/database"
+JWT_SECRET="your-strong-secret"
+```
+
+**Start command:**
 ```bash
-npm run choose vercel
+npm run start:vercel
+# or
+npm start  # if RUNTIME=vercel in .env
 ```
 
 **What it does:**
@@ -97,7 +156,7 @@ npm run choose vercel
 
 3. Deploy:
    ```bash
-   npm run choose vercel
+   npm run start:vercel
    ```
 
 4. Run database migrations:
@@ -112,40 +171,11 @@ npm run choose vercel
 - Free tier available
 - Automatic HTTPS
 
-**Alternative Direct Command:**
-```bash
-npm run start:vercel
-```
-
-### 3. Development Environment
-
-**Best for:** Local development, testing, debugging
-
-```bash
-npm run choose dev
-```
-
-**What it does:**
-- Starts Vite development server with hot module reload
-- Uses API middleware for backend routes
-- Runs on http://localhost:5173
-- SQLite database for local development
-
-**Advantages:**
-- Instant hot reload
-- Fast development feedback
-- Built-in debugging tools
-- No build step required
-
-**Alternative Direct Command:**
-```bash
-npm run dev
-```
-
 ## Environment Comparison
 
 | Feature | Development | Node.js | Vercel |
 |---------|-------------|---------|--------|
+| **Configuration** | `RUNTIME=dev` | `RUNTIME=node` | `RUNTIME=vercel` |
 | **Server Type** | Vite Dev Server | Express.js | Serverless Functions |
 | **Database** | SQLite | Any (SQLite, PostgreSQL, etc.) | PostgreSQL (recommended) |
 | **Hot Reload** | ✅ Yes | ❌ No | ❌ No |
@@ -158,20 +188,29 @@ npm run dev
 
 ### Custom Port for Node.js
 
+Set in your `.env` file:
+```env
+RUNTIME=node
+PORT=8080
+```
+
+Or override via command line:
 ```bash
-PORT=8080 npm run choose nodejs
+PORT=8080 npm run start:node
 ```
 
 ### Deploy to Vercel Production
 
 ```bash
-npm run choose vercel -- --prod
+RUNTIME=vercel npm start -- --prod
+# or
+npm run start:vercel -- --prod
 ```
 
 ### Deploy to Vercel Preview
 
 ```bash
-npm run choose vercel
+npm run start:vercel
 ```
 
 ## Troubleshooting
@@ -180,15 +219,16 @@ npm run choose vercel
 
 **Problem:** Port 3000 is already in use
 
-**Solution:** Use a different port
-```bash
-PORT=8080 npm run choose nodejs
+**Solution:** Use a different port in `.env` file
+```env
+RUNTIME=node
+PORT=8080
 ```
 
 **Problem:** Database not configured
 
 **Solution:** Set `DATABASE_URL` in `.env` file
-```bash
+```env
 DATABASE_URL="file:./dev.db"
 ```
 
@@ -227,11 +267,16 @@ npx prisma migrate deploy
    npm run build
    ```
 
-2. Set production environment variables in `.env`
+2. Update `.env` file:
+   ```env
+   RUNTIME=node
+   NODE_ENV=production
+   DATABASE_URL="your-production-db-url"
+   ```
 
 3. Start Node.js server:
    ```bash
-   npm run choose nodejs
+   npm start
    ```
 
 ### From Development to Vercel
@@ -246,12 +291,19 @@ npx prisma migrate deploy
 
 2. Set environment variables in Vercel dashboard
 
-3. Deploy:
-   ```bash
-   npm run choose vercel -- --prod
+3. Update `.env` for Vercel:
+   ```env
+   RUNTIME=vercel
    ```
 
-4. Run migrations:
+4. Deploy:
+   ```bash
+   npm start -- --prod
+   # or
+   npm run start:vercel -- --prod
+   ```
+
+5. Run migrations:
    ```bash
    npx prisma migrate deploy
    ```
@@ -262,9 +314,16 @@ npx prisma migrate deploy
 
 2. Set environment variables in Vercel dashboard
 
-3. Deploy:
+3. Update `.env`:
+   ```env
+   RUNTIME=vercel
+   ```
+
+4. Deploy:
    ```bash
-   npm run choose vercel
+   npm start
+   # or
+   npm run start:vercel
    ```
 
 ## Additional Resources

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "start": "vite preview",
+    "start": "node scripts/start.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate",
@@ -14,7 +14,6 @@
     "prisma:studio": "prisma studio",
     "prisma:seed": "tsx prisma/seed.ts",
     "db:setup": "npm run prisma:generate && npm run prisma:migrate && npm run prisma:seed",
-    "choose": "node scripts/run.mjs",
     "start:node": "NODE_ENV=production tsx server/index.ts",
     "start:vercel": "vercel"
   },
