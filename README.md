@@ -18,7 +18,21 @@ A fullstack web application built with **TanStack Start**, **TanStack Router**, 
   - [Deploy to Node Server](#deploy-to-node-server)
 - [Tech Stack](#️-tech-stack)
 
-## 🚀 Features
+
+## Environment Variables
+
+```
+DATABASE_URL=
+DATABASE_PROVIDER=postgresql
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+PORT=5173
+NODE_ENV=development
+RUNTIME=dev
+```
+
+### DATABASE_PROVIDER
+Specifies the database provider for Prisma. Example values: `sqlite`, `postgresql`, `mysql`.
+Make sure this matches your migration history and database setup.
 
 - **TanStack Router** - Type-safe file-based routing with protected routes
 - **TanStack Query** - Powerful data fetching and caching
