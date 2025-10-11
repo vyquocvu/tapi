@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "start": "npm run db:setup && node scripts/start.mjs",
+    "build": "tsc && vite build && npm run db:setup",
+    "start": "node scripts/start.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate",
