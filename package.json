@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "start": "node scripts/start.mjs",
+    "start": "npm run db:setup && node scripts/start.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate",
