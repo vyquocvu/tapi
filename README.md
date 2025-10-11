@@ -18,7 +18,21 @@ A fullstack web application built with **TanStack Start**, **TanStack Router**, 
   - [Deploy to Node Server](#deploy-to-node-server)
 - [Tech Stack](#️-tech-stack)
 
-## 🚀 Features
+
+## Environment Variables
+
+```
+DATABASE_URL=
+DATABASE_PROVIDER=postgresql
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+PORT=5173
+NODE_ENV=development
+RUNTIME=dev
+```
+
+### DATABASE_PROVIDER
+Specifies the database provider for Prisma. Example values: `sqlite`, `postgresql`, `mysql`.
+Make sure this matches your migration history and database setup.
 
 - **TanStack Router** - Type-safe file-based routing with protected routes
 - **TanStack Query** - Powerful data fetching and caching
@@ -130,6 +144,38 @@ A fullstack web application built with **TanStack Start**, **TanStack Router**, 
 
 ## 🚀 Running the Application
 
+> 🌟 **NEW**: Configure your runtime environment in `.env` file! Run on Node.js server or deploy to Vercel by setting the `RUNTIME` variable.
+
+### Quick Start - Configure Your Environment
+
+Set the `RUNTIME` environment variable in your `.env` file:
+
+```env
+# Choose one of: dev (default), node, vercel
+RUNTIME=dev
+```
+
+Then start the application:
+
+```bash
+npm start
+```
+
+**Or use convenience scripts:**
+
+```bash
+# Run on Node.js server (production)
+npm run start:node
+
+# Deploy to Vercel (serverless)
+npm run start:vercel
+
+# Start development server (Vite)
+npm run dev
+```
+
+📖 **For detailed environment documentation, see [RUN_ENVIRONMENTS.md](./RUN_ENVIRONMENTS.md)**
+
 ### Development Mode
 
 Start the development server:
@@ -154,17 +200,19 @@ Build for production:
 npm run build
 ```
 
-Preview the production build:
+Run the production build (runtime determined by `RUNTIME` env variable):
 
 ```bash
-npm run start
+npm start
 ```
 
 ### Available Scripts
 
+- `npm start` - **Start application (runtime based on RUNTIME env variable)**
+- `npm run start:node` - **Run on Node.js server**
+- `npm run start:vercel` - **Deploy to Vercel**
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
-- `npm run start` - Preview production build
 - `npm run typecheck` - Run TypeScript type checking
 - `npm run prisma:generate` - Generate Prisma Client
 - `npm run prisma:migrate` - Run database migrations
@@ -305,6 +353,26 @@ This will:
 ## 🚢 Deployment
 
 > 🌟 **NEW**: Full Vercel serverless deployment support with dedicated API functions!
+> 🚀 **NEW**: Run on Node.js server with Express! Set `RUNTIME=node` in your environment.
+
+### Quick Deploy with Runtime Configuration
+
+Configure the runtime in your environment:
+
+```bash
+# Deploy to Vercel
+npm run start:vercel
+
+# Run on Node.js server
+npm run start:node
+```
+
+Or set `RUNTIME` in your `.env` file and use:
+```bash
+npm start
+```
+
+📖 **For detailed environment options, see [RUN_ENVIRONMENTS.md](./RUN_ENVIRONMENTS.md)**
 
 ### Deploy to Vercel
 
@@ -426,6 +494,34 @@ The frontend is served as a static site with client-side routing via TanStack Ro
 
 ### Deploy to Node Server
 
+> 🚀 **Quick Start**: Set `RUNTIME=node` in your `.env` file and run `npm start`!
+
+The application includes a production-ready Express.js server for traditional hosting environments (VPS, Docker, etc.).
+
+#### Option A: Using Runtime Environment Variable (Recommended)
+
+1. Set runtime in your `.env` file:
+   ```env
+   RUNTIME=node
+   NODE_ENV=production
+   PORT=3000
+   ```
+
+2. Start the server:
+   ```bash
+   npm start
+   ```
+
+#### Option B: Using Convenience Script
+
+```bash
+npm run start:node
+```
+
+This automatically sets `RUNTIME=node` and starts the server.
+
+#### Option C: Manual Steps
+
 1. **Build the application**
    ```bash
    npm run build
@@ -436,10 +532,32 @@ The frontend is served as a static site with client-side routing via TanStack Ro
    DATABASE_URL="your-production-db-url" npx prisma migrate deploy
    ```
 
-3. **Start the server**
+3. **Start the server directly**
    ```bash
-   npm run start
+   NODE_ENV=production tsx server/index.ts
+   # or with custom port
+   PORT=8080 NODE_ENV=production tsx server/index.ts
    ```
+
+#### Features
+
+- **Full-stack server**: Handles both API routes and frontend serving
+- **Express.js**: Production-ready, battle-tested framework
+- **Flexible database**: Works with SQLite, PostgreSQL, MySQL, etc.
+- **Custom port**: Set PORT environment variable
+- **Static file serving**: Automatically serves built frontend
+- **SPA routing**: Supports client-side routing with fallback
+
+#### Environment Variables
+
+Set these in your `.env` file or environment:
+
+```env
+DATABASE_URL="postgresql://user:password@host:port/database"
+JWT_SECRET="use-a-strong-random-secret-at-least-32-characters"
+NODE_ENV="production"
+PORT=3000  # Optional, defaults to 3000
+```
 
 ### Environment Variables for Production
 
