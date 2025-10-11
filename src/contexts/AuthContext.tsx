@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 
 interface User {
   email: string
@@ -17,6 +17,44 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Restore user session on mount if token exists
+  useEffect(() => {
+    const restoreSession = async () => {
+      const token = sessionStorage.getItem('authToken')
+      if (token) {
+        try {
+          // Verify token by fetching user data from /api/me
+          const response = await fetch('/api/me', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          })
+
+          if (response.ok) {
+            const data = await response.json()
+            if (data.success && data.data?.user) {
+              setUser({
+                id: data.data.user.userId,
+                email: data.data.user.email,
+                name: data.data.user.email.split('@')[0],
+              })
+            }
+          } else {
+            // Token is invalid, remove it
+            sessionStorage.removeItem('authToken')
+          }
+        } catch (error) {
+          console.error('Failed to restore session:', error)
+          sessionStorage.removeItem('authToken')
+        }
+      }
+      setIsLoading(false)
+    }
+
+    restoreSession()
+  }, [])
 
   const login = async (email: string, password: string) => {
     // Call the real API endpoint
@@ -54,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
-      {children}
+      {isLoading ? null : children}
     </AuthContext.Provider>
   )
 }
