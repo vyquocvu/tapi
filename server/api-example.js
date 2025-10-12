@@ -31,17 +31,6 @@ app.get('/api/hello', (req, res) => {
   });
 });
 
-// Example endpoint with data
-app.get('/api/posts', async (req, res) => {
-  try {
-    const response = await fetch('https://jsonplaceholder.typicode.com/posts?_limit=5');
-    const posts = await response.json();
-    res.json(posts);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch posts' });
-  }
-});
-
 app.listen(PORT, () => {
   console.log(`Server API running at http://localhost:${PORT}`);
 });
