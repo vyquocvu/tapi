@@ -37,6 +37,7 @@ Make sure this matches your migration history and database setup.
 - **TanStack Router** - Type-safe file-based routing with protected routes
 - **TanStack Query** - Powerful data fetching and caching
 - **Prisma + SQLite** - Type-safe database access with local SQLite for development
+- **Content Type Builder** - Strapi-inspired content type builder with automatic Prisma schema generation
 - **JWT Authentication** - Secure authentication with JSON Web Tokens
 - **Protected Routes** - Dashboard route with authentication guards
 - **API Routes** - Built-in API endpoints via Vite middleware
@@ -219,6 +220,9 @@ npm start
 - `npm run prisma:studio` - Open Prisma Studio (database GUI)
 - `npm run prisma:seed` - Seed the database
 - `npm run db:setup` - Complete database setup (generate + migrate + seed)
+- `npm run content-type:generate` - Generate Prisma schema from content type definitions (manual)
+- `npm run content-type:watch` - Watch content types and auto-generate schemas (standalone)
+- `npm run content-type:test` - Test the content type builder functionality
 
 ## 🎯 Key Features Explained
 
@@ -254,7 +258,31 @@ export const Route = createFileRoute('/dashboard/')({
 - **Migrations**: Version-controlled database schema changes
 - **Seeding**: Automatic creation of demo user and posts
 
-### 4. API Routes via Vite Middleware
+### 4. Content Type Builder
+
+The Content Type Builder allows you to define database models using JSON or TypeScript and automatically generate Prisma schemas - **just like Strapi**:
+
+- **Auto-generation in dev mode**: Schemas regenerate automatically when you save changes
+- **Define content types** in `content-types/definitions.json`
+- **Multiple field types**: strings, numbers, dates, relations, enums, JSON
+- **Relationship support**: one-to-one, one-to-many, many-to-one, many-to-many
+- **Migration tracking**: Track and manage schema changes
+
+Quick example:
+```bash
+# Start dev server (includes auto-generation watcher)
+npm run dev
+
+# In another terminal, use the blog example
+cp content-types/examples/blog-example.json content-types/definitions.json
+
+# Schema is automatically generated! Apply to database:
+npm run prisma:migrate
+```
+
+See [Content Type Builder Quick Start](./CONTENT_TYPE_BUILDER_QUICKSTART.md) and [Full Documentation](./CONTENT_TYPE_BUILDER.md) for more details.
+
+### 5. API Routes via Vite Middleware
 
 API endpoints are implemented in `vite.config.ts`:
 
@@ -263,7 +291,7 @@ API endpoints are implemented in `vite.config.ts`:
 - `GET /api/me` - Get current user (protected)
 - `GET /api/health` - Health check
 
-### 5. Type-Safe Data Fetching
+### 6. Type-Safe Data Fetching
 
 TanStack Query provides automatic caching and state management:
 
@@ -274,7 +302,7 @@ const { data: posts, isLoading, error } = useQuery<Post[]>({
 })
 ```
 
-### 6. Service Layer Architecture
+### 7. Service Layer Architecture
 
 Business logic is separated into service modules:
 
