@@ -1,55 +1,56 @@
 {
-  "api::article.article": {
-    "uid": "api::article.article",
-    "displayName": "Article",
-    "singularName": "article",
-    "pluralName": "articles",
-    "description": "Blog articles with rich content",
+  "api::product.product": {
+    "uid": "api::product.product",
+    "displayName": "Product",
+    "singularName": "product",
+    "pluralName": "products",
+    "description": "E-commerce product",
     "fields": {
-      "title": {
+      "name": {
         "type": "string",
         "required": true,
         "maxLength": 255
       },
-      "slug": {
+      "sku": {
         "type": "string",
-        "required": true,
         "unique": true,
-        "maxLength": 255
-      },
-      "content": {
-        "type": "text",
         "required": true
       },
-      "excerpt": {
+      "description": {
         "type": "text"
       },
-      "published": {
-        "type": "boolean",
-        "default": false
+      "price": {
+        "type": "decimal",
+        "required": true,
+        "min": 0
       },
-      "publishedAt": {
-        "type": "datetime"
+      "compareAtPrice": {
+        "type": "decimal",
+        "min": 0
       },
-      "viewCount": {
+      "stock": {
         "type": "integer",
-        "default": 0
+        "default": 0,
+        "min": 0
       },
       "status": {
         "type": "enumeration",
-        "values": ["draft", "published", "archived"],
-        "default": "draft"
+        "values": ["active", "inactive", "discontinued"],
+        "default": "active"
       },
-      "author": {
-        "type": "relation",
-        "relationType": "manyToOne",
-        "target": "api::user.user",
-        "required": true
+      "featured": {
+        "type": "boolean",
+        "default": false
       },
       "category": {
         "type": "relation",
         "relationType": "manyToOne",
         "target": "api::category.category"
+      },
+      "tags": {
+        "type": "relation",
+        "relationType": "manyToMany",
+        "target": "api::tag.tag"
       }
     },
     "options": {
@@ -61,7 +62,7 @@
     "displayName": "Category",
     "singularName": "category",
     "pluralName": "categories",
-    "description": "Article categories",
+    "description": "Product category",
     "fields": {
       "name": {
         "type": "string",
@@ -70,54 +71,165 @@
       },
       "slug": {
         "type": "string",
-        "required": true,
         "unique": true,
-        "maxLength": 100
+        "required": true
       },
       "description": {
         "type": "text"
       },
-      "articles": {
+      "parent": {
+        "type": "relation",
+        "relationType": "manyToOne",
+        "target": "api::category.category"
+      },
+      "children": {
         "type": "relation",
         "relationType": "oneToMany",
-        "target": "api::article.article"
+        "target": "api::category.category"
+      },
+      "products": {
+        "type": "relation",
+        "relationType": "oneToMany",
+        "target": "api::product.product"
       }
     },
     "options": {
       "timestamps": true
     }
   },
-  "api::user.user": {
-    "uid": "api::user.user",
-    "displayName": "User",
-    "singularName": "user",
-    "pluralName": "users",
-    "description": "Application users",
+  "api::tag.tag": {
+    "uid": "api::tag.tag",
+    "displayName": "Tag",
+    "singularName": "tag",
+    "pluralName": "tags",
+    "description": "Product tag",
+    "fields": {
+      "name": {
+        "type": "string",
+        "required": true,
+        "unique": true,
+        "maxLength": 50
+      },
+      "slug": {
+        "type": "string",
+        "unique": true,
+        "required": true
+      },
+      "products": {
+        "type": "relation",
+        "relationType": "manyToMany",
+        "target": "api::product.product"
+      }
+    },
+    "options": {
+      "timestamps": true
+    }
+  },
+  "api::order.order": {
+    "uid": "api::order.order",
+    "displayName": "Order",
+    "singularName": "order",
+    "pluralName": "orders",
+    "description": "Customer order",
+    "fields": {
+      "orderNumber": {
+        "type": "string",
+        "unique": true,
+        "required": true
+      },
+      "status": {
+        "type": "enumeration",
+        "values": ["pending", "processing", "shipped", "delivered", "cancelled"],
+        "default": "pending"
+      },
+      "total": {
+        "type": "decimal",
+        "required": true,
+        "min": 0
+      },
+      "customer": {
+        "type": "relation",
+        "relationType": "manyToOne",
+        "target": "api::customer.customer",
+        "required": true
+      },
+      "items": {
+        "type": "relation",
+        "relationType": "oneToMany",
+        "target": "api::order-item.order-item"
+      },
+      "shippingAddress": {
+        "type": "json"
+      },
+      "billingAddress": {
+        "type": "json"
+      }
+    },
+    "options": {
+      "timestamps": true
+    }
+  },
+  "api::order-item.order-item": {
+    "uid": "api::order-item.order-item",
+    "displayName": "Order Item",
+    "singularName": "order-item",
+    "pluralName": "order-items",
+    "description": "Item in an order",
+    "fields": {
+      "quantity": {
+        "type": "integer",
+        "required": true,
+        "min": 1
+      },
+      "price": {
+        "type": "decimal",
+        "required": true,
+        "min": 0
+      },
+      "order": {
+        "type": "relation",
+        "relationType": "manyToOne",
+        "target": "api::order.order",
+        "required": true
+      },
+      "product": {
+        "type": "relation",
+        "relationType": "manyToOne",
+        "target": "api::product.product",
+        "required": true
+      }
+    },
+    "options": {
+      "timestamps": true
+    }
+  },
+  "api::customer.customer": {
+    "uid": "api::customer.customer",
+    "displayName": "Customer",
+    "singularName": "customer",
+    "pluralName": "customers",
+    "description": "Customer account",
     "fields": {
       "email": {
         "type": "email",
         "required": true,
         "unique": true
       },
-      "password": {
-        "type": "password",
+      "firstName": {
+        "type": "string",
         "required": true
       },
-      "name": {
+      "lastName": {
         "type": "string",
-        "required": true,
-        "maxLength": 255
+        "required": true
       },
-      "bio": {
-        "type": "text"
-      },
-      "avatar": {
+      "phone": {
         "type": "string"
       },
-      "articles": {
+      "orders": {
         "type": "relation",
         "relationType": "oneToMany",
-        "target": "api::article.article"
+        "target": "api::order.order"
       }
     },
     "options": {
