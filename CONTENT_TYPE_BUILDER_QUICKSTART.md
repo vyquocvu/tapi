@@ -6,9 +6,19 @@ This guide will help you get started with the Content Type Builder in 5 minutes.
 
 The Content Type Builder allows you to define your database models using a simple JSON format or TypeScript API, then automatically generate Prisma schemas from those definitions. It's inspired by Strapi's content type builder and makes database schema management easier and more maintainable.
 
+**✨ Auto-Generation:** When running in development mode (`npm run dev`), Prisma schemas are automatically generated whenever you save changes to `content-types/definitions.json` - just like Strapi!
+
 ## Quick Example
 
-### Step 1: Define Your Content Types
+### Step 1: Start Development Server
+
+```bash
+npm run dev
+```
+
+The development server includes automatic content type watching. Any changes to `content-types/definitions.json` will automatically regenerate the Prisma schema.
+
+### Step 2: Define Your Content Types
 
 Create or edit `content-types/definitions.json`:
 
@@ -40,11 +50,7 @@ Create or edit `content-types/definitions.json`:
 }
 ```
 
-### Step 2: Generate Prisma Schema
-
-```bash
-npm run content-type:generate
-```
+**Save the file** and the Prisma schema will be automatically generated! ✨
 
 This creates a Prisma schema:
 
@@ -61,6 +67,8 @@ model Post {
 
 ### Step 3: Apply to Database
 
+After the schema is generated, apply it to the database:
+
 ```bash
 npm run prisma:migrate
 npm run prisma:generate
@@ -68,17 +76,52 @@ npm run prisma:generate
 
 That's it! Your database now has the new schema.
 
+## Auto-Generation Features
+
+### Development Mode (Automatic)
+
+When you run `npm run dev`, the content type watcher is automatically started:
+
+```bash
+npm run dev
+```
+
+You'll see:
+```
+👀 Content Type Watcher: Active
+💡 Edit content-types/definitions.json to auto-generate Prisma schema
+```
+
+Now whenever you save changes to `content-types/definitions.json`, the Prisma schema will be automatically regenerated! No manual commands needed.
+
+### Manual Generation
+
+If you prefer manual control or need to generate outside of development mode:
+
+```bash
+npm run content-type:generate
+```
+
+### Standalone Watcher
+
+You can also run the watcher separately:
+
+```bash
+npm run content-type:watch
+```
+
 ## Using Examples
 
 We provide a complete blog example. Try it:
 
 ```bash
-# Copy the blog example
+# Start dev server with auto-generation
+npm run dev
+
+# In another terminal, copy the blog example
 cp content-types/examples/blog-example.json content-types/definitions.json
 
-# Generate the schema
-npm run content-type:generate
-
+# The schema is automatically generated! Check the console output.
 # Review the generated schema
 cat prisma/schema.prisma
 

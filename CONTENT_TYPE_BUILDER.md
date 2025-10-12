@@ -6,6 +6,7 @@ A modular, extensible content type builder for defining database models with aut
 
 - **Flexible Content Type Definition**: Define content types through configuration files or code
 - **Automatic Schema Generation**: Auto-generate Prisma models from content type definitions
+- **Auto-Generation in Dev Mode**: Schemas regenerate automatically when you save changes (like Strapi!)
 - **Rich Field Types**: Support for strings, numbers, dates, enums, relations, and more
 - **Validation Support**: Built-in validation rules for fields
 - **Migration Tracking**: Track and manage schema changes
@@ -30,6 +31,24 @@ A modular, extensible content type builder for defining database models with aut
 The content type builder is included in the vstack project. No additional installation required.
 
 ## Quick Start
+
+### Option 1: Auto-Generation (Recommended)
+
+Start the development server which includes automatic content type watching:
+
+```bash
+npm run dev
+```
+
+You'll see:
+```
+👀 Content Type Watcher: Active
+💡 Edit content-types/definitions.json to auto-generate Prisma schema
+```
+
+Now create or edit `content-types/definitions.json` and save. The Prisma schema will be automatically generated!
+
+### Option 2: Manual Generation
 
 ### 1. Define Your Content Types
 
@@ -69,6 +88,12 @@ Run the generation command:
 
 ```bash
 npm run content-type:generate
+```
+
+Or start the watcher:
+
+```bash
+npm run content-type:watch
 ```
 
 This will create/update your `prisma/schema.prisma` file with the generated models.

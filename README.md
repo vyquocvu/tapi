@@ -220,7 +220,8 @@ npm start
 - `npm run prisma:studio` - Open Prisma Studio (database GUI)
 - `npm run prisma:seed` - Seed the database
 - `npm run db:setup` - Complete database setup (generate + migrate + seed)
-- `npm run content-type:generate` - Generate Prisma schema from content type definitions
+- `npm run content-type:generate` - Generate Prisma schema from content type definitions (manual)
+- `npm run content-type:watch` - Watch content types and auto-generate schemas (standalone)
 - `npm run content-type:test` - Test the content type builder functionality
 
 ## 🎯 Key Features Explained
@@ -259,23 +260,23 @@ export const Route = createFileRoute('/dashboard/')({
 
 ### 4. Content Type Builder
 
-The Content Type Builder allows you to define database models using JSON or TypeScript and automatically generate Prisma schemas:
+The Content Type Builder allows you to define database models using JSON or TypeScript and automatically generate Prisma schemas - **just like Strapi**:
 
+- **Auto-generation in dev mode**: Schemas regenerate automatically when you save changes
 - **Define content types** in `content-types/definitions.json`
-- **Generate Prisma schemas** with `npm run content-type:generate`
 - **Multiple field types**: strings, numbers, dates, relations, enums, JSON
 - **Relationship support**: one-to-one, one-to-many, many-to-one, many-to-many
 - **Migration tracking**: Track and manage schema changes
 
 Quick example:
 ```bash
-# Use the blog example
+# Start dev server (includes auto-generation watcher)
+npm run dev
+
+# In another terminal, use the blog example
 cp content-types/examples/blog-example.json content-types/definitions.json
 
-# Generate Prisma schema
-npm run content-type:generate
-
-# Apply to database
+# Schema is automatically generated! Apply to database:
 npm run prisma:migrate
 ```
 
