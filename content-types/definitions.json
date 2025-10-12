@@ -1,0 +1,127 @@
+{
+  "api::article.article": {
+    "uid": "api::article.article",
+    "displayName": "Article",
+    "singularName": "article",
+    "pluralName": "articles",
+    "description": "Blog articles with rich content",
+    "fields": {
+      "title": {
+        "type": "string",
+        "required": true,
+        "maxLength": 255
+      },
+      "slug": {
+        "type": "string",
+        "required": true,
+        "unique": true,
+        "maxLength": 255
+      },
+      "content": {
+        "type": "text",
+        "required": true
+      },
+      "excerpt": {
+        "type": "text"
+      },
+      "published": {
+        "type": "boolean",
+        "default": false
+      },
+      "publishedAt": {
+        "type": "datetime"
+      },
+      "viewCount": {
+        "type": "integer",
+        "default": 0
+      },
+      "status": {
+        "type": "enumeration",
+        "values": ["draft", "published", "archived"],
+        "default": "draft"
+      },
+      "author": {
+        "type": "relation",
+        "relationType": "manyToOne",
+        "target": "api::user.user",
+        "required": true
+      },
+      "category": {
+        "type": "relation",
+        "relationType": "manyToOne",
+        "target": "api::category.category"
+      }
+    },
+    "options": {
+      "timestamps": true
+    }
+  },
+  "api::category.category": {
+    "uid": "api::category.category",
+    "displayName": "Category",
+    "singularName": "category",
+    "pluralName": "categories",
+    "description": "Article categories",
+    "fields": {
+      "name": {
+        "type": "string",
+        "required": true,
+        "maxLength": 100
+      },
+      "slug": {
+        "type": "string",
+        "required": true,
+        "unique": true,
+        "maxLength": 100
+      },
+      "description": {
+        "type": "text"
+      },
+      "articles": {
+        "type": "relation",
+        "relationType": "oneToMany",
+        "target": "api::article.article"
+      }
+    },
+    "options": {
+      "timestamps": true
+    }
+  },
+  "api::user.user": {
+    "uid": "api::user.user",
+    "displayName": "User",
+    "singularName": "user",
+    "pluralName": "users",
+    "description": "Application users",
+    "fields": {
+      "email": {
+        "type": "email",
+        "required": true,
+        "unique": true
+      },
+      "password": {
+        "type": "password",
+        "required": true
+      },
+      "name": {
+        "type": "string",
+        "required": true,
+        "maxLength": 255
+      },
+      "bio": {
+        "type": "text"
+      },
+      "avatar": {
+        "type": "string"
+      },
+      "articles": {
+        "type": "relation",
+        "relationType": "oneToMany",
+        "target": "api::article.article"
+      }
+    },
+    "options": {
+      "timestamps": true
+    }
+  }
+}

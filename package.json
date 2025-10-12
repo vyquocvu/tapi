@@ -16,6 +16,7 @@
     "db:setup": "npm run prisma:generate && npm run prisma:migrate && npm run prisma:seed",
     "db:check": "node scripts/check-db-migrated.mjs",
     "db:setup:check": "npm run db:check || npm run db:setup",
+    "content-type:generate": "tsx scripts/content-types/generate.ts",
     "start:node": "NODE_ENV=production tsx server/index.ts",
     "start:vercel": "vercel"
   },
