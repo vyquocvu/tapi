@@ -49,7 +49,7 @@ function DashboardComponent() {
         <p>Email: {user?.email}</p>
       </div>
 
-      <h2>Your Posts</h2>
+      <h2>Posts</h2>
       
       {isLoading && <div className="loading">Loading posts...</div>}
       
