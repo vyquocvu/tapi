@@ -221,6 +221,7 @@ npm start
 - `npm run prisma:seed` - Seed the database
 - `npm run db:setup` - Complete database setup (generate + migrate + seed)
 - `npm run content-type:generate` - Generate Prisma schema from content type definitions
+- `npm run content-type:test` - Test the content type builder functionality
 
 ## 🎯 Key Features Explained
 
