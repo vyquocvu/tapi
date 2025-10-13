@@ -31,9 +31,14 @@ function Navigation() {
           About
         </Link>
         {isAuthenticated && (
-          <Link to="/dashboard" activeProps={{ className: 'active' }}>
-            Dashboard
-          </Link>
+          <>
+            <Link to="/dashboard" activeProps={{ className: 'active' }}>
+              Dashboard
+            </Link>
+            <Link to="/content-type-builder" activeProps={{ className: 'active' }}>
+              Content Types
+            </Link>
+          </>
         )}
       </div>
       <div>
