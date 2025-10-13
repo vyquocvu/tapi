@@ -5,12 +5,6 @@ import type { ContentTypeDefinition, Field, FieldType } from '../../content-type
 import '../../styles/content-type-builder.css'
 
 export const Route = createFileRoute('/content-type-builder/')({
-  beforeLoad: async () => {
-    const token = sessionStorage.getItem('token')
-    if (!token) {
-      throw new Error('Not authenticated')
-    }
-  },
   component: ContentTypeBuilderComponent,
 })
 
@@ -66,6 +60,19 @@ function ContentTypeBuilderComponent() {
   const [selectedUid, setSelectedUid] = useState<string | null>(null)
   const [error, setError] = useState<string>('')
   
+  // Check authentication
+  const token = typeof window !== 'undefined' ? sessionStorage.getItem('authToken') : null
+  
+  if (!token) {
+    return (
+      <div className="content-type-builder">
+        <div className="error">
+          Please login to access the content type builder.
+        </div>
+      </div>
+    )
+  }
+  
   // Form state
   const [uid, setUid] = useState('')
   const [displayName, setDisplayName] = useState('')
@@ -83,7 +90,7 @@ function ContentTypeBuilderComponent() {
   const { data: contentTypes, isLoading } = useQuery({
     queryKey: ['content-types'],
     queryFn: async () => {
-      const token = sessionStorage.getItem('token')
+      const token = sessionStorage.getItem('authToken')
       const response = await fetch('/api/content-types', {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -98,7 +105,7 @@ function ContentTypeBuilderComponent() {
   // Create mutation
   const createMutation = useMutation({
     mutationFn: async (definition: ContentTypeDefinition) => {
-      const token = sessionStorage.getItem('token')
+      const token = sessionStorage.getItem('authToken')
       const response = await fetch('/api/content-types', {
         method: 'POST',
         headers: {
@@ -127,7 +134,7 @@ function ContentTypeBuilderComponent() {
   // Update mutation
   const updateMutation = useMutation({
     mutationFn: async ({ uid, definition }: { uid: string; definition: ContentTypeDefinition }) => {
-      const token = sessionStorage.getItem('token')
+      const token = sessionStorage.getItem('authToken')
       const response = await fetch(`/api/content-types?uid=${uid}`, {
         method: 'PUT',
         headers: {
@@ -156,7 +163,7 @@ function ContentTypeBuilderComponent() {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (uid: string) => {
-      const token = sessionStorage.getItem('token')
+      const token = sessionStorage.getItem('authToken')
       const response = await fetch(`/api/content-types?uid=${uid}`, {
         method: 'DELETE',
         headers: {
