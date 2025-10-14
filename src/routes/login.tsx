@@ -1,6 +1,11 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState, FormEvent } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export const Route = createFileRoute('/login')({
   component: LoginComponent,
@@ -35,59 +40,77 @@ function LoginComponent() {
   }
 
   return (
-    <div>
-      <h1>Login</h1>
-      <div className="card" style={{ maxWidth: '400px', margin: '2rem auto' }}>
-        <h3>Sign In</h3>
-        <p style={{ marginBottom: '1.5rem', color: '#7f8c8d' }}>
-          Use demo@user.com / password to login
-        </p>
-        
-        {error && <div className="error">{error}</div>}
-        
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={isLoading}
-              placeholder="Enter your email"
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={isLoading}
-              placeholder="Enter your password"
-            />
-          </div>
-          
-          <button type="submit" disabled={isLoading} style={{ width: '100%' }}>
-            {isLoading ? 'Logging in...' : 'Login'}
-          </button>
-        </form>
-      </div>
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
+      <div className="w-full max-w-md space-y-6">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold tracking-tight">Login</h1>
+        </div>
 
-      <div className="info-box" style={{ maxWidth: '400px', margin: '1rem auto' }}>
-        <h3>💡 Demo Login</h3>
-        <p>
-          This login page authenticates against a real backend API endpoint at <code>/api/login</code>.
-        </p>
-        <p style={{ marginTop: '0.5rem' }}>
-          <strong>Demo credentials:</strong><br />
-          Email: <code>demo@user.com</code><br />
-          Password: <code>password</code>
-        </p>
+        <Card>
+          <CardHeader>
+            <CardTitle>Sign In</CardTitle>
+            <CardDescription>
+              Use demo@user.com / password to login
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {error && (
+              <Alert variant="destructive" className="mb-6">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={isLoading}
+                  placeholder="Enter your email"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={isLoading}
+                  placeholder="Enter your password"
+                />
+              </div>
+              
+              <Button type="submit" disabled={isLoading} className="w-full">
+                {isLoading ? 'Logging in...' : 'Login'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              💡 Demo Login
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              This login page authenticates against a real backend API endpoint at <code className="px-1 py-0.5 rounded bg-muted text-foreground">/api/login</code>.
+            </p>
+            <div className="text-sm space-y-1">
+              <p className="font-semibold text-foreground">Demo credentials:</p>
+              <p className="text-muted-foreground">Email: <code className="px-1 py-0.5 rounded bg-muted text-foreground">demo@user.com</code></p>
+              <p className="text-muted-foreground">Password: <code className="px-1 py-0.5 rounded bg-muted text-foreground">password</code></p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
