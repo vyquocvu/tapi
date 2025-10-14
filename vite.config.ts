@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 import type { Connect } from 'vite'
 import dotenv from 'dotenv'
+import path from 'path'
 import { contentTypeWatcherPlugin } from './scripts/content-types/vite-plugin.js'
 
 // Load environment variables
@@ -520,4 +521,9 @@ function apiPlugin() {
 
 export default defineConfig({
   plugins: [TanStackRouterVite(), react(), apiPlugin(), contentTypeWatcherPlugin()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
 })
