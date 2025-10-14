@@ -3,6 +3,7 @@ import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { AuthProvider, useAuth } from '../contexts/AuthContext'
+import { Button } from '@/components/ui/button'
 import '../app.css'
 
 const queryClient = new QueryClient({
@@ -22,48 +23,65 @@ function Navigation() {
   const { isAuthenticated, user, logout } = useAuth()
 
   return (
-    <nav>
-      <div>
-        <Link to="/" activeProps={{ className: 'active' }}>
-          Home
-        </Link>
-        <Link to="/about" activeProps={{ className: 'active' }}>
-          About
-        </Link>
-        {isAuthenticated && (
-          <>
-            <Link to="/dashboard" activeProps={{ className: 'active' }}>
-              Dashboard
-            </Link>
-            <Link to="/content-type-builder" activeProps={{ className: 'active' }}>
-              Content Types
-            </Link>
-          </>
-        )}
-      </div>
-      <div>
-        {isAuthenticated ? (
-          <>
-            <span style={{ color: 'white', marginRight: '1rem' }}>
-              Welcome, {user?.name}
-            </span>
-            <button 
-              onClick={logout} 
-              style={{ 
-                background: 'transparent', 
-                border: '1px solid white',
-                padding: '0.3rem 0.8rem',
-                fontSize: '0.9rem'
-              }}
-            >
-              Logout
-            </button>
-          </>
-        ) : (
-          <Link to="/login" activeProps={{ className: 'active' }}>
-            Login
+    <nav className="bg-slate-800 px-8 py-4 mb-8">
+      <div className="flex justify-between items-center max-w-7xl mx-auto">
+        <div className="flex items-center gap-6">
+          <Link 
+            to="/" 
+            className="text-white hover:text-blue-400 transition-colors font-medium [&.active]:text-blue-400 [&.active]:border-b-2 [&.active]:border-blue-400"
+            activeProps={{ className: 'active' }}
+          >
+            Home
           </Link>
-        )}
+          <Link 
+            to="/about" 
+            className="text-white hover:text-blue-400 transition-colors font-medium [&.active]:text-blue-400 [&.active]:border-b-2 [&.active]:border-blue-400"
+            activeProps={{ className: 'active' }}
+          >
+            About
+          </Link>
+          {isAuthenticated && (
+            <>
+              <Link 
+                to="/dashboard" 
+                className="text-white hover:text-blue-400 transition-colors font-medium [&.active]:text-blue-400 [&.active]:border-b-2 [&.active]:border-blue-400"
+                activeProps={{ className: 'active' }}
+              >
+                Dashboard
+              </Link>
+              <Link 
+                to="/content-type-builder" 
+                className="text-white hover:text-blue-400 transition-colors font-medium [&.active]:text-blue-400 [&.active]:border-b-2 [&.active]:border-blue-400"
+                activeProps={{ className: 'active' }}
+              >
+                Content Types
+              </Link>
+            </>
+          )}
+        </div>
+        <div className="flex items-center gap-4">
+          {isAuthenticated ? (
+            <>
+              <span className="text-white text-sm">
+                Welcome, {user?.name}
+              </span>
+              <Button 
+                onClick={logout} 
+                variant="outline"
+                size="sm"
+                className="text-white border-white hover:bg-white/10"
+              >
+                Logout
+              </Button>
+            </>
+          ) : (
+            <Link to="/login">
+              <Button variant="ghost" size="sm" className="text-white hover:text-blue-400">
+                Login
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
     </nav>
   )
@@ -74,7 +92,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Navigation />
-        <div className="container">
+        <div className="container max-w-7xl mx-auto px-8">
           <Outlet />
         </div>
         <ReactQueryDevtools buttonPosition="bottom-left" />
