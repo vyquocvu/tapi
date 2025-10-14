@@ -24,6 +24,14 @@ function apiPlugin() {
           updateContentType, 
           deleteContentType 
         } = await import('./src/services/contentTypeService.js')
+        const {
+          findMany,
+          findOne,
+          create,
+          update,
+          deleteOne,
+          count
+        } = await import('./src/services/contentManagerService.js')
         const { createContext, requireAuth } = await import('./src/server/context.js')
 
         // Handle POST /api/login
@@ -281,6 +289,216 @@ function apiPlugin() {
               res.end(JSON.stringify({
                 success: true,
                 message: 'Content type deleted successfully',
+              }))
+            } catch (error) {
+              res.statusCode = 500
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: false,
+                error: error instanceof Error ? error.message : 'Internal server error',
+              }))
+            }
+            return
+          }
+        }
+
+        // Handle /api/content endpoints for content management
+        if (req.url?.startsWith('/content')) {
+          // Verify authentication for all content requests
+          try {
+            const context = createContext(req)
+            requireAuth(context)
+          } catch (error) {
+            res.statusCode = 401
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({
+              success: false,
+              error: 'Unauthorized',
+            }))
+            return
+          }
+
+          const url = new URL(req.url, `http://${req.headers.host}`)
+          const contentType = url.searchParams.get('contentType')
+          const id = url.searchParams.get('id')
+
+          if (!contentType) {
+            res.statusCode = 400
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({
+              success: false,
+              error: 'Content type parameter is required',
+            }))
+            return
+          }
+
+          // GET - Find entries or a specific entry
+          if (req.method === 'GET') {
+            try {
+              if (id) {
+                const entryId = parseInt(id, 10)
+                if (isNaN(entryId)) {
+                  res.statusCode = 400
+                  res.setHeader('Content-Type', 'application/json')
+                  res.end(JSON.stringify({
+                    success: false,
+                    error: 'Invalid ID parameter',
+                  }))
+                  return
+                }
+
+                const entry = await findOne(contentType, entryId)
+                if (!entry) {
+                  res.statusCode = 404
+                  res.setHeader('Content-Type', 'application/json')
+                  res.end(JSON.stringify({
+                    success: false,
+                    error: 'Entry not found',
+                  }))
+                  return
+                }
+
+                res.statusCode = 200
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: true,
+                  data: entry,
+                }))
+                return
+              }
+
+              // Get all entries
+              const entries = await findMany(contentType)
+              res.statusCode = 200
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: true,
+                data: entries,
+              }))
+              return
+            } catch (error) {
+              res.statusCode = 500
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: false,
+                error: error instanceof Error ? error.message : 'Internal server error',
+              }))
+              return
+            }
+          }
+
+          // POST - Create new entry
+          if (req.method === 'POST') {
+            let body = ''
+            req.on('data', chunk => {
+              body += chunk.toString()
+            })
+            req.on('end', async () => {
+              try {
+                const data = JSON.parse(body)
+                const entry = await create(contentType, { data })
+                res.statusCode = 201
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: true,
+                  data: entry,
+                }))
+              } catch (error) {
+                res.statusCode = 500
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: false,
+                  error: error instanceof Error ? error.message : 'Internal server error',
+                }))
+              }
+            })
+            return
+          }
+
+          // PUT - Update existing entry
+          if (req.method === 'PUT') {
+            if (!id) {
+              res.statusCode = 400
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: false,
+                error: 'ID parameter is required for updates',
+              }))
+              return
+            }
+
+            const entryId = parseInt(id, 10)
+            if (isNaN(entryId)) {
+              res.statusCode = 400
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: false,
+                error: 'Invalid ID parameter',
+              }))
+              return
+            }
+
+            let body = ''
+            req.on('data', chunk => {
+              body += chunk.toString()
+            })
+            req.on('end', async () => {
+              try {
+                const data = JSON.parse(body)
+                const entry = await update(contentType, {
+                  where: { id: entryId },
+                  data,
+                })
+                res.statusCode = 200
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: true,
+                  data: entry,
+                }))
+              } catch (error) {
+                res.statusCode = 500
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: false,
+                  error: error instanceof Error ? error.message : 'Internal server error',
+                }))
+              }
+            })
+            return
+          }
+
+          // DELETE - Delete entry
+          if (req.method === 'DELETE') {
+            if (!id) {
+              res.statusCode = 400
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: false,
+                error: 'ID parameter is required for deletion',
+              }))
+              return
+            }
+
+            const entryId = parseInt(id, 10)
+            if (isNaN(entryId)) {
+              res.statusCode = 400
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: false,
+                error: 'Invalid ID parameter',
+              }))
+              return
+            }
+
+            try {
+              await deleteOne(contentType, {
+                where: { id: entryId },
+              })
+              res.statusCode = 200
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: true,
+                message: 'Entry deleted successfully',
               }))
             } catch (error) {
               res.statusCode = 500
