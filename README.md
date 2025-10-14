@@ -38,6 +38,7 @@ Make sure this matches your migration history and database setup.
 - **TanStack Query** - Powerful data fetching and caching
 - **Prisma + SQLite** - Type-safe database access with local SQLite for development
 - **Content Type Builder** - Strapi-inspired content type builder with automatic Prisma schema generation
+- **Content Manager** - Dynamic CRUD API for managing content entries of any type
 - **JWT Authentication** - Secure authentication with JSON Web Tokens
 - **Protected Routes** - Dashboard route with authentication guards
 - **API Routes** - Built-in API endpoints via Vite middleware
@@ -71,7 +72,9 @@ Make sure this matches your migration history and database setup.
 │   │   └── context.ts       # Request context helpers
 │   ├── services/
 │   │   ├── authService.ts   # Authentication business logic
-│   │   └── postService.ts   # Post business logic
+│   │   ├── postService.ts   # Post business logic
+│   │   ├── contentTypeService.ts   # Content type definitions management
+│   │   └── contentManagerService.ts   # Content entries CRUD operations
 │   └── lib/
 │       ├── types.ts         # Shared TypeScript types
 │       ├── http.ts          # HTTP client utility
@@ -344,7 +347,19 @@ curl -X POST http://localhost:5173/api/login \
 # Get posts (requires token from login response)
 curl http://localhost:5173/api/posts \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
+
+# Get all articles (Content Manager)
+curl http://localhost:5173/api/content?contentType=api::article.article \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+
+# Create a category (Content Manager)
+curl -X POST http://localhost:5173/api/content?contentType=api::category.category \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Tech","slug":"tech","description":"Technology articles"}'
 ```
+
+For detailed Content Manager API documentation, see [CONTENT_MANAGER.md](./CONTENT_MANAGER.md).
 
 ## 🗄️ Database Management
 
