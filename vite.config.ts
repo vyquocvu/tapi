@@ -17,6 +17,13 @@ function apiPlugin() {
         // Dynamically import services (ESM modules)
         const { loginUser } = await import('./src/services/authService.js')
         const { getAllPosts } = await import('./src/services/postService.js')
+        const { 
+          getAllContentTypes,
+          getContentType, 
+          createContentType, 
+          updateContentType, 
+          deleteContentType 
+        } = await import('./src/services/contentTypeService.js')
         const { createContext, requireAuth } = await import('./src/server/context.js')
 
         // Handle POST /api/login
@@ -117,6 +124,174 @@ function apiPlugin() {
             environment: process.env.NODE_ENV || 'development',
           }))
           return
+        }
+
+        // Handle /api/content-types endpoints
+        if (req.url?.startsWith('/content-types')) {
+          // Verify authentication for all content-types requests
+          try {
+            const context = createContext(req)
+            requireAuth(context)
+          } catch (error) {
+            res.statusCode = 401
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({
+              success: false,
+              error: 'Unauthorized',
+            }))
+            return
+          }
+
+          // GET all content types or specific one
+          if (req.method === 'GET') {
+            try {
+              const url = new URL(req.url, `http://${req.headers.host}`)
+              const uid = url.searchParams.get('uid')
+              
+              if (uid) {
+                const contentType = await getContentType(uid)
+                if (!contentType) {
+                  res.statusCode = 404
+                  res.setHeader('Content-Type', 'application/json')
+                  res.end(JSON.stringify({
+                    success: false,
+                    error: 'Content type not found',
+                  }))
+                  return
+                }
+                res.statusCode = 200
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: true,
+                  data: contentType,
+                }))
+              } else {
+                const contentTypes = await getAllContentTypes()
+                res.statusCode = 200
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: true,
+                  data: contentTypes,
+                }))
+              }
+            } catch (error) {
+              res.statusCode = 500
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: false,
+                error: error instanceof Error ? error.message : 'Internal server error',
+              }))
+            }
+            return
+          }
+
+          // POST - Create new content type
+          if (req.method === 'POST') {
+            let body = ''
+            req.on('data', chunk => {
+              body += chunk.toString()
+            })
+            req.on('end', async () => {
+              try {
+                const definition = JSON.parse(body)
+                const created = await createContentType(definition)
+                res.statusCode = 201
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: true,
+                  data: created,
+                }))
+              } catch (error) {
+                res.statusCode = 500
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: false,
+                  error: error instanceof Error ? error.message : 'Internal server error',
+                }))
+              }
+            })
+            return
+          }
+
+          // PUT - Update content type
+          if (req.method === 'PUT') {
+            let body = ''
+            req.on('data', chunk => {
+              body += chunk.toString()
+            })
+            req.on('end', async () => {
+              try {
+                const url = new URL(req.url!, `http://${req.headers.host}`)
+                const uid = url.searchParams.get('uid')
+                if (!uid) {
+                  res.statusCode = 400
+                  res.setHeader('Content-Type', 'application/json')
+                  res.end(JSON.stringify({
+                    success: false,
+                    error: 'UID is required',
+                  }))
+                  return
+                }
+                const definition = JSON.parse(body)
+                const updated = await updateContentType(uid, definition)
+                res.statusCode = 200
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: true,
+                  data: updated,
+                }))
+              } catch (error) {
+                res.statusCode = 500
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: false,
+                  error: error instanceof Error ? error.message : 'Internal server error',
+                }))
+              }
+            })
+            return
+          }
+
+          // DELETE - Delete content type
+          if (req.method === 'DELETE') {
+            try {
+              const url = new URL(req.url!, `http://${req.headers.host}`)
+              const uid = url.searchParams.get('uid')
+              if (!uid) {
+                res.statusCode = 400
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: false,
+                  error: 'UID is required',
+                }))
+                return
+              }
+              const deleted = await deleteContentType(uid)
+              if (!deleted) {
+                res.statusCode = 404
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: false,
+                  error: 'Content type not found',
+                }))
+                return
+              }
+              res.statusCode = 200
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: true,
+                message: 'Content type deleted successfully',
+              }))
+            } catch (error) {
+              res.statusCode = 500
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: false,
+                error: error instanceof Error ? error.message : 'Internal server error',
+              }))
+            }
+            return
+          }
         }
 
         next()
