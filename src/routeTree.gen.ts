@@ -14,6 +14,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as ContentTypeBuilderIndexRouteImport } from './routes/content-type-builder/index'
+import { Route as ApiDashboardIndexRouteImport } from './routes/api-dashboard/index'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -40,11 +41,17 @@ const ContentTypeBuilderIndexRoute = ContentTypeBuilderIndexRouteImport.update({
   path: '/content-type-builder/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiDashboardIndexRoute = ApiDashboardIndexRouteImport.update({
+  id: '/api-dashboard/',
+  path: '/api-dashboard/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
+  '/api-dashboard': typeof ApiDashboardIndexRoute
   '/content-type-builder': typeof ContentTypeBuilderIndexRoute
   '/dashboard': typeof DashboardIndexRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
+  '/api-dashboard': typeof ApiDashboardIndexRoute
   '/content-type-builder': typeof ContentTypeBuilderIndexRoute
   '/dashboard': typeof DashboardIndexRoute
 }
@@ -60,19 +68,33 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
+  '/api-dashboard/': typeof ApiDashboardIndexRoute
   '/content-type-builder/': typeof ContentTypeBuilderIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/login' | '/content-type-builder' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/login'
+    | '/api-dashboard'
+    | '/content-type-builder'
+    | '/dashboard'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/login' | '/content-type-builder' | '/dashboard'
+  to:
+    | '/'
+    | '/about'
+    | '/login'
+    | '/api-dashboard'
+    | '/content-type-builder'
+    | '/dashboard'
   id:
     | '__root__'
     | '/'
     | '/about'
     | '/login'
+    | '/api-dashboard/'
     | '/content-type-builder/'
     | '/dashboard/'
   fileRoutesById: FileRoutesById
@@ -81,6 +103,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   LoginRoute: typeof LoginRoute
+  ApiDashboardIndexRoute: typeof ApiDashboardIndexRoute
   ContentTypeBuilderIndexRoute: typeof ContentTypeBuilderIndexRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
@@ -122,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContentTypeBuilderIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api-dashboard/': {
+      id: '/api-dashboard/'
+      path: '/api-dashboard'
+      fullPath: '/api-dashboard'
+      preLoaderRoute: typeof ApiDashboardIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -129,6 +159,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   LoginRoute: LoginRoute,
+  ApiDashboardIndexRoute: ApiDashboardIndexRoute,
   ContentTypeBuilderIndexRoute: ContentTypeBuilderIndexRoute,
   DashboardIndexRoute: DashboardIndexRoute,
 }

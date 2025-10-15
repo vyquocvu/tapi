@@ -39,6 +39,7 @@ Make sure this matches your migration history and database setup.
 - **Prisma + SQLite** - Type-safe database access with local SQLite for development
 - **Content Type Builder** - Strapi-inspired content type builder with automatic Prisma schema generation
 - **Content Manager** - Dynamic CRUD API for managing content entries of any type
+- **API Controller Dashboard** - Comprehensive REST API management and monitoring interface
 - **JWT Authentication** - Secure authentication with JSON Web Tokens
 - **Protected Routes** - Dashboard route with authentication guards
 - **API Routes** - Built-in API endpoints via Vite middleware
@@ -360,6 +361,17 @@ curl -X POST http://localhost:5173/api/content?contentType=api::category.categor
 ```
 
 For detailed Content Manager API documentation, see [CONTENT_MANAGER.md](./CONTENT_MANAGER.md).
+
+### API Controller Dashboard
+
+Access the comprehensive API management dashboard at `/api-dashboard` after logging in. The dashboard provides:
+
+- **API Statistics**: View endpoint counts and usage metrics
+- **Endpoint Documentation**: Complete API reference grouped by category
+- **Content Type APIs**: Manage and configure endpoints for each content type
+- **Documentation Generation**: Auto-generate API docs from content type schemas
+
+For detailed API Dashboard documentation, see [API_DASHBOARD.md](./API_DASHBOARD.md).
 
 ## 🗄️ Database Management
 
