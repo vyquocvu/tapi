@@ -1,8 +1,8 @@
 # vstack
 
-A fullstack web application built with **TanStack Start**, **TanStack Router**, **TanStack Query**, **Prisma**, and **SQLite**, demonstrating modern React development with type-safe routing, efficient data fetching, and JWT-based authentication.
+A serverless CMS and fullstack web application built with **TanStack Start**, **TanStack Router**, **TanStack Query**, **Prisma**, and **SQLite**, demonstrating modern React development with type-safe routing, efficient data fetching, JWT-based authentication, and a Strapi-inspired content type builder.
 
-**✨ Now with Vercel serverless deployment support!** See [Quick Start Guide](./VERCEL_QUICK_START.md) for deployment instructions.
+**✨ Deploy anywhere!** Run on **Vercel** (serverless), **any cloud provider** (AWS, Azure, GCP), or your own **Node.js server**. See [Quick Start Guide](./VERCEL_QUICK_START.md) for deployment instructions.
 
 ## 📋 Table of Contents
 
@@ -14,8 +14,8 @@ A fullstack web application built with **TanStack Start**, **TanStack Router**, 
 - [Testing the Application](#-testing-the-application)
 - [Database Management](#️-database-management)
 - [Deployment](#-deployment)
-  - [Deploy to Vercel](#deploy-to-vercel) ⭐
-  - [Deploy to Node Server](#deploy-to-node-server)
+  - [Deploy to Vercel (Serverless)](#deploy-to-vercel-serverless) ⭐
+  - [Deploy to Any Cloud (Node.js Server)](#deploy-to-any-cloud-nodejs-server) ☁️
 - [Tech Stack](#️-tech-stack)
 
 
@@ -395,18 +395,18 @@ This will:
 
 ## 🚢 Deployment
 
-> 🌟 **NEW**: Full Vercel serverless deployment support with dedicated API functions!
-> 🚀 **NEW**: Run on Node.js server with Express! Set `RUNTIME=node` in your environment.
+> 🌟 **Multi-Cloud Ready**: Deploy to **Vercel** (serverless), **any cloud provider** (AWS, Azure, GCP), or your own infrastructure!
+> 🚀 **Flexible Runtime**: Serverless functions OR traditional Node.js server - your choice!
 
 ### Quick Deploy with Runtime Configuration
 
-Configure the runtime in your environment:
+This serverless CMS can be deployed to **any cloud platform**:
 
 ```bash
-# Deploy to Vercel
+# Deploy to Vercel (serverless)
 npm run start:vercel
 
-# Run on Node.js server
+# Run on Node.js server (AWS, Azure, GCP, DigitalOcean, etc.)
 npm run start:node
 ```
 
@@ -417,7 +417,7 @@ npm start
 
 📖 **For detailed environment options, see [RUN_ENVIRONMENTS.md](./RUN_ENVIRONMENTS.md)**
 
-### Deploy to Vercel
+### Deploy to Vercel (Serverless)
 
 This application is configured to work seamlessly with Vercel's serverless platform.
 
@@ -535,11 +535,12 @@ The frontend is served as a static site with client-side routing via TanStack Ro
 
 
 
-### Deploy to Node Server
+### Deploy to Any Cloud (Node.js Server)
 
 > 🚀 **Quick Start**: Set `RUNTIME=node` in your `.env` file and run `npm start`!
+> ☁️ **Works on**: AWS, Azure, GCP, DigitalOcean, Heroku, Railway, Fly.io, or any VPS/Docker environment
 
-The application includes a production-ready Express.js server for traditional hosting environments (VPS, Docker, etc.).
+The application includes a production-ready Express.js server for traditional hosting environments.
 
 #### Option A: Using Runtime Environment Variable (Recommended)
 
