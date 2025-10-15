@@ -33,6 +33,19 @@ function apiPlugin() {
           deleteOne,
           count
         } = await import('./src/services/contentManagerService.js')
+        const {
+          getAPIEndpoints,
+          getAPIStatistics,
+          getRecentActivityLogs,
+          getEndpointDocumentation
+        } = await import('./src/services/apiAnalyticsService.js')
+        const {
+          getAllEndpointConfigs,
+          getEndpointConfig,
+          updateEndpointConfig,
+          generateAPIDocumentation,
+          generateOpenAPISpec
+        } = await import('./src/services/apiEndpointConfigService.js')
         const { createContext, requireAuth } = await import('./src/server/context.js')
 
         // Handle POST /api/login
@@ -511,6 +524,126 @@ function apiPlugin() {
             }
             return
           }
+        }
+
+        // Handle /api/api-dashboard (API Controller Dashboard)
+        if (req.url?.startsWith('/api-dashboard') && req.method === 'GET') {
+          try {
+            const context = createContext(req)
+            requireAuth(context)
+            
+            const url = new URL(req.url!, `http://${req.headers.host}`)
+            const action = url.searchParams.get('action')
+            const contentType = url.searchParams.get('contentType')
+            const limit = url.searchParams.get('limit')
+
+            let data: any
+
+            if (action === 'endpoints') {
+              data = getAPIEndpoints()
+            } else if (action === 'statistics') {
+              data = getAPIStatistics()
+            } else if (action === 'activity') {
+              data = getRecentActivityLogs(limit ? parseInt(limit, 10) : 10)
+            } else if (action === 'documentation') {
+              data = getEndpointDocumentation()
+            } else if (action === 'configs') {
+              data = await getAllEndpointConfigs()
+            } else if (action === 'config' && contentType) {
+              data = await getEndpointConfig(contentType)
+              if (!data) {
+                res.statusCode = 404
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: false,
+                  error: 'Content type not found',
+                }))
+                return
+              }
+            } else if (action === 'generate-docs' && contentType) {
+              const docs = await generateAPIDocumentation(contentType)
+              data = { markdown: docs }
+            } else if (action === 'openapi' && contentType) {
+              data = await generateOpenAPISpec(contentType)
+            } else {
+              // Default: return overview
+              data = {
+                statistics: getAPIStatistics(),
+                recentActivity: getRecentActivityLogs(5),
+                endpoints: getAPIEndpoints(),
+              }
+            }
+
+            res.statusCode = 200
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({
+              success: true,
+              data,
+            }))
+          } catch (error) {
+            console.error('[Vite API /api-dashboard] Error:', error)
+            res.statusCode = error instanceof Error && error.message === 'Unauthorized' ? 401 : 500
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({
+              success: false,
+              error: error instanceof Error ? error.message : 'Internal server error',
+            }))
+          }
+          return
+        }
+
+        // Handle PUT /api/api-dashboard (Update endpoint config)
+        if (req.url?.startsWith('/api-dashboard') && req.method === 'PUT') {
+          try {
+            const context = createContext(req)
+            requireAuth(context)
+            
+            const url = new URL(req.url!, `http://${req.headers.host}`)
+            const contentType = url.searchParams.get('contentType')
+
+            if (!contentType) {
+              res.statusCode = 400
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: false,
+                error: 'Content type parameter is required',
+              }))
+              return
+            }
+
+            let body = ''
+            req.on('data', chunk => {
+              body += chunk.toString()
+            })
+            req.on('end', async () => {
+              try {
+                const config = JSON.parse(body)
+                const updated = await updateEndpointConfig(contentType, config)
+
+                res.statusCode = 200
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: true,
+                  data: updated,
+                }))
+              } catch (error) {
+                res.statusCode = 500
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: false,
+                  error: error instanceof Error ? error.message : 'Internal server error',
+                }))
+              }
+            })
+          } catch (error) {
+            res.statusCode = 401
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({
+              success: false,
+              error: 'Unauthorized',
+            }))
+          }
+          return
         }
 
         next()

@@ -5,7 +5,8 @@ import {
   Image, 
   Settings, 
   Menu, 
-  X 
+  X,
+  Server
 } from 'lucide-react'
 import { Button } from './ui/button'
 
@@ -61,6 +62,12 @@ export function Sidebar({ isCollapsed = false, onToggle }: SidebarProps) {
             to="/content-type-builder"
             icon={<FileType size={20} />}
             label="Content Types"
+            isCollapsed={isCollapsed}
+          />
+          <SidebarLink
+            to="/api-dashboard"
+            icon={<Server size={20} />}
+            label="API Controller"
             isCollapsed={isCollapsed}
           />
           <SidebarLink
