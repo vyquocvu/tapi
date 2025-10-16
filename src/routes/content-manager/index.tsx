@@ -42,7 +42,20 @@ async function fetchContentTypes(): Promise<ContentTypeDefinition[]> {
   }
   
   const result = await response.json()
-  return Object.values(result.data || {})
+  
+  // Ensure we always return an array
+  // result.data could be an object (ContentTypeRegistry) or an array
+  if (!result.data) {
+    return []
+  }
+  
+  // If it's already an array, return it
+  if (Array.isArray(result.data)) {
+    return result.data
+  }
+  
+  // If it's an object, convert to array
+  return Object.values(result.data)
 }
 
 // Fetch entries for a content type
@@ -193,7 +206,9 @@ function ContentManagerComponent() {
     },
   })
 
-  const selectedContentTypeDef = contentTypes?.find((ct) => ct.uid === selectedContentType)
+  const selectedContentTypeDef = Array.isArray(contentTypes) 
+    ? contentTypes.find((ct) => ct.uid === selectedContentType)
+    : undefined
 
   const handleSelectContentType = (uid: string) => {
     setSelectedContentType(uid)
@@ -428,7 +443,7 @@ function ContentManagerComponent() {
               <CardDescription>Choose a content type to manage its entries</CardDescription>
             </CardHeader>
             <CardContent>
-              {contentTypes && contentTypes.length > 0 ? (
+              {Array.isArray(contentTypes) && contentTypes.length > 0 ? (
                 <div className="content-type-grid">
                   {contentTypes.map((contentType) => (
                     <button
