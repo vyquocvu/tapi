@@ -16,7 +16,8 @@ export interface Post {
 
 export async function getAllPosts(): Promise<Post[]> {
   try {
-    const posts = await prisma.post.findMany({
+    // Using article model instead of deprecated post model
+    const articles = await prisma.article.findMany({
       where: { published: true },
       include: {
         author: {
@@ -31,7 +32,16 @@ export async function getAllPosts(): Promise<Post[]> {
         createdAt: 'desc',
       },
     })
-    return posts
+    // Map articles to legacy post format for backward compatibility
+    return articles.map(article => ({
+      id: article.id,
+      title: article.title,
+      body: article.content || article.excerpt || '',
+      published: article.published || false,
+      createdAt: article.createdAt,
+      updatedAt: article.updatedAt,
+      author: article.author,
+    }))
   } catch (error) {
     console.error('Error fetching posts:', error)
     throw new Error('Failed to fetch posts')
@@ -40,7 +50,7 @@ export async function getAllPosts(): Promise<Post[]> {
 
 export async function getPostById(id: number): Promise<Post | null> {
   try {
-    const post = await prisma.post.findUnique({
+    const article = await prisma.article.findUnique({
       where: { id },
       include: {
         author: {
@@ -52,7 +62,19 @@ export async function getPostById(id: number): Promise<Post | null> {
         },
       },
     })
-    return post
+    
+    if (!article) return null
+    
+    // Map article to legacy post format
+    return {
+      id: article.id,
+      title: article.title,
+      body: article.content || article.excerpt || '',
+      published: article.published || false,
+      createdAt: article.createdAt,
+      updatedAt: article.updatedAt,
+      author: article.author,
+    }
   } catch (error) {
     console.error('Error fetching post:', error)
     throw new Error('Failed to fetch post')
@@ -66,10 +88,11 @@ export async function createPost(data: {
   authorId: number
 }): Promise<Post> {
   try {
-    const post = await prisma.post.create({
+    const article = await prisma.article.create({
       data: {
         title: data.title,
-        body: data.body,
+        content: data.body,
+        slug: data.title.toLowerCase().replace(/\s+/g, '-'),
         published: data.published ?? false,
         authorId: data.authorId,
       },
@@ -83,7 +106,17 @@ export async function createPost(data: {
         },
       },
     })
-    return post
+    
+    // Map article to legacy post format
+    return {
+      id: article.id,
+      title: article.title,
+      body: article.content,
+      published: article.published || false,
+      createdAt: article.createdAt,
+      updatedAt: article.updatedAt,
+      author: article.author,
+    }
   } catch (error) {
     console.error('Error creating post:', error)
     throw new Error('Failed to create post')
