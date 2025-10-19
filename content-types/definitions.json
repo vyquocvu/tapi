@@ -37,7 +37,11 @@
       },
       "status": {
         "type": "enumeration",
-        "values": ["draft", "published", "archived"],
+        "values": [
+          "draft",
+          "published",
+          "archived"
+        ],
         "default": "draft"
       },
       "author": {
@@ -122,6 +126,28 @@
     },
     "options": {
       "timestamps": true
+    }
+  },
+  "api::city.city": {
+    "uid": "api::city.city",
+    "displayName": "city",
+    "singularName": "city",
+    "pluralName": "cities",
+    "fields": {
+      "name": {
+        "type": "string",
+        "required": true,
+        "unique": false
+      },
+      "contry": {
+        "type": "string",
+        "required": true,
+        "unique": false
+      }
+    },
+    "options": {
+      "timestamps": true,
+      "softDelete": false
     }
   }
 }

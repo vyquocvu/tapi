@@ -180,6 +180,15 @@ model Category {
   updatedAt DateTime @updatedAt
 
 }
+
+model City {
+  id        Int      @id @default(autoincrement())
+  name  String
+  contry  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+}
 enum ArticleStatus {
   draft
   published
