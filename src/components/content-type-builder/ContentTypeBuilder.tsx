@@ -5,6 +5,7 @@ import { ContentTypeList } from './ContentTypeList'
 import { ContentTypeForm } from './ContentTypeForm'
 import { PreviewMode } from './PreviewMode'
 import { httpClient } from '../../lib/http'
+import { queryKeys } from '../../lib/queryKeys'
 
 export function ContentTypeBuilder() {
   const [mode, setMode] = useState<ContentTypeBuilderMode>('list')
@@ -34,7 +35,7 @@ export function ContentTypeBuilder() {
       return response.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['content-types'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.contentTypes.all })
       resetForm()
       setMode('list')
     },
@@ -55,7 +56,7 @@ export function ContentTypeBuilder() {
       return response.json()
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['content-types'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.contentTypes.all })
       resetForm()
       setMode('list')
     },
@@ -74,7 +75,7 @@ export function ContentTypeBuilder() {
       return response.json()
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['content-types'] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.contentTypes.all })
     },
     onError: (error: any) => {
       setError(error.message || 'Failed to delete content type')

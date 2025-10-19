@@ -57,7 +57,6 @@ function Navigation() {
                 onClick={logout} 
                 variant="outline"
                 size="sm"
-                className="text-white border-white hover:bg-white/10 h-7 text-xs px-2"
               >
                 Logout
               </Button>
