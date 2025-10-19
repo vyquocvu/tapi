@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import type { ContentTypeDefinition } from '../../content-type-builder/types'
+import { httpClient } from '../../lib/http'
 
 interface ContentTypeListProps {
   onEdit: (contentType: ContentTypeDefinition) => void
@@ -12,9 +13,11 @@ export function ContentTypeList({ onEdit, onDelete, onCreate, error }: ContentTy
   const { data: contentTypes, isLoading, error: queryError } = useQuery<Record<string, ContentTypeDefinition>>({
     queryKey: ['content-types'],
     queryFn: async () => {
-      const response = await fetch('/api/content-types')
-      if (!response.ok) throw new Error('Failed to fetch content types')
-      return response.json()
+      const response = await httpClient.get<Record<string, ContentTypeDefinition>>('/api/content-types')
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to fetch content types')
+      }
+      return response.data || {}
     },
   })
 

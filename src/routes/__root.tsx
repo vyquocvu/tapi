@@ -28,20 +28,24 @@ function Navigation() {
     <nav className="bg-slate-800 px-4 py-2">
       <div className="flex justify-between items-center max-w-7xl mx-auto">
         <div className="flex items-center gap-4">
-          <Link 
-            to="/" 
-            className="text-white hover:text-blue-400 transition-colors text-sm font-medium [&.active]:text-blue-400"
-            activeProps={{ className: 'active' }}
-          >
-            Home
-          </Link>
-          <Link 
-            to="/about" 
-            className="text-white hover:text-blue-400 transition-colors text-sm font-medium [&.active]:text-blue-400"
-            activeProps={{ className: 'active' }}
-          >
-            About
-          </Link>
+          {!isAuthenticated && (
+            <>
+            <Link 
+              to="/" 
+              className="text-white hover:text-blue-400 transition-colors text-sm font-medium [&.active]:text-blue-400"
+              activeProps={{ className: 'active' }}
+            >
+              Home
+            </Link>
+            <Link 
+              to="/about" 
+              className="text-white hover:text-blue-400 transition-colors text-sm font-medium [&.active]:text-blue-400"
+              activeProps={{ className: 'active' }}
+            >
+              About
+            </Link>
+            </>
+          )}
         </div>
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
