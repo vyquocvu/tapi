@@ -15,13 +15,30 @@ export interface ContentTypeRegistry {
  * This is the canonical format returned by the API
  */
 export async function fetchContentTypesRegistry(): Promise<ContentTypeRegistry> {
-  const response = await httpClient.get<ContentTypeRegistry>('/api/content-types')
+  const response = await httpClient.get<any>('/api/content-types')
+  
+  console.log('[fetchContentTypesRegistry] Raw response:', response)
   
   if (!response.success) {
     throw new Error(response.error || 'Failed to fetch content types')
   }
   
-  return (response.data?.data || {}) as ContentTypeRegistry
+  // httpClient returns: { success: true, data: <API response> }
+  // API response is: { success: true, data: <content types> }
+  // So we need to access response.data.data for the actual content types
+  const apiResponse = response.data
+  
+  console.log('[fetchContentTypesRegistry] API response:', apiResponse)
+  
+  // Check if apiResponse has the expected structure
+  if (apiResponse && typeof apiResponse === 'object' && 'data' in apiResponse) {
+    console.log('[fetchContentTypesRegistry] Returning apiResponse.data:', apiResponse.data)
+    return (apiResponse.data || {}) as ContentTypeRegistry
+  }
+  
+  // Fallback: if response.data is already the content types object
+  console.log('[fetchContentTypesRegistry] Fallback - returning apiResponse:', apiResponse)
+  return (apiResponse || {}) as ContentTypeRegistry
 }
 
 /**
