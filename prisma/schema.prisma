@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -64,7 +64,7 @@ model ContentMetadata {
   ogImage       String?  // Open Graph image URL
   
   // Additional metadata (stored as JSON for flexibility)
-  customData    Json?    // Flexible field for custom metadata
+  customData    String?  // JSON string for SQLite compatibility
   
   // Tracking
   createdById   Int
@@ -86,7 +86,7 @@ model ContentRevision {
   
   // Revision data
   revisionNumber Int     // Sequential version number for this content
-  data          Json     // Full snapshot of the content at this revision
+  data          String   // Full snapshot as JSON string for SQLite compatibility
   changeLog     String?  // Optional description of what changed
   
   // Tracking

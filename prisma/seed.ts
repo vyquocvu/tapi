@@ -199,11 +199,11 @@ async function main() {
       ogDescription: 'Master TanStack tools for modern React development',
       ogImage: 'https://example.com/images/tanstack-tutorial.jpg',
       createdById: user.id,
-      customData: {
+      customData: JSON.stringify({
         readingTime: '8 min',
         difficulty: 'beginner',
         featured: true,
-      },
+      }),
     },
   })
 
@@ -225,11 +225,11 @@ async function main() {
       ogDescription: 'Learn Prisma ORM for modern database management',
       ogImage: 'https://example.com/images/prisma-guide.jpg',
       createdById: user.id,
-      customData: {
+      customData: JSON.stringify({
         readingTime: '12 min',
         difficulty: 'intermediate',
         featured: true,
-      },
+      }),
     },
   })
 
@@ -249,11 +249,11 @@ async function main() {
       contentType: 'api::article.article',
       contentId: article1.id,
       revisionNumber: 1,
-      data: {
+      data: JSON.stringify({
         title: article1.title,
         content: article1.content,
         status: article1.status,
-      },
+      }),
       changeLog: 'Initial version',
       createdById: user.id,
     },
@@ -272,11 +272,11 @@ async function main() {
       contentType: 'api::article.article',
       contentId: article1.id,
       revisionNumber: 2,
-      data: {
+      data: JSON.stringify({
         title: article1.title,
         content: article1.content,
         status: article1.status,
-      },
+      }),
       changeLog: 'Added more details and examples',
       createdById: user.id,
     },
