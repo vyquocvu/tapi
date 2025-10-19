@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { Edit, Trash2, Plus } from 'lucide-react'
 import type { ContentTypeDefinition } from '../../content-type-builder/types'
-import { httpClient } from '../../lib/http'
+import { queryKeys } from '../../lib/queryKeys'
+import { fetchContentTypesRegistry } from '../../services/queryFunctions'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -14,17 +15,11 @@ interface ContentTypeListProps {
 }
 
 export function ContentTypeList({ onEdit, onDelete, onCreate, error }: ContentTypeListProps) {
-  const { data: contentTypes, isLoading, error: queryError } = useQuery<Record<string, ContentTypeDefinition>>({
-    queryKey: ['content-types'],
-    queryFn: async () => {
-      const response = await httpClient.get<Record<string, ContentTypeDefinition>>('/api/content-types')
-      if (!response.success) {
-        throw new Error(response.error || 'Failed to fetch content types')
-      }
-      return response.data || {}
-    },
+  const { data: contentTypes, isLoading, error: queryError } = useQuery({
+    queryKey: queryKeys.contentTypes.all,
+    queryFn: fetchContentTypesRegistry,
   })
-
+  console.log('Fetched content types:', contentTypes)
   const displayError = error || queryError?.message
 
   return (

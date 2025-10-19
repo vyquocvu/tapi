@@ -1,0 +1,146 @@
+/**
+ * Query Functions for TanStack Query
+ * Centralized data fetching functions that ensure consistency across components
+ */
+
+import { httpClient } from '@/lib/http'
+import type { ContentTypeDefinition } from '../content-type-builder/types'
+
+export interface ContentTypeRegistry {
+  [uid: string]: ContentTypeDefinition
+}
+
+/**
+ * Fetch all content types as an object (Registry format)
+ * This is the canonical format returned by the API
+ */
+export async function fetchContentTypesRegistry(): Promise<ContentTypeRegistry> {
+  const response = await httpClient.get<ContentTypeRegistry>('/api/content-types')
+  
+  if (!response.success) {
+    throw new Error(response.error || 'Failed to fetch content types')
+  }
+  
+  return (response.data?.data || {}) as ContentTypeRegistry
+}
+
+/**
+ * Fetch all content types as an array
+ * Converts the registry format to an array for easier iteration
+ */
+export async function fetchContentTypesArray(): Promise<ContentTypeDefinition[]> {
+  const registry = await fetchContentTypesRegistry()
+  return Object.values(registry)
+}
+
+/**
+ * Fetch a single content type by UID
+ */
+export async function fetchContentType(uid: string): Promise<ContentTypeDefinition | null> {
+  const registry = await fetchContentTypesRegistry()
+  return registry[uid] || null
+}
+
+/**
+ * Content Entry type
+ */
+export interface ContentEntry {
+  id: number
+  [key: string]: any
+}
+
+/**
+ * Fetch entries for a content type
+ */
+export async function fetchContentEntries(contentType: string): Promise<ContentEntry[]> {
+  const token = sessionStorage.getItem('authToken')
+  const response = await fetch(`/api/content?contentType=${encodeURIComponent(contentType)}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch entries')
+  }
+  
+  const result = await response.json()
+  return result.data || []
+}
+
+/**
+ * Create a content entry
+ */
+export async function createContentEntry(
+  contentType: string,
+  data: Record<string, any>
+): Promise<ContentEntry> {
+  const token = sessionStorage.getItem('authToken')
+  const response = await fetch(`/api/content?contentType=${encodeURIComponent(contentType)}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  })
+  
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to create entry')
+  }
+  
+  const result = await response.json()
+  return result.data
+}
+
+/**
+ * Update a content entry
+ */
+export async function updateContentEntry(
+  contentType: string,
+  id: number,
+  data: Record<string, any>
+): Promise<ContentEntry> {
+  const token = sessionStorage.getItem('authToken')
+  const response = await fetch(
+    `/api/content?contentType=${encodeURIComponent(contentType)}&id=${id}`,
+    {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    }
+  )
+  
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to update entry')
+  }
+  
+  const result = await response.json()
+  return result.data
+}
+
+/**
+ * Delete a content entry
+ */
+export async function deleteContentEntry(contentType: string, id: number): Promise<void> {
+  const token = sessionStorage.getItem('authToken')
+  const response = await fetch(
+    `/api/content?contentType=${encodeURIComponent(contentType)}&id=${id}`,
+    {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    }
+  )
+  
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to delete entry')
+  }
+}

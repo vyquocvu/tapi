@@ -7,7 +7,15 @@ import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import type { ContentTypeDefinition } from '../../content-type-builder/types'
+import { queryKeys } from '@/lib/queryKeys'
+import {
+  fetchContentTypesArray,
+  fetchContentEntries,
+  createContentEntry,
+  updateContentEntry,
+  deleteContentEntry,
+  type ContentEntry,
+} from '@/services/queryFunctions'
 
 export const Route = createFileRoute('/content-manager/')({
   beforeLoad: async () => {
@@ -24,121 +32,6 @@ export const Route = createFileRoute('/content-manager/')({
   component: ContentManagerComponent,
 })
 
-interface ContentEntry {
-  id: number
-  [key: string]: any
-}
-
-// Fetch all content types
-async function fetchContentTypes(): Promise<ContentTypeDefinition[]> {
-  const response = await fetch('/api/content-types', {
-    headers: {
-      'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
-    },
-  })
-  
-  if (!response.ok) {
-    throw new Error('Failed to fetch content types')
-  }
-  
-  const result = await response.json()
-  
-  // Ensure we always return an array
-  // result.data could be an object (ContentTypeRegistry) or an array
-  if (!result.data) {
-    return []
-  }
-  
-  // If it's already an array, return it
-  if (Array.isArray(result.data)) {
-    return result.data
-  }
-  
-  // If it's an object, convert to array
-  return Object.values(result.data)
-}
-
-// Fetch entries for a content type
-async function fetchEntries(contentType: string): Promise<ContentEntry[]> {
-  const response = await fetch(`/api/content?contentType=${encodeURIComponent(contentType)}`, {
-    headers: {
-      'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
-    },
-  })
-  
-  if (!response.ok) {
-    throw new Error('Failed to fetch entries')
-  }
-  
-  const result = await response.json()
-  return result.data || []
-}
-
-// Create entry
-async function createEntry(contentType: string, data: Record<string, any>): Promise<ContentEntry> {
-  const response = await fetch(`/api/content?contentType=${encodeURIComponent(contentType)}`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  })
-  
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to create entry')
-  }
-  
-  const result = await response.json()
-  return result.data
-}
-
-// Update entry
-async function updateEntry(
-  contentType: string,
-  id: number,
-  data: Record<string, any>
-): Promise<ContentEntry> {
-  const response = await fetch(
-    `/api/content?contentType=${encodeURIComponent(contentType)}&id=${id}`,
-    {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    }
-  )
-  
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to update entry')
-  }
-  
-  const result = await response.json()
-  return result.data
-}
-
-// Delete entry
-async function deleteEntry(contentType: string, id: number): Promise<void> {
-  const response = await fetch(
-    `/api/content?contentType=${encodeURIComponent(contentType)}&id=${id}`,
-    {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
-      },
-    }
-  )
-  
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to delete entry')
-  }
-}
-
 type ViewMode = 'select' | 'list' | 'create' | 'edit'
 
 function ContentManagerComponent() {
@@ -153,8 +46,8 @@ function ContentManagerComponent() {
 
   // Fetch content types
   const { data: contentTypes, isLoading: typesLoading } = useQuery({
-    queryKey: ['content-types'],
-    queryFn: fetchContentTypes,
+    queryKey: queryKeys.contentTypes.all,
+    queryFn: fetchContentTypesArray,
   })
 
   // Fetch entries for selected content type
@@ -163,16 +56,16 @@ function ContentManagerComponent() {
     isLoading: entriesLoading,
     error: entriesError,
   } = useQuery({
-    queryKey: ['content-entries', selectedContentType],
-    queryFn: () => fetchEntries(selectedContentType!),
+    queryKey: queryKeys.contentEntries.byType(selectedContentType!),
+    queryFn: () => fetchContentEntries(selectedContentType!),
     enabled: !!selectedContentType && mode === 'list',
   })
 
   // Create mutation
   const createMutation = useMutation({
-    mutationFn: (data: Record<string, any>) => createEntry(selectedContentType!, data),
+    mutationFn: (data: Record<string, any>) => createContentEntry(selectedContentType!, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['content-entries', selectedContentType] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.contentEntries.byType(selectedContentType!) })
       setMode('list')
       setFormData({})
       setError('')
@@ -185,9 +78,9 @@ function ContentManagerComponent() {
   // Update mutation
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Record<string, any> }) =>
-      updateEntry(selectedContentType!, id, data),
+      updateContentEntry(selectedContentType!, id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['content-entries', selectedContentType] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.contentEntries.byType(selectedContentType!) })
       setMode('list')
       setFormData({})
       setSelectedEntry(null)
@@ -200,9 +93,9 @@ function ContentManagerComponent() {
 
   // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => deleteEntry(selectedContentType!, id),
+    mutationFn: (id: number) => deleteContentEntry(selectedContentType!, id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['content-entries', selectedContentType] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.contentEntries.byType(selectedContentType!) })
     },
   })
 
@@ -245,11 +138,11 @@ function ContentManagerComponent() {
     }
     
     for (const id of selectedEntries) {
-      await deleteEntry(selectedContentType!, id)
+      await deleteContentEntry(selectedContentType!, id)
     }
     
     setSelectedEntries(new Set())
-    queryClient.invalidateQueries({ queryKey: ['content-entries', selectedContentType] })
+    queryClient.invalidateQueries({ queryKey: queryKeys.contentEntries.byType(selectedContentType!) })
   }
 
   const handleSubmit = (e: React.FormEvent) => {
