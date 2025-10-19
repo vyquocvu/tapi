@@ -4,6 +4,7 @@ import type { ContentTypeBuilderMode, FieldWithId } from './types'
 import { ContentTypeList } from './ContentTypeList'
 import { ContentTypeForm } from './ContentTypeForm'
 import { PreviewMode } from './PreviewMode'
+import { httpClient } from '../../lib/http'
 
 export function ContentTypeBuilder() {
   const [mode, setMode] = useState<ContentTypeBuilderMode>('list')
@@ -19,20 +20,18 @@ export function ContentTypeBuilder() {
   const [description, setDescription] = useState('')
   const [timestamps, setTimestamps] = useState(true)
   const [softDelete, setSoftDelete] = useState(false)
-  const [fields, setFields] = useState<FieldWithId[]>([])
+  const [fields, setFields] = useState<{ [key: string]: FieldWithId }>({})
 
   const queryClient = useQueryClient()
 
   // Create mutation
   const createMutation = useMutation({
     mutationFn: async (contentType: any) => {
-      const response = await fetch('/api/content-types', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(contentType),
-      })
-      if (!response.ok) throw new Error('Failed to create content type')
-      return response.json()
+      const response = await httpClient.post('/api/content-types', contentType)
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to create content type')
+      }
+      return response.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['content-types'] })
@@ -90,7 +89,7 @@ export function ContentTypeBuilder() {
     setDescription('')
     setTimestamps(true)
     setSoftDelete(false)
-    setFields([])
+    setFields({})
     setError('')
     setEditingId(null)
   }
@@ -109,7 +108,7 @@ export function ContentTypeBuilder() {
     setDescription(contentType.description || '')
     setTimestamps(contentType.timestamps ?? true)
     setSoftDelete(contentType.softDelete ?? false)
-    setFields(contentType.fields || [])
+    setFields(contentType.fields || {})
     setError('')
     setMode('edit')
   }
@@ -170,24 +169,30 @@ export function ContentTypeBuilder() {
   }
 
   const handleAddField = () => {
+    const fieldId = `field_${Date.now()}`
     const newField: FieldWithId = {
-      id: `field_${Date.now()}`,
+      id: fieldId,
       name: '',
       type: 'string',
       required: false,
       unique: false,
     }
-    setFields([...fields, newField])
+    setFields({ ...fields, [fieldId]: newField })
   }
 
   const handleFieldChange = (id: string, updates: Partial<FieldWithId>) => {
-    setFields(fields.map(field => 
-      field.id === id ? { ...field, ...updates } : field
-    ))
+    if (fields[id]) {
+      setFields({
+        ...fields,
+        [id]: { ...fields[id], ...updates }
+      })
+    }
   }
 
   const handleRemoveField = (id: string) => {
-    setFields(fields.filter(field => field.id !== id))
+    const newFields = { ...fields }
+    delete newFields[id]
+    setFields(newFields)
   }
 
   const handleDragStart = (index: number) => {
@@ -198,10 +203,16 @@ export function ContentTypeBuilder() {
     e.preventDefault()
     if (draggedIndex === null) return
 
-    const newFields = [...fields]
-    const draggedField = newFields[draggedIndex]
-    newFields.splice(draggedIndex, 1)
-    newFields.splice(index, 0, draggedField)
+    const fieldsArray = Object.values(fields)
+    const draggedField = fieldsArray[draggedIndex]
+    fieldsArray.splice(draggedIndex, 1)
+    fieldsArray.splice(index, 0, draggedField)
+    
+    // Convert back to object format
+    const newFields: { [key: string]: FieldWithId } = {}
+    fieldsArray.forEach(field => {
+      newFields[field.id] = field
+    })
     
     setFields(newFields)
     setDraggedIndex(index)

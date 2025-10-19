@@ -18,8 +18,10 @@ interface ContentTypeFormProps {
   setTimestamps: (enabled: boolean) => void
   softDelete: boolean
   setSoftDelete: (enabled: boolean) => void
-  fields: FieldWithId[]
-  setFields: (fields: FieldWithId[]) => void
+  fields: {
+    [key: string]: FieldWithId
+  }
+  setFields: (fields: { [key: string]: FieldWithId }) => void
   draggedIndex: number | null
   error: string
   onBack: () => void
@@ -80,6 +82,7 @@ export function ContentTypeForm({
       }
     }
   }
+  console.log('Rendering ContentTypeForm with fields:', fields);
 
   return (
     <div className="space-y-6">
@@ -229,13 +232,13 @@ export function ContentTypeForm({
           </button>
         </div>
 
-        {fields.length === 0 ? (
+        {Object.keys(fields).length === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground">No fields added yet. Click "Add Field" to start!</p>
           </div>
         ) : (
           <div className="space-y-4">
-            {fields.map((field, index) => (
+            {Object.values(fields).map((field, index) => (
               <FieldEditor
                 key={field.id}
                 field={field}

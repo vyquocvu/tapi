@@ -8,7 +8,7 @@ interface PreviewModeProps {
   description: string
   timestamps: boolean
   softDelete: boolean
-  fields: FieldWithId[]
+  fields: { [key: string]: FieldWithId }
   onBack: () => void
   onEdit: () => void
 }
@@ -26,7 +26,7 @@ export function PreviewMode({
   onEdit,
 }: PreviewModeProps) {
   const formatPrismaSchema = () => {
-    if (!fields || fields.length === 0) return 'No fields defined'
+    if (!fields || Object.keys(fields).length === 0) return 'No fields defined'
     
     let schema = `model ${displayName.replace(/\s+/g, '')} {\n`
     
@@ -34,7 +34,7 @@ export function PreviewMode({
     schema += `  id    String @id @default(cuid())\n`
     
     // Add user-defined fields
-    fields.forEach(field => {
+    Object.values(fields).forEach(field => {
       const optional = !field.required ? '?' : ''
       let prismaType = 'String'
       
@@ -123,13 +123,13 @@ export function PreviewMode({
   }
 
   const formatJSONStructure = () => {
-    if (!fields || fields.length === 0) return '{}'
+    if (!fields || Object.keys(fields).length === 0) return '{}'
     
     const jsonObj: Record<string, any> = {
       id: 'cuid_example_123',
     }
     
-    fields.forEach(field => {
+    Object.values(fields).forEach(field => {
       let value: any = null
       
       switch (field.type) {
@@ -243,12 +243,12 @@ export function PreviewMode({
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-foreground mb-4">🗃️ Fields ({fields.length})</h2>
-          {fields.length === 0 ? (
+          <h2 className="text-lg font-semibold text-foreground mb-4">🗃️ Fields ({Object.keys(fields).length})</h2>
+          {Object.keys(fields).length === 0 ? (
             <p className="text-muted-foreground">No fields defined</p>
           ) : (
             <div className="space-y-3">
-              {fields.map((field) => (
+              {Object.values(fields).map((field) => (
                 <div key={field.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-md">
                   <div>
                     <span className="font-medium text-foreground">{field.name}</span>
