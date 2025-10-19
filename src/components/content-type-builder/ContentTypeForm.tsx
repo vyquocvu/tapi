@@ -82,7 +82,6 @@ export function ContentTypeForm({
       }
     }
   }
-  console.log('Rendering ContentTypeForm with fields:', fields);
 
   return (
     <div className="space-y-6">
@@ -238,19 +237,22 @@ export function ContentTypeForm({
           </div>
         ) : (
           <div className="space-y-4">
-            {Object.values(fields).map((field, index) => (
-              <FieldEditor
-                key={field.id}
-                field={field}
-                index={index}
-                onFieldChange={onFieldChange}
+            {Object.keys(fields).map((fieldId, index) => {
+              const field = fields[fieldId];
+              return (
+                <FieldEditor
+                  key={fieldId}
+                  field={field}
+                  index={index}
+                  onFieldChange={onFieldChange}
                 onRemoveField={onRemoveField}
                 draggedIndex={draggedIndex}
                 onDragStart={onDragStart}
                 onDragOver={onDragOver}
                 onDragEnd={onDragEnd}
               />
-            ))}
+            )
+          })}
           </div>
         )}
       </div>
