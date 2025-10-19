@@ -22,7 +22,6 @@ export function ContentTypeList({ onEdit, onDelete, onCreate, error }: ContentTy
   })
 
   const displayError = error || queryError?.message
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -46,7 +45,7 @@ export function ContentTypeList({ onEdit, onDelete, onCreate, error }: ContentTy
         </div>
       ) : contentTypes && Object.keys(contentTypes).length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Object.entries(contentTypes).map(([uid, contentType]) => (
+          {Object.entries(contentTypes).map(([uid, contentType]) => contentType ? (
             <div key={uid} className="rounded-lg border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-3">
                 <h3 className="text-lg font-semibold text-foreground">{contentType.displayName}</h3>
@@ -72,12 +71,12 @@ export function ContentTypeList({ onEdit, onDelete, onCreate, error }: ContentTy
                 <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{contentType.description}</p>
               )}
               <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-3 border-t">
-                <span>📋 {Object.keys(contentType.fields).length} fields</span>
+                <span>📋 {contentType.fields ? Object.keys(contentType.fields).length : 0} fields</span>
                 {contentType.options?.timestamps && <span>🕐 Timestamps</span>}
                 {contentType.options?.softDelete && <span>🗑️ Soft Delete</span>}
               </div>
             </div>
-          ))}
+          ) : '')}
         </div>
       ) : (
         <div className="text-center py-12">
