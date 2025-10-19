@@ -36,9 +36,14 @@ Make sure this matches your migration history and database setup.
 
 - **TanStack Router** - Type-safe file-based routing with protected routes
 - **TanStack Query** - Powerful data fetching and caching
-- **Prisma + SQLite** - Type-safe database access with local SQLite for development
-- **Content Type Builder** - Strapi-inspired content type builder with automatic Prisma schema generation
-- **Content Manager** - Dynamic CRUD API for managing content entries of any type
+- **Prisma + PostgreSQL** - Type-safe database access with PostgreSQL
+- **Enhanced CMS** - Complete content management system with:
+  - **Content Type Builder** - Strapi-inspired content type builder with automatic Prisma schema generation
+  - **Content Manager** - Dynamic CRUD API for managing content entries of any type
+  - **Content Metadata** - SEO and metadata management for any content type
+  - **Content Revisions** - Full audit trail and version history
+  - **Content Tags** - Flexible tagging system with visual categorization
+  - **Content Relations** - Generic relationships between any content items
 - **Enhanced REST API** - Comprehensive REST API with validation, standardized responses, and error handling
 - **API Controller Dashboard** - Comprehensive REST API management and monitoring interface
 - **JWT Authentication** - Secure authentication with JSON Web Tokens
@@ -56,8 +61,9 @@ Make sure this matches your migration history and database setup.
 ```
 /vstack
 ├── prisma/
-│   ├── schema.prisma        # Database schema (User, Post models)
-│   ├── seed.ts              # Database seeding script
+│   ├── schema.prisma        # Database schema (auto-generated from content types)
+│   ├── schema.original.prisma # Base system schema (User, Post, CMS tables)
+│   ├── seed.ts              # Database seeding script with CMS examples
 │   └── migrations/          # Database migrations
 ├── src/
 │   ├── routes/
@@ -93,6 +99,9 @@ Make sure this matches your migration history and database setup.
 │   ├── content-types.ts     # Content Type Builder endpoints
 │   ├── login.ts             # Authentication endpoint
 │   └── api-dashboard.ts     # API Dashboard endpoints
+├── docs/
+│   ├── CMS_DATABASE_STRUCTURE.md  # Complete CMS database reference
+│   └── CMS_IMPROVEMENTS.md        # CMS features and usage guide
 ├── tests/
 │   └── api-validation.test.ts  # API validation tests
 ├── .env.example             # Environment variables template
@@ -277,9 +286,13 @@ export const Route = createFileRoute('/dashboard/')({
 - **Migrations**: Version-controlled database schema changes
 - **Seeding**: Automatic creation of demo user and posts
 
-### 4. Content Type Builder
+### 4. Enhanced CMS Features
 
-The Content Type Builder allows you to define database models using JSON or TypeScript and automatically generate Prisma schemas - **just like Strapi**:
+The vstack CMS provides a complete content management system with enterprise-grade features:
+
+#### Content Type Builder
+
+Define database models using JSON or TypeScript and automatically generate Prisma schemas - **just like Strapi**:
 
 - **Auto-generation in dev mode**: Schemas regenerate automatically when you save changes
 - **Define content types** in `content-types/definitions.json`
@@ -299,7 +312,98 @@ cp content-types/examples/blog-example.json content-types/definitions.json
 npm run prisma:migrate
 ```
 
-See [Content Type Builder Quick Start](./CONTENT_TYPE_BUILDER_QUICKSTART.md) and [Full Documentation](./CONTENT_TYPE_BUILDER.md) for more details.
+#### CMS Metadata System
+
+Add SEO and metadata to any content type:
+
+- **SEO Optimization**: Meta titles, descriptions, keywords
+- **Social Sharing**: Open Graph metadata for Twitter, Facebook, etc.
+- **Custom Metadata**: Flexible JSON field for any custom data
+- **Per-Content**: One metadata record per content item
+
+```typescript
+// Add SEO metadata to an article
+await prisma.contentMetadata.create({
+  data: {
+    contentType: 'api::article.article',
+    contentId: articleId,
+    metaTitle: 'Best TypeScript Practices',
+    metaDescription: 'Learn TypeScript best practices',
+    customData: { readingTime: '8 min' }
+  }
+})
+```
+
+#### Content Revisions & Audit Trail
+
+Track all changes with complete version history:
+
+- **Full History**: Every content change is tracked
+- **Snapshots**: Complete content snapshots as JSON
+- **Change Logs**: Optional descriptions of what changed
+- **User Tracking**: Know who made each change
+- **Rollback**: Restore previous versions
+
+```typescript
+// Create a revision on content update
+await prisma.contentRevision.create({
+  data: {
+    contentType: 'api::article.article',
+    contentId: articleId,
+    revisionNumber: 5,
+    data: articleSnapshot,
+    changeLog: 'Updated title and added examples'
+  }
+})
+```
+
+#### Flexible Tagging System
+
+Categorize and filter content with tags:
+
+- **Reusable Tags**: Create tags once, use anywhere
+- **Visual Categorization**: Color-coded tags for UI
+- **Multi-Tag Support**: Tag content with multiple tags
+- **Cross-Content**: Works with any content type
+
+```typescript
+// Tag an article as "featured"
+await prisma.contentTagRelation.create({
+  data: {
+    tagId: featuredTag.id,
+    contentType: 'api::article.article',
+    contentId: articleId
+  }
+})
+```
+
+#### Content Relationships
+
+Create relationships between any content items:
+
+- **Generic Relations**: Link any content types together
+- **Named Types**: "related", "parent", "child", etc.
+- **Bidirectional**: Set up two-way relationships
+- **Cross-Type**: Article → Product, Page → Section, etc.
+
+```typescript
+// Create "related articles" relationship
+await prisma.contentRelation.create({
+  data: {
+    sourceType: 'api::article.article',
+    sourceId: article1.id,
+    targetType: 'api::article.article',
+    targetId: article2.id,
+    relationType: 'related'
+  }
+})
+```
+
+**📖 CMS Documentation:**
+- [CMS Database Structure](./docs/CMS_DATABASE_STRUCTURE.md) - Complete database schema reference
+- [CMS Improvements Guide](./docs/CMS_IMPROVEMENTS.md) - Features and usage examples
+- [Content Type Builder](./CONTENT_TYPE_BUILDER.md) - Full content type documentation
+- [Content Manager](./CONTENT_MANAGER.md) - CRUD API documentation
 
 ### 5. Enhanced REST API
 
