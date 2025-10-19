@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ContentTypeBuilderRouteImport } from './routes/content-type-builder'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
@@ -20,6 +21,11 @@ import { Route as ApiDashboardIndexRouteImport } from './routes/api-dashboard/in
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContentTypeBuilderRoute = ContentTypeBuilderRouteImport.update({
+  id: '/content-type-builder',
+  path: '/content-type-builder',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -38,9 +44,9 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContentTypeBuilderIndexRoute = ContentTypeBuilderIndexRouteImport.update({
-  id: '/content-type-builder/',
-  path: '/content-type-builder/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => ContentTypeBuilderRoute,
 } as any)
 const ContentManagerIndexRoute = ContentManagerIndexRouteImport.update({
   id: '/content-manager/',
@@ -56,10 +62,11 @@ const ApiDashboardIndexRoute = ApiDashboardIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/content-type-builder': typeof ContentTypeBuilderRouteWithChildren
   '/login': typeof LoginRoute
   '/api-dashboard': typeof ApiDashboardIndexRoute
   '/content-manager': typeof ContentManagerIndexRoute
-  '/content-type-builder': typeof ContentTypeBuilderIndexRoute
+  '/content-type-builder/': typeof ContentTypeBuilderIndexRoute
   '/dashboard': typeof DashboardIndexRoute
 }
 export interface FileRoutesByTo {
@@ -75,6 +82,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/content-type-builder': typeof ContentTypeBuilderRouteWithChildren
   '/login': typeof LoginRoute
   '/api-dashboard/': typeof ApiDashboardIndexRoute
   '/content-manager/': typeof ContentManagerIndexRoute
@@ -86,10 +94,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/content-type-builder'
     | '/login'
     | '/api-dashboard'
     | '/content-manager'
-    | '/content-type-builder'
+    | '/content-type-builder/'
     | '/dashboard'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -104,6 +113,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
+    | '/content-type-builder'
     | '/login'
     | '/api-dashboard/'
     | '/content-manager/'
@@ -114,10 +124,10 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  ContentTypeBuilderRoute: typeof ContentTypeBuilderRouteWithChildren
   LoginRoute: typeof LoginRoute
   ApiDashboardIndexRoute: typeof ApiDashboardIndexRoute
   ContentManagerIndexRoute: typeof ContentManagerIndexRoute
-  ContentTypeBuilderIndexRoute: typeof ContentTypeBuilderIndexRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
@@ -128,6 +138,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content-type-builder': {
+      id: '/content-type-builder'
+      path: '/content-type-builder'
+      fullPath: '/content-type-builder'
+      preLoaderRoute: typeof ContentTypeBuilderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -153,10 +170,10 @@ declare module '@tanstack/react-router' {
     }
     '/content-type-builder/': {
       id: '/content-type-builder/'
-      path: '/content-type-builder'
-      fullPath: '/content-type-builder'
+      path: '/'
+      fullPath: '/content-type-builder/'
       preLoaderRoute: typeof ContentTypeBuilderIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ContentTypeBuilderRoute
     }
     '/content-manager/': {
       id: '/content-manager/'
@@ -175,13 +192,24 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface ContentTypeBuilderRouteChildren {
+  ContentTypeBuilderIndexRoute: typeof ContentTypeBuilderIndexRoute
+}
+
+const ContentTypeBuilderRouteChildren: ContentTypeBuilderRouteChildren = {
+  ContentTypeBuilderIndexRoute: ContentTypeBuilderIndexRoute,
+}
+
+const ContentTypeBuilderRouteWithChildren =
+  ContentTypeBuilderRoute._addFileChildren(ContentTypeBuilderRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  ContentTypeBuilderRoute: ContentTypeBuilderRouteWithChildren,
   LoginRoute: LoginRoute,
   ApiDashboardIndexRoute: ApiDashboardIndexRoute,
   ContentManagerIndexRoute: ContentManagerIndexRoute,
-  ContentTypeBuilderIndexRoute: ContentTypeBuilderIndexRoute,
   DashboardIndexRoute: DashboardIndexRoute,
 }
 export const routeTree = rootRouteImport

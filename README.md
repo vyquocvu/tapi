@@ -39,8 +39,11 @@ Make sure this matches your migration history and database setup.
 - **Prisma + SQLite** - Type-safe database access with local SQLite for development
 - **Content Type Builder** - Strapi-inspired content type builder with automatic Prisma schema generation
 - **Content Manager** - Dynamic CRUD API for managing content entries of any type
+- **Enhanced REST API** - Comprehensive REST API with validation, standardized responses, and error handling
 - **API Controller Dashboard** - Comprehensive REST API management and monitoring interface
 - **JWT Authentication** - Secure authentication with JSON Web Tokens
+- **Input Validation** - Robust validation middleware for all API endpoints
+- **Rate Limiting** - Built-in rate limiting support for API protection
 - **Protected Routes** - Dashboard route with authentication guards
 - **API Routes** - Built-in API endpoints via Vite middleware
 - **TypeScript** - Full type safety throughout the stack
@@ -76,10 +79,22 @@ Make sure this matches your migration history and database setup.
 │   │   ├── postService.ts   # Post business logic
 │   │   ├── contentTypeService.ts   # Content type definitions management
 │   │   └── contentManagerService.ts   # Content entries CRUD operations
+│   ├── middleware/
+│   │   ├── validation.ts    # Input validation utilities
+│   │   └── rateLimit.ts     # Rate limiting middleware
+│   ├── utils/
+│   │   └── apiResponse.ts   # Standardized API response helpers
 │   └── lib/
 │       ├── types.ts         # Shared TypeScript types
 │       ├── http.ts          # HTTP client utility
 │       └── queryClient.ts   # TanStack Query client config
+├── api/
+│   ├── content.ts           # Content Manager API endpoints
+│   ├── content-types.ts     # Content Type Builder endpoints
+│   ├── login.ts             # Authentication endpoint
+│   └── api-dashboard.ts     # API Dashboard endpoints
+├── tests/
+│   └── api-validation.test.ts  # API validation tests
 ├── .env.example             # Environment variables template
 ├── vite.config.ts           # Vite config with API middleware
 ├── package.json             # Dependencies and scripts
@@ -286,7 +301,43 @@ npm run prisma:migrate
 
 See [Content Type Builder Quick Start](./CONTENT_TYPE_BUILDER_QUICKSTART.md) and [Full Documentation](./CONTENT_TYPE_BUILDER.md) for more details.
 
-### 5. API Routes via Vite Middleware
+### 5. Enhanced REST API
+
+The platform provides a comprehensive REST API with enterprise-grade features:
+
+**Core Features:**
+- ✅ **Standardized Responses** - Consistent JSON response format across all endpoints
+- ✅ **Input Validation** - Robust validation with detailed error messages
+- ✅ **Error Handling** - Comprehensive error codes and meaningful error responses
+- ✅ **Authentication** - JWT-based authentication for protected endpoints
+- ✅ **Rate Limiting** - Built-in rate limiting support to prevent abuse
+- ✅ **Pagination** - Efficient pagination with skip/take parameters
+- ✅ **Filtering & Sorting** - Advanced query capabilities for all content types
+
+**API Endpoints:**
+- `POST /api/login` - User authentication
+- `GET /api/content` - Dynamic CRUD for all content types
+- `GET /api/content-types` - Content type management
+- `GET /api/api-dashboard` - API analytics and monitoring
+- `GET /api/me` - Current user information (protected)
+- `GET /api/health` - System health check
+
+**Example Usage:**
+```bash
+# Get all articles with filtering and pagination
+curl "http://localhost:5173/api/content?contentType=api::article.article&where={\"published\":true}&take=10" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Create a new article
+curl -X POST "http://localhost:5173/api/content?contentType=api::article.article" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"New Article","slug":"new-article","content":"Article content","authorId":1}'
+```
+
+See [API Reference](./API_REFERENCE.md) for complete API documentation with examples.
+
+### 6. API Routes via Vite Middleware
 
 API endpoints are implemented in `vite.config.ts`:
 
@@ -295,7 +346,7 @@ API endpoints are implemented in `vite.config.ts`:
 - `GET /api/me` - Get current user (protected)
 - `GET /api/health` - Health check
 
-### 6. Type-Safe Data Fetching
+### 7. Type-Safe Data Fetching
 
 TanStack Query provides automatic caching and state management:
 
@@ -306,7 +357,7 @@ const { data: posts, isLoading, error } = useQuery<Post[]>({
 })
 ```
 
-### 7. Service Layer Architecture
+### 8. Service Layer Architecture
 
 Business logic is separated into service modules:
 

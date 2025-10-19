@@ -8,6 +8,20 @@ import {
   count
 } from '../src/services/contentManagerService.js'
 import { verifyToken } from '../src/server/auth.js'
+import {
+  successResponse,
+  unauthorizedResponse,
+  badRequestResponse,
+  notFoundResponse,
+  serverErrorResponse,
+  validationErrorResponse,
+  HTTP_STATUS
+} from '../src/utils/apiResponse.js'
+import {
+  validateId,
+  validateContentTypeUID,
+  validatePaginationParams
+} from '../src/middleware/validation.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Set CORS headers
@@ -23,19 +37,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Verify authentication for all requests
   const token = req.headers.authorization?.replace('Bearer ', '')
   if (!token) {
-    return res.status(401).json({
-      success: false,
-      error: 'Authentication required',
-    })
+    return res.status(HTTP_STATUS.UNAUTHORIZED).json(unauthorizedResponse())
   }
 
   try {
     verifyToken(token)
   } catch (error) {
-    return res.status(401).json({
-      success: false,
-      error: 'Invalid or expired token',
-    })
+    return res.status(HTTP_STATUS.UNAUTHORIZED).json(
+      unauthorizedResponse('Invalid or expired token')
+    )
   }
 
   try {
@@ -43,36 +53,50 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Validate contentType parameter
     if (!contentType || typeof contentType !== 'string') {
-      return res.status(400).json({
-        success: false,
-        error: 'Content type parameter is required',
-      })
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        badRequestResponse('Content type parameter is required')
+      )
+    }
+
+    // Validate content type UID format
+    const uidValidation = validateContentTypeUID(contentType)
+    if (!uidValidation.isValid) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        validationErrorResponse(uidValidation.errors)
+      )
     }
 
     // GET - Find entries or a specific entry
     if (req.method === 'GET') {
       // Get specific entry by ID
       if (id && typeof id === 'string') {
-        const entryId = parseInt(id, 10)
-        if (isNaN(entryId)) {
-          return res.status(400).json({
-            success: false,
-            error: 'Invalid ID parameter',
-          })
+        const idValidation = validateId(id)
+        if (!idValidation.isValid) {
+          return res.status(HTTP_STATUS.BAD_REQUEST).json(
+            validationErrorResponse(idValidation.errors)
+          )
         }
 
+        const entryId = parseInt(id, 10)
         const entry = await findOne(contentType, entryId)
         if (!entry) {
-          return res.status(404).json({
-            success: false,
-            error: 'Entry not found',
-          })
+          return res.status(HTTP_STATUS.NOT_FOUND).json(
+            notFoundResponse('Entry')
+          )
         }
 
-        return res.status(200).json({
-          success: true,
-          data: entry,
-        })
+        return res.status(HTTP_STATUS.OK).json(successResponse(entry))
+      }
+
+      // Validate pagination parameters
+      const paginationValidation = validatePaginationParams(
+        req.query.skip,
+        req.query.take
+      )
+      if (!paginationValidation.isValid) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json(
+          validationErrorResponse(paginationValidation.errors)
+        )
       }
 
       // Get all entries with optional filters
@@ -92,11 +116,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         )
       }
 
-      return res.status(200).json({
-        success: true,
-        data: entries,
-        ...(total !== undefined && { meta: { total } }),
-      })
+      return res.status(HTTP_STATUS.OK).json(
+        successResponse(entries, total !== undefined ? { total } : undefined)
+      )
     }
 
     // POST - Create new entry
@@ -104,44 +126,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const data = req.body
 
       if (!data || typeof data !== 'object') {
-        return res.status(400).json({
-          success: false,
-          error: 'Request body must be an object',
-        })
+        return res.status(HTTP_STATUS.BAD_REQUEST).json(
+          badRequestResponse('Request body must be an object')
+        )
       }
 
       const entry = await create(contentType, { data })
 
-      return res.status(201).json({
-        success: true,
-        data: entry,
-      })
+      return res.status(HTTP_STATUS.CREATED).json(successResponse(entry))
     }
 
     // PUT - Update existing entry
     if (req.method === 'PUT') {
       if (!id || typeof id !== 'string') {
-        return res.status(400).json({
-          success: false,
-          error: 'ID parameter is required for updates',
-        })
+        return res.status(HTTP_STATUS.BAD_REQUEST).json(
+          badRequestResponse('ID parameter is required for updates')
+        )
+      }
+
+      const idValidation = validateId(id)
+      if (!idValidation.isValid) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json(
+          validationErrorResponse(idValidation.errors)
+        )
       }
 
       const entryId = parseInt(id, 10)
-      if (isNaN(entryId)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Invalid ID parameter',
-        })
-      }
-
       const data = req.body
 
       if (!data || typeof data !== 'object') {
-        return res.status(400).json({
-          success: false,
-          error: 'Request body must be an object',
-        })
+        return res.status(HTTP_STATUS.BAD_REQUEST).json(
+          badRequestResponse('Request body must be an object')
+        )
       }
 
       const entry = await update(contentType, {
@@ -149,48 +165,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         data,
       })
 
-      return res.status(200).json({
-        success: true,
-        data: entry,
-      })
+      return res.status(HTTP_STATUS.OK).json(successResponse(entry))
     }
 
     // DELETE - Delete entry
     if (req.method === 'DELETE') {
       if (!id || typeof id !== 'string') {
-        return res.status(400).json({
-          success: false,
-          error: 'ID parameter is required for deletion',
-        })
+        return res.status(HTTP_STATUS.BAD_REQUEST).json(
+          badRequestResponse('ID parameter is required for deletion')
+        )
+      }
+
+      const idValidation = validateId(id)
+      if (!idValidation.isValid) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json(
+          validationErrorResponse(idValidation.errors)
+        )
       }
 
       const entryId = parseInt(id, 10)
-      if (isNaN(entryId)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Invalid ID parameter',
-        })
-      }
 
       await deleteOne(contentType, {
         where: { id: entryId },
       })
 
-      return res.status(200).json({
-        success: true,
-        message: 'Entry deleted successfully',
-      })
+      return res.status(HTTP_STATUS.OK).json(
+        successResponse({ message: 'Entry deleted successfully' })
+      )
     }
 
-    return res.status(405).json({
-      success: false,
-      error: 'Method not allowed',
-    })
+    return res.status(HTTP_STATUS.METHOD_NOT_ALLOWED).json(
+      badRequestResponse('Method not allowed')
+    )
   } catch (error) {
     console.error('[API /content] Error:', error)
-    return res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Internal server error',
-    })
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(
+      serverErrorResponse(
+        error instanceof Error ? error.message : 'Internal server error'
+      )
+    )
   }
 }
