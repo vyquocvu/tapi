@@ -1,4 +1,7 @@
+import { ArrowLeft, Edit } from 'lucide-react'
 import type { FieldWithId } from './types'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface PreviewModeProps {
   uid: string
@@ -191,115 +194,131 @@ export function PreviewMode({
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <button 
-          onClick={onBack} 
-          className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        >
-          ← Back to List
-        </button>
-        <button 
-          onClick={onEdit} 
-          className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        >
-          ✏️ Edit
-        </button>
+        <Button variant="outline" onClick={onBack}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to List
+        </Button>
+        <Button onClick={onEdit}>
+          <Edit className="mr-2 h-4 w-4" />
+          Edit
+        </Button>
       </div>
 
-      <div className="rounded-lg border bg-card p-6 shadow-sm">
-        <h1 className="text-2xl font-bold text-foreground mb-4">{displayName}</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <span className="text-sm font-medium text-muted-foreground">UID:</span>
-            <p className="text-foreground font-mono">{uid}</p>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl">{displayName}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <span className="text-sm font-medium text-muted-foreground">UID:</span>
+              <p className="text-foreground font-mono">{uid}</p>
+            </div>
+            <div>
+              <span className="text-sm font-medium text-muted-foreground">Singular:</span>
+              <p className="text-foreground">{singularName}</p>
+            </div>
+            <div>
+              <span className="text-sm font-medium text-muted-foreground">Plural:</span>
+              <p className="text-foreground">{pluralName}</p>
+            </div>
           </div>
-          <div>
-            <span className="text-sm font-medium text-muted-foreground">Singular:</span>
-            <p className="text-foreground">{singularName}</p>
-          </div>
-          <div>
-            <span className="text-sm font-medium text-muted-foreground">Plural:</span>
-            <p className="text-foreground">{pluralName}</p>
-          </div>
-        </div>
-        {description && (
-          <div className="mb-4">
-            <span className="text-sm font-medium text-muted-foreground">Description:</span>
-            <p className="text-foreground">{description}</p>
-          </div>
-        )}
-        <div className="flex gap-4">
-          {timestamps && (
-            <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-              📅 Timestamps
-            </span>
+          {description && (
+            <div>
+              <span className="text-sm font-medium text-muted-foreground">Description:</span>
+              <p className="text-foreground">{description}</p>
+            </div>
           )}
-          {softDelete && (
-            <span className="inline-flex items-center rounded-full bg-secondary/10 px-2 py-1 text-xs font-medium text-secondary-foreground">
-              🗑️ Soft Delete
-            </span>
-          )}
-        </div>
-      </div>
+          <div className="flex gap-4">
+            {timestamps && (
+              <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                📅 Timestamps
+              </span>
+            )}
+            {softDelete && (
+              <span className="inline-flex items-center rounded-full bg-secondary/10 px-2 py-1 text-xs font-medium text-secondary-foreground">
+                🗑️ Soft Delete
+              </span>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-foreground mb-4">🗃️ Fields ({Object.keys(fields).length})</h2>
-          {Object.keys(fields).length === 0 ? (
-            <p className="text-muted-foreground">No fields defined</p>
-          ) : (
-            <div className="space-y-3">
-              {Object.values(fields).map((field) => (
-                <div key={field.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-md">
-                  <div>
-                    <span className="font-medium text-foreground">{field.name}</span>
-                    <span className="ml-2 text-sm text-muted-foreground">({field.type})</span>
-                    {field.required && <span className="ml-1 text-destructive">*</span>}
+        <Card>
+          <CardHeader>
+            <CardTitle>🗃️ Fields ({Object.keys(fields).length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {Object.keys(fields).length === 0 ? (
+              <p className="text-muted-foreground">No fields defined</p>
+            ) : (
+              <div className="space-y-3">
+                {Object.values(fields).map((field) => (
+                  <div key={field.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-md">
+                    <div>
+                      <span className="font-medium text-foreground">{field.name}</span>
+                      <span className="ml-2 text-sm text-muted-foreground">({field.type})</span>
+                      {field.required && <span className="ml-1 text-destructive">*</span>}
+                    </div>
+                    {field.unique && (
+                      <span className="inline-flex items-center rounded-full bg-accent px-2 py-1 text-xs font-medium text-accent-foreground">
+                        Unique
+                      </span>
+                    )}
                   </div>
-                  {field.unique && (
-                    <span className="inline-flex items-center rounded-full bg-accent px-2 py-1 text-xs font-medium text-accent-foreground">
-                      Unique
-                    </span>
-                  )}
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>🔗 REST API Endpoints</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {formatRestAPIEndpoints().map((endpoint, index) => (
+                <div key={index} className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${
+                    endpoint.method === 'GET' ? 'bg-blue-100 text-blue-800' :
+                    endpoint.method === 'POST' ? 'bg-green-100 text-green-800' :
+                    endpoint.method === 'PUT' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    {endpoint.method}
+                  </span>
+                  <code className="text-sm font-mono text-foreground">{endpoint.path}</code>
                 </div>
               ))}
             </div>
-          )}
-        </div>
-
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-foreground mb-4">🔗 REST API Endpoints</h2>
-          <div className="space-y-2">
-            {formatRestAPIEndpoints().map((endpoint, index) => (
-              <div key={index} className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
-                <span className={`px-2 py-1 rounded text-xs font-medium ${
-                  endpoint.method === 'GET' ? 'bg-blue-100 text-blue-800' :
-                  endpoint.method === 'POST' ? 'bg-green-100 text-green-800' :
-                  endpoint.method === 'PUT' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-red-100 text-red-800'
-                }`}>
-                  {endpoint.method}
-                </span>
-                <code className="text-sm font-mono text-foreground">{endpoint.path}</code>
-              </div>
-            ))}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-foreground mb-4">🗄️ Prisma Schema</h2>
-          <pre className="bg-muted p-4 rounded-md overflow-x-auto text-sm font-mono text-foreground">
-            {formatPrismaSchema()}
-          </pre>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>🗄️ Prisma Schema</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <pre className="bg-muted p-4 rounded-md overflow-x-auto text-sm font-mono text-foreground">
+              {formatPrismaSchema()}
+            </pre>
+          </CardContent>
+        </Card>
 
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-foreground mb-4">📋 JSON Structure</h2>
-          <pre className="bg-muted p-4 rounded-md overflow-x-auto text-sm font-mono text-foreground">
-            {formatJSONStructure()}
-          </pre>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>📋 JSON Structure</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <pre className="bg-muted p-4 rounded-md overflow-x-auto text-sm font-mono text-foreground">
+              {formatJSONStructure()}
+            </pre>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

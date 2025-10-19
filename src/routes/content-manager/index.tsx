@@ -1,13 +1,13 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { ArrowLeft, Plus, Trash2, Edit } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { ContentTypeDefinition } from '../../content-type-builder/types'
-import '../../styles/content-manager.css'
 
 export const Route = createFileRoute('/content-manager/')({
   beforeLoad: async () => {
@@ -424,68 +424,81 @@ function ContentManagerComponent() {
   }
 
   if (typesLoading) {
-    return <div className="loading">Loading content types...</div>
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-center text-muted-foreground">Loading content types...</p>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
-    <div className="content-manager">
-      <div className="manager-header">
-        <h1>Content Manager</h1>
-        <p>Create, edit, and manage your content entries</p>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-4xl font-bold tracking-tight">Content Manager</h1>
+        <p className="mt-2 text-muted-foreground">Create, edit, and manage your content entries</p>
       </div>
 
       {/* Content Type Selection */}
       {mode === 'select' && (
-        <div className="manager-content">
-          <Card>
-            <CardHeader>
-              <CardTitle>Select Content Type</CardTitle>
-              <CardDescription>Choose a content type to manage its entries</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {Array.isArray(contentTypes) && contentTypes.length > 0 ? (
-                <div className="content-type-grid">
-                  {contentTypes.map((contentType) => (
-                    <button
-                      key={contentType.uid}
-                      onClick={() => handleSelectContentType(contentType.uid)}
-                      className="content-type-card"
-                    >
-                      <h3>{contentType.displayName}</h3>
-                      <p className="text-sm text-muted-foreground">
+        <Card>
+          <CardHeader>
+            <CardTitle>Select Content Type</CardTitle>
+            <CardDescription>Choose a content type to manage its entries</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {Array.isArray(contentTypes) && contentTypes.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {contentTypes.map((contentType) => (
+                  <Card
+                    key={contentType.uid}
+                    className="cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() => handleSelectContentType(contentType.uid)}
+                  >
+                    <CardHeader>
+                      <CardTitle className="text-lg">{contentType.displayName}</CardTitle>
+                      <CardDescription>
                         {contentType.description || contentType.pluralName}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-2">
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-xs text-muted-foreground">
                         {Object.keys(contentType.fields).length} fields
                       </p>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="empty-state">
-                  <p>No content types found.</p>
-                  <p>Create content types in the Content Type Builder first.</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground mb-2">No content types found.</p>
+                <p className="text-muted-foreground">Create content types in the Content Type Builder first.</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* List View */}
       {mode === 'list' && selectedContentTypeDef && (
-        <div className="manager-content">
-          <div className="manager-actions">
+        <div className="space-y-4">
+          <div className="flex justify-between items-center gap-4 flex-wrap">
             <Button onClick={() => setMode('select')} variant="outline">
-              ← Back to Content Types
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Content Types
             </Button>
             <div className="flex gap-2">
               {selectedEntries.size > 0 && (
                 <Button onClick={handleBulkDelete} variant="destructive">
-                  🗑️ Delete Selected ({selectedEntries.size})
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Selected ({selectedEntries.size})
                 </Button>
               )}
-              <Button onClick={handleCreate}>➕ Create New {selectedContentTypeDef.singularName}</Button>
+              <Button onClick={handleCreate}>
+                <Plus className="mr-2 h-4 w-4" />
+                Create New {selectedContentTypeDef.singularName}
+              </Button>
             </div>
           </div>
 
@@ -502,7 +515,7 @@ function ContentManagerComponent() {
             </CardHeader>
             <CardContent>
               {entriesLoading ? (
-                <p className="text-center text-muted-foreground">Loading entries...</p>
+                <p className="text-center text-muted-foreground py-6">Loading entries...</p>
               ) : entriesError ? (
                 <Alert variant="destructive">
                   <AlertDescription>
@@ -511,10 +524,10 @@ function ContentManagerComponent() {
                 </Alert>
               ) : entries && entries.length > 0 ? (
                 <div className="overflow-x-auto">
-                  <table className="entries-table">
+                  <table className="w-full border-collapse">
                     <thead>
-                      <tr>
-                        <th className="w-12">
+                      <tr className="border-b">
+                        <th className="w-12 p-3 text-left text-sm font-semibold bg-muted">
                           <input
                             type="checkbox"
                             checked={selectedEntries.size === entries.length}
@@ -522,27 +535,27 @@ function ContentManagerComponent() {
                             className="h-4 w-4"
                           />
                         </th>
-                        <th>ID</th>
+                        <th className="p-3 text-left text-sm font-semibold bg-muted">ID</th>
                         {Object.keys(selectedContentTypeDef.fields)
                           .filter((key) => !['password'].includes(selectedContentTypeDef.fields[key].type))
                           .slice(0, 4)
                           .map((key) => (
-                            <th key={key}>{key}</th>
+                            <th key={key} className="p-3 text-left text-sm font-semibold bg-muted uppercase">{key}</th>
                           ))}
-                        <th>Status</th>
+                        <th className="p-3 text-left text-sm font-semibold bg-muted">Status</th>
                         {selectedContentTypeDef.options?.timestamps && (
                           <>
-                            <th>Created</th>
-                            <th>Updated</th>
+                            <th className="p-3 text-left text-sm font-semibold bg-muted">Created</th>
+                            <th className="p-3 text-left text-sm font-semibold bg-muted">Updated</th>
                           </>
                         )}
-                        <th>Actions</th>
+                        <th className="p-3 text-left text-sm font-semibold bg-muted">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {entries.map((entry) => (
-                        <tr key={entry.id}>
-                          <td>
+                        <tr key={entry.id} className="border-b hover:bg-muted/50">
+                          <td className="p-3 text-sm">
                             <input
                               type="checkbox"
                               checked={selectedEntries.has(entry.id)}
@@ -550,7 +563,7 @@ function ContentManagerComponent() {
                               className="h-4 w-4"
                             />
                           </td>
-                          <td>{entry.id}</td>
+                          <td className="p-3 text-sm">{entry.id}</td>
                           {Object.keys(selectedContentTypeDef.fields)
                             .filter((key) => !['password'].includes(selectedContentTypeDef.fields[key].type))
                             .slice(0, 4)
@@ -568,26 +581,26 @@ function ContentManagerComponent() {
                                 displayValue = value.slice(0, 50) + '...'
                               }
                               
-                              return <td key={key}>{displayValue}</td>
+                              return <td key={key} className="p-3 text-sm">{displayValue}</td>
                             })}
-                          <td>{getStatusBadge(entry)}</td>
+                          <td className="p-3 text-sm">{getStatusBadge(entry)}</td>
                           {selectedContentTypeDef.options?.timestamps && (
                             <>
-                              <td>{entry.createdAt ? new Date(entry.createdAt).toLocaleDateString() : '-'}</td>
-                              <td>{entry.updatedAt ? new Date(entry.updatedAt).toLocaleDateString() : '-'}</td>
+                              <td className="p-3 text-sm">{entry.createdAt ? new Date(entry.createdAt).toLocaleDateString() : '-'}</td>
+                              <td className="p-3 text-sm">{entry.updatedAt ? new Date(entry.updatedAt).toLocaleDateString() : '-'}</td>
                             </>
                           )}
-                          <td>
+                          <td className="p-3 text-sm">
                             <div className="flex gap-2">
                               <Button onClick={() => handleEdit(entry)} size="sm" variant="outline">
-                                ✏️ Edit
+                                <Edit className="h-4 w-4" />
                               </Button>
                               <Button
                                 onClick={() => handleDelete(entry.id)}
                                 size="sm"
                                 variant="destructive"
                               >
-                                🗑️
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
                           </td>
@@ -597,9 +610,10 @@ function ContentManagerComponent() {
                   </table>
                 </div>
               ) : (
-                <div className="empty-state">
-                  <p>No entries found.</p>
-                  <Button onClick={handleCreate} className="mt-4">
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground mb-4">No entries found.</p>
+                  <Button onClick={handleCreate}>
+                    <Plus className="mr-2 h-4 w-4" />
                     Create your first {selectedContentTypeDef.singularName}
                   </Button>
                 </div>
@@ -657,8 +671,8 @@ function ContentManagerComponent() {
                     {createMutation.isPending || updateMutation.isPending
                       ? 'Saving...'
                       : mode === 'create'
-                      ? '➕ Create'
-                      : '💾 Save'}
+                      ? 'Create'
+                      : 'Save'}
                   </Button>
                   <Button type="button" onClick={() => setMode('list')} variant="outline">
                     Cancel

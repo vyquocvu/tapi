@@ -1,6 +1,11 @@
+import { GripVertical, X } from 'lucide-react'
 import type { FieldWithId } from './types'
 import { FIELD_TYPES } from './constants'
 import type { FieldType } from '../../content-type-builder/types'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card } from '@/components/ui/card'
 
 interface FieldEditorProps {
   field: FieldWithId
@@ -24,35 +29,36 @@ export function FieldEditor({
   onDragEnd,
 }: FieldEditorProps) {
   return (
-    <div
-      className={`rounded-lg border bg-card p-4 shadow-sm ${draggedIndex === index ? 'opacity-50' : ''}`}
+    <Card
+      className={`p-4 ${draggedIndex === index ? 'opacity-50' : ''}`}
       draggable
       onDragStart={() => onDragStart(index)}
       onDragOver={(e) => onDragOver(e, index)}
       onDragEnd={onDragEnd}
     >
       <div className="flex items-center gap-3 mb-4">
-        <span className="cursor-move text-muted-foreground">⋮⋮</span>
-        <input
+        <GripVertical className="cursor-move text-muted-foreground h-5 w-5" />
+        <Input
           type="text"
           value={field.name}
           onChange={(e) => onFieldChange(field.id, { name: e.target.value })}
           placeholder="Field name"
-          className="flex-1 h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="flex-1"
         />
-        <button
+        <Button
+          variant="destructive"
+          size="icon"
           onClick={() => onRemoveField(field.id)}
-          className="inline-flex items-center justify-center h-8 w-8 rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90"
           title="Remove field"
         >
-          ✕
-        </button>
+          <X className="h-4 w-4" />
+        </Button>
       </div>
 
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Type</label>
+            <Label>Type</Label>
             <select
               value={field.type}
               onChange={(e) => onFieldChange(field.id, { type: e.target.value as FieldType })}
@@ -78,9 +84,9 @@ export function FieldEditor({
                 onChange={(e) => onFieldChange(field.id, { required: e.target.checked })}
                 className="h-4 w-4 rounded border-input"
               />
-              <label htmlFor={`required-${field.id}`} className="text-sm font-medium text-foreground">
+              <Label htmlFor={`required-${field.id}`}>
                 Required
-              </label>
+              </Label>
             </div>
             <div className="flex items-center space-x-2">
               <input
@@ -90,9 +96,9 @@ export function FieldEditor({
                 onChange={(e) => onFieldChange(field.id, { unique: e.target.checked })}
                 className="h-4 w-4 rounded border-input"
               />
-              <label htmlFor={`unique-${field.id}`} className="text-sm font-medium text-foreground">
+              <Label htmlFor={`unique-${field.id}`}>
                 Unique
-              </label>
+              </Label>
             </div>
           </div>
         </div>
@@ -101,8 +107,8 @@ export function FieldEditor({
         {(field.type === 'string' || field.type === 'text' || field.type === 'email') && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Min Length</label>
-              <input
+              <Label>Min Length</Label>
+              <Input
                 type="number"
                 value={field.minLength || ''}
                 onChange={(e) =>
@@ -111,12 +117,11 @@ export function FieldEditor({
                   })
                 }
                 placeholder="Optional"
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Max Length</label>
-              <input
+              <Label>Max Length</Label>
+              <Input
                 type="number"
                 value={field.maxLength || ''}
                 onChange={(e) =>
@@ -125,7 +130,6 @@ export function FieldEditor({
                   })
                 }
                 placeholder="Optional"
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
             </div>
           </div>
@@ -135,8 +139,8 @@ export function FieldEditor({
         {(field.type === 'integer' || field.type === 'float' || field.type === 'decimal') && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Min Value</label>
-              <input
+              <Label>Min Value</Label>
+              <Input
                 type="number"
                 value={field.min || ''}
                 onChange={(e) =>
@@ -145,12 +149,11 @@ export function FieldEditor({
                   })
                 }
                 placeholder="Optional"
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Max Value</label>
-              <input
+              <Label>Max Value</Label>
+              <Input
                 type="number"
                 value={field.max || ''}
                 onChange={(e) =>
@@ -159,7 +162,6 @@ export function FieldEditor({
                   })
                 }
                 placeholder="Optional"
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
             </div>
           </div>
@@ -168,8 +170,8 @@ export function FieldEditor({
         {/* Enumeration options */}
         {field.type === 'enumeration' && (
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Values (comma-separated)</label>
-            <input
+            <Label>Values (comma-separated)</Label>
+            <Input
               type="text"
               value={field.values?.join(', ') || ''}
               onChange={(e) =>
@@ -178,7 +180,6 @@ export function FieldEditor({
                 })
               }
               placeholder="active, inactive, pending"
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             />
           </div>
         )}
@@ -187,7 +188,7 @@ export function FieldEditor({
         {field.type === 'relation' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Relation Type</label>
+              <Label>Relation Type</Label>
               <select
                 value={field.relationType || 'manyToOne'}
                 onChange={(e) => onFieldChange(field.id, { relationType: e.target.value as any })}
@@ -200,13 +201,12 @@ export function FieldEditor({
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Target</label>
-              <input
+              <Label>Target</Label>
+              <Input
                 type="text"
                 value={field.target || ''}
                 onChange={(e) => onFieldChange(field.id, { target: e.target.value })}
                 placeholder="api::user.user"
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
             </div>
           </div>
@@ -215,7 +215,7 @@ export function FieldEditor({
         {/* Default value */}
         {field.type === 'boolean' ? (
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Default Value</label>
+            <Label>Default Value</Label>
             <select
               value={field.default === undefined ? '' : field.default.toString()}
               onChange={(e) =>
@@ -232,17 +232,16 @@ export function FieldEditor({
           </div>
         ) : field.type !== 'relation' && (
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Default Value</label>
-            <input
+            <Label>Default Value</Label>
+            <Input
               type="text"
               value={field.default || ''}
               onChange={(e) => onFieldChange(field.id, { default: e.target.value || undefined })}
               placeholder="Optional default value"
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             />
           </div>
         )}
       </div>
-    </div>
+    </Card>
   )
 }
