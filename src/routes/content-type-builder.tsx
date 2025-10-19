@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import type { ContentTypeDefinition, FieldType, RelationType } from '../content-type-builder/types'
+import '../styles/content-type-builder.css'
 
 export const Route = createFileRoute('/content-type-builder')({
   component: ContentTypeBuilderComponent,
