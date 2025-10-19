@@ -88,7 +88,6 @@ export function ContentTypeForm({
       }
     }
   }
-  console.log('Rendering ContentTypeForm with fields:', fields);
 
   return (
     <div className="space-y-6">

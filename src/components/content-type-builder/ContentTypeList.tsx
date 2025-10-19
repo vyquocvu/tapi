@@ -21,7 +21,6 @@ export function ContentTypeList({ onEdit, onDelete, onCreate, error }: ContentTy
   })
   console.log('Fetched content types:', contentTypes)
   const displayError = error || queryError?.message
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
