@@ -85,7 +85,7 @@ export function ContentTypeList({ onEdit, onDelete, onCreate, error }: ContentTy
               <CardContent>
                 <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
-                    📋 {Object.keys(contentType.fields).length} fields
+                    📋 {contentType.fields ? Object.keys(contentType.fields).length : 0} fields
                   </span>
                   {contentType.options?.timestamps && (
                     <span className="flex items-center gap-1">🕐 Timestamps</span>

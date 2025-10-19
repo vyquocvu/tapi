@@ -464,7 +464,7 @@ function ContentManagerComponent() {
                     </CardHeader>
                     <CardContent>
                       <p className="text-xs text-muted-foreground">
-                        {Object.keys(contentType.fields).length} fields
+                        {contentType.fields ? Object.keys(contentType.fields).length : 0} fields
                       </p>
                     </CardContent>
                   </Card>
