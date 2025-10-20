@@ -47,6 +47,14 @@ function apiPlugin() {
           generateOpenAPISpec
         } = await import('./src/services/apiEndpointConfigService.js')
         const { createContext, requireAuth } = await import('./src/server/context.js')
+        const {
+          uploadFile,
+          deleteFile,
+          listFiles,
+          getFileMetadata,
+          getProviderInfo
+        } = await import('./src/services/mediaService.js')
+        const multer = (await import('multer')).default
 
         // Handle POST /api/login
         if (req.url === '/login' && req.method === 'POST') {
@@ -646,6 +654,159 @@ function apiPlugin() {
           return
         }
 
+        // Handle /api/media endpoints
+        if (req.url?.startsWith('/media')) {
+          // Verify authentication for all media requests
+          try {
+            const context = createContext(req)
+            requireAuth(context)
+          } catch (error) {
+            res.statusCode = 401
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({
+              success: false,
+              error: 'Unauthorized',
+            }))
+            return
+          }
+
+          const url = new URL(req.url, `http://${req.headers.host}`)
+          const action = url.searchParams.get('action')
+          const folder = url.searchParams.get('folder')
+          const id = url.searchParams.get('id')
+
+          // GET - List files or get provider info
+          if (req.method === 'GET') {
+            try {
+              if (action === 'provider-info') {
+                const info = getProviderInfo()
+                res.statusCode = 200
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: true,
+                  data: info,
+                }))
+                return
+              }
+
+              const files = await listFiles(folder || undefined)
+              res.statusCode = 200
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: true,
+                data: files,
+              }))
+              return
+            } catch (error) {
+              res.statusCode = 500
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: false,
+                error: error instanceof Error ? error.message : 'Internal server error',
+              }))
+              return
+            }
+          }
+
+          // POST - Upload file
+          if (req.method === 'POST') {
+            try {
+              // Set up multer for memory storage
+              const storage = multer.memoryStorage()
+              const upload = multer({ storage }).single('file')
+
+              // Wrap multer in a promise
+              await new Promise<void>((resolve, reject) => {
+                upload(req as any, res as any, (err: any) => {
+                  if (err) reject(err)
+                  else resolve()
+                })
+              })
+
+              const file = (req as any).file
+              if (!file) {
+                res.statusCode = 400
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: false,
+                  error: 'No file provided',
+                }))
+                return
+              }
+
+              const uploadedFile = await uploadFile(
+                file.buffer,
+                file.originalname,
+                {
+                  contentType: file.mimetype,
+                  folder: folder || undefined,
+                }
+              )
+
+              res.statusCode = 201
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: true,
+                data: uploadedFile,
+              }))
+              return
+            } catch (error) {
+              console.error('[Vite API /media] Error uploading file:', error)
+              res.statusCode = 500
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: false,
+                error: error instanceof Error ? error.message : 'Internal server error',
+              }))
+              return
+            }
+          }
+
+          // DELETE - Delete file
+          if (req.method === 'DELETE') {
+            try {
+              if (!id) {
+                res.statusCode = 400
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: false,
+                  error: 'File ID is required',
+                }))
+                return
+              }
+
+              const result = await deleteFile(id)
+              
+              if (!result) {
+                res.statusCode = 404
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: false,
+                  error: 'File not found or could not be deleted',
+                }))
+                return
+              }
+
+              res.statusCode = 200
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: true,
+                message: 'File deleted successfully',
+              }))
+              return
+            } catch (error) {
+              console.error('[Vite API /media] Error deleting file:', error)
+              res.statusCode = 500
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: false,
+                error: error instanceof Error ? error.message : 'Internal server error',
+              }))
+              return
+            }
+          }
+        }
+
         next()
       })
     },
@@ -659,4 +820,11 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    fs: {
+      // Allow serving files from uploads directory
+      allow: ['.', './uploads'],
+    },
+  },
+  publicDir: 'uploads',
 })
