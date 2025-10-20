@@ -8,10 +8,16 @@ import { Alert } from '@/components/ui/alert'
 import { useState, useRef } from 'react'
 
 export const Route = createFileRoute('/media/')({
-  beforeLoad: ({ context }) => {
-    // @ts-ignore - context has isAuthenticated
-    if (!context.isAuthenticated) {
-      throw redirect({ to: '/login' })
+  beforeLoad: async () => {
+    // Check if user is authenticated via sessionStorage
+    const token = sessionStorage.getItem('authToken')
+    if (!token) {
+      throw redirect({
+        to: '/login',
+        search: {
+          redirect: '/media',
+        },
+      })
     }
   },
   component: MediaManagerPage,
@@ -44,7 +50,7 @@ function MediaManagerPage() {
   const { data: providerData } = useQuery<{ success: boolean; data: ProviderInfo }>({
     queryKey: ['media-provider'],
     queryFn: async () => {
-      const token = sessionStorage.getItem('token')
+      const token = sessionStorage.getItem('authToken')
       const response = await fetch('/api/media?action=provider-info', {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -59,7 +65,7 @@ function MediaManagerPage() {
   const { data: filesData, isLoading, error, refetch } = useQuery<{ success: boolean; data: MediaFile[] }>({
     queryKey: ['media-files'],
     queryFn: async () => {
-      const token = sessionStorage.getItem('token')
+      const token = sessionStorage.getItem('authToken')
       const response = await fetch('/api/media', {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -73,7 +79,7 @@ function MediaManagerPage() {
   // Upload mutation
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
-      const token = sessionStorage.getItem('token')
+      const token = sessionStorage.getItem('authToken')
       const formData = new FormData()
       formData.append('file', file)
 
@@ -110,7 +116,7 @@ function MediaManagerPage() {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (fileId: string) => {
-      const token = sessionStorage.getItem('token')
+      const token = sessionStorage.getItem('authToken')
       const response = await fetch(`/api/media?id=${encodeURIComponent(fileId)}`, {
         method: 'DELETE',
         headers: {

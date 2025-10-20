@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as ContentTypeBuilderRouteImport } from './routes/content-type-builder'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MediaIndexRouteImport } from './routes/media/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as ContentManagerIndexRouteImport } from './routes/content-manager/index'
 import { Route as ApiDashboardIndexRouteImport } from './routes/api-dashboard/index'
@@ -35,6 +36,11 @@ const AboutRoute = AboutRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MediaIndexRoute = MediaIndexRouteImport.update({
+  id: '/media/',
+  path: '/media/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/api-dashboard': typeof ApiDashboardIndexRoute
   '/content-manager': typeof ContentManagerIndexRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/media': typeof MediaIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/api-dashboard': typeof ApiDashboardIndexRoute
   '/content-manager': typeof ContentManagerIndexRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/media': typeof MediaIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/api-dashboard/': typeof ApiDashboardIndexRoute
   '/content-manager/': typeof ContentManagerIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/media/': typeof MediaIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/api-dashboard'
     | '/content-manager'
     | '/dashboard'
+    | '/media'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/api-dashboard'
     | '/content-manager'
     | '/dashboard'
+    | '/media'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/api-dashboard/'
     | '/content-manager/'
     | '/dashboard/'
+    | '/media/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +131,7 @@ export interface RootRouteChildren {
   ApiDashboardIndexRoute: typeof ApiDashboardIndexRoute
   ContentManagerIndexRoute: typeof ContentManagerIndexRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  MediaIndexRoute: typeof MediaIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -149,6 +162,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/media/': {
+      id: '/media/'
+      path: '/media'
+      fullPath: '/media'
+      preLoaderRoute: typeof MediaIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/': {
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiDashboardIndexRoute: ApiDashboardIndexRoute,
   ContentManagerIndexRoute: ContentManagerIndexRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  MediaIndexRoute: MediaIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
