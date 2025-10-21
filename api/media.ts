@@ -6,6 +6,7 @@ import {
   getFileMetadata,
   getProviderInfo 
 } from '../src/services/mediaService.js'
+import { generateVercelUploadUrl } from '../src/storage/providers/vercelBlob.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Set CORS headers
@@ -38,13 +39,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       })
     }
 
-    // POST - Upload file
+    // POST - Upload file or get upload token
     if (req.method === 'POST') {
-      // Note: In Vercel serverless, we'd need to handle multipart/form-data differently
-      // This is a simplified version - see Vite middleware for full implementation
+      const provider = getProviderInfo()
+
+      if (provider.name === 'vercel-blob') {
+        const { filename } = req.query
+        if (!filename || typeof filename !== 'string') {
+          return res.status(400).json({ success: false, error: 'filename query param is required' })
+        }
+
+        try {
+          // Return token directly for @vercel/blob/client compatibility
+          const token = process.env.BLOB_READ_WRITE_TOKEN
+          if (!token) {
+            return res.status(500).json({ success: false, error: 'BLOB_READ_WRITE_TOKEN not configured' })
+          }
+
+          // Return in the format expected by @vercel/blob/client
+          return res.status(200).json({
+            url: `https://blob.vercel-storage.com/${filename}`,
+            token,
+          })
+        } catch (err) {
+          console.error('[API /media] Vercel upload token generation failed', err)
+          return res.status(500).json({ success: false, error: 'Failed to generate upload token' })
+        }
+      }
+
+      // Fallback: server-side upload (not supported in Vercel serverless for multipart)
       return res.status(501).json({
         success: false,
-        error: 'File upload in Vercel requires different handling. Use Vite dev server or Node server.',
+        error: 'Server-side file upload not supported on Vercel. Use direct upload via the provided upload URL.',
       })
     }
 

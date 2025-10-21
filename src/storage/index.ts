@@ -2,6 +2,7 @@ import { StorageProvider } from './types.js'
 import { LocalStorageProvider } from './providers/local.js'
 import { S3StorageProvider } from './providers/s3.js'
 import { GCSStorageProvider } from './providers/gcs.js'
+import { VercelBlobStorageProvider } from './providers/vercelBlob.js'
 
 /**
  * Storage provider factory
@@ -16,6 +17,9 @@ export function getStorageProvider(): StorageProvider {
     case 'gcs':
     case 'google':
       return new GCSStorageProvider()
+    case 'vercel':
+    case 'vercel-blob':
+      return new VercelBlobStorageProvider()
     case 'local':
     default:
       return new LocalStorageProvider()
@@ -26,3 +30,4 @@ export * from './types.js'
 export { LocalStorageProvider } from './providers/local.js'
 export { S3StorageProvider } from './providers/s3.js'
 export { GCSStorageProvider } from './providers/gcs.js'
+export { VercelBlobStorageProvider } from './providers/vercelBlob.js'
