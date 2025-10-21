@@ -28,11 +28,23 @@ JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 PORT=5173
 NODE_ENV=development
 RUNTIME=dev
+
+# Storage Configuration
+STORAGE_PROVIDER=local  # Options: local, s3, gcs
+LOCAL_UPLOAD_DIR=./uploads
+LOCAL_BASE_URL=http://localhost:5173
+
+# For S3: AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_S3_BUCKET
+# For GCS: GCS_PROJECT_ID, GCS_BUCKET, GCS_KEY_FILE
 ```
 
 ### DATABASE_PROVIDER
 Specifies the database provider for Prisma. Example values: `sqlite`, `postgresql`, `mysql`.
 Make sure this matches your migration history and database setup.
+
+### STORAGE_PROVIDER
+Specifies the storage backend for media files. Options: `local`, `s3`, `gcs`.
+See [MEDIA_MANAGER.md](./MEDIA_MANAGER.md) for detailed configuration.
 
 - **TanStack Router** - Type-safe file-based routing with protected routes
 - **TanStack Query** - Powerful data fetching and caching
@@ -40,6 +52,7 @@ Make sure this matches your migration history and database setup.
 - **Enhanced CMS** - Complete content management system with:
   - **Content Type Builder** - Strapi-inspired content type builder with automatic Prisma schema generation
   - **Content Manager** - Dynamic CRUD API for managing content entries of any type
+  - **Media Manager** - Multi-provider file storage system (Local, S3, GCS) with upload, delete, and preview
   - **Content Metadata** - SEO and metadata management for any content type
   - **Content Revisions** - Full audit trail and version history
   - **Content Tags** - Flexible tagging system with visual categorization
@@ -84,7 +97,15 @@ Make sure this matches your migration history and database setup.
 │   │   ├── authService.ts   # Authentication business logic
 │   │   ├── postService.ts   # Post business logic
 │   │   ├── contentTypeService.ts   # Content type definitions management
-│   │   └── contentManagerService.ts   # Content entries CRUD operations
+│   │   ├── contentManagerService.ts   # Content entries CRUD operations
+│   │   └── mediaService.ts  # Media file management service
+│   ├── storage/
+│   │   ├── types.ts         # Storage provider interface
+│   │   ├── index.ts         # Storage provider factory
+│   │   └── providers/
+│   │       ├── local.ts     # Local filesystem provider
+│   │       ├── s3.ts        # AWS S3 provider
+│   │       └── gcs.ts       # Google Cloud Storage provider
 │   ├── middleware/
 │   │   ├── validation.ts    # Input validation utilities
 │   │   └── rateLimit.ts     # Rate limiting middleware
@@ -97,6 +118,7 @@ Make sure this matches your migration history and database setup.
 ├── api/
 │   ├── content.ts           # Content Manager API endpoints
 │   ├── content-types.ts     # Content Type Builder endpoints
+│   ├── media.ts             # Media Manager API endpoints
 │   ├── login.ts             # Authentication endpoint
 │   └── api-dashboard.ts     # API Dashboard endpoints
 ├── docs/
@@ -404,6 +426,7 @@ await prisma.contentRelation.create({
 - [CMS Improvements Guide](./docs/CMS_IMPROVEMENTS.md) - Features and usage examples
 - [Content Type Builder](./CONTENT_TYPE_BUILDER.md) - Full content type documentation
 - [Content Manager](./CONTENT_MANAGER.md) - CRUD API documentation
+- [Media Manager](./MEDIA_MANAGER.md) - File storage and management documentation
 
 ### 5. Enhanced REST API
 

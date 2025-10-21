@@ -82,7 +82,6 @@ export function Sidebar({ isCollapsed = false, onToggle }: SidebarProps) {
             icon={<Image size={20} />}
             label="Media"
             isCollapsed={isCollapsed}
-            disabled
           />
           <SidebarLink
             to="/settings"
