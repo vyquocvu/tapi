@@ -820,6 +820,14 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  optimizeDeps: {
+    exclude: ['@tanstack/router-devtools'],
+  },
+  build: {
+    rollupOptions: {
+      external: ['solid-js', 'solid-js/web', 'solid-js/store'],
+    },
+  },
   server: {
     fs: {
       // Allow serving files from uploads directory
