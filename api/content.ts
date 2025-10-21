@@ -90,8 +90,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       // Validate pagination parameters
       const paginationValidation = validatePaginationParams(
-        req.query.skip,
-        req.query.take
+        req.query.skip as string | undefined,
+        req.query.take as string | undefined
       )
       if (!paginationValidation.isValid) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json(
