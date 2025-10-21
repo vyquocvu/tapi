@@ -2118,6 +2118,11 @@
   resolved "https://registry.npmjs.org/@tanstack/history/-/history-1.132.31.tgz"
   integrity sha512-UCHM2uS0t/uSszqPEo+SBSSoQVeQ+LlOWAVBl5SA7+AedeAbKafIPjFn8huZCXNLAYb0WKV2+wETr7lDK9uz7g==
 
+"@tanstack/history@1.133.19":
+  version "1.133.19"
+  resolved "https://registry.yarnpkg.com/@tanstack/history/-/history-1.133.19.tgz#6e52020517465347d3a36b9c6851fb385e8fde9f"
+  integrity sha512-Y866qBVVprdQkmO0/W1AFBI8tiQy398vFeIwP+VrRWCOzs3VecxSVzAvaOM4iHfkJz81fFAZMhLLjDVoPikD+w==
+
 "@tanstack/query-core@5.90.2":
   version "5.90.2"
   resolved "https://registry.npmjs.org/@tanstack/query-core/-/query-core-5.90.2.tgz"
@@ -2142,22 +2147,22 @@
   dependencies:
     "@tanstack/query-core" "5.90.2"
 
-"@tanstack/react-router-devtools@1.132.51":
-  version "1.132.51"
-  resolved "https://registry.npmjs.org/@tanstack/react-router-devtools/-/react-router-devtools-1.132.51.tgz"
-  integrity sha512-09gHGUE9BVE6O+7u4ICnKigdPP0vZAYI70dKNqGp8bEy9jaMmHGlUxVV6pKqBLVgcPmwT9YMRAeJ5+QrcznXGA==
+"@tanstack/react-router-devtools@1.133.21":
+  version "1.133.21"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-router-devtools/-/react-router-devtools-1.133.21.tgz#63d87cd0ee157f15549dcf0f3ad47255daabf6f3"
+  integrity sha512-O+Lz5maPFawucYIbfNcsvKQOL3RrWpQfv74xVK9NXRCGzr9068prOXTiBHYvPXFztbD/jha7V+dSZxaNdjzaeg==
   dependencies:
-    "@tanstack/router-devtools-core" "1.132.51"
+    "@tanstack/router-devtools-core" "1.133.20"
     vite "^7.1.7"
 
-"@tanstack/react-router@^1.132.0":
-  version "1.132.47"
-  resolved "https://registry.npmjs.org/@tanstack/react-router/-/react-router-1.132.47.tgz"
-  integrity sha512-mjCN1ueVLHBOK1gqLeacCrUPBZietMKTkr7xZlC32dCGn4e+83zMSlRTS2TrEl7+wEH+bqjnoyx8ALYTSiQ1Cg==
+"@tanstack/react-router@1.133.21":
+  version "1.133.21"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-router/-/react-router-1.133.21.tgz#b405bb4d0b28ca7013730c3459857f2a7fbfe957"
+  integrity sha512-mzctHlMvrBhC1+O5KeA4ZDV6P+rcuDSWcIOVtCbeE0ZXzQi52csyXid+vUVMdfI1HK3Pa1sVq9fzVTzbvS49XA==
   dependencies:
-    "@tanstack/history" "1.132.31"
+    "@tanstack/history" "1.133.19"
     "@tanstack/react-store" "^0.7.0"
-    "@tanstack/router-core" "1.132.47"
+    "@tanstack/router-core" "1.133.20"
     isbot "^5.1.22"
     tiny-invariant "^1.3.3"
     tiny-warning "^1.0.3"
@@ -2183,21 +2188,34 @@
     tiny-invariant "^1.3.3"
     tiny-warning "^1.0.3"
 
-"@tanstack/router-devtools-core@1.132.51":
-  version "1.132.51"
-  resolved "https://registry.npmjs.org/@tanstack/router-devtools-core/-/router-devtools-core-1.132.51.tgz"
-  integrity sha512-uhbk4rSeUpYaqOJLZwOwfyysSoeedIEiRWz37sTVM4tUBFsWqA/p9gO2kVSx/Xmcu8grLy512KNDDeji3QhdwQ==
+"@tanstack/router-core@1.133.20":
+  version "1.133.20"
+  resolved "https://registry.yarnpkg.com/@tanstack/router-core/-/router-core-1.133.20.tgz#5b8d318b2bc053a93b9e067f9053141f53d53813"
+  integrity sha512-cO8E6XA0vMX2BaPZck9kfgXK76e6Lqo13GmXEYxtXshmW8cIlgcLHhBDKnI/sCjIy9OPY2sV1qrGHtcxJy/4ew==
+  dependencies:
+    "@tanstack/history" "1.133.19"
+    "@tanstack/store" "^0.7.0"
+    cookie-es "^2.0.0"
+    seroval "^1.3.2"
+    seroval-plugins "^1.3.2"
+    tiny-invariant "^1.3.3"
+    tiny-warning "^1.0.3"
+
+"@tanstack/router-devtools-core@1.133.20":
+  version "1.133.20"
+  resolved "https://registry.yarnpkg.com/@tanstack/router-devtools-core/-/router-devtools-core-1.133.20.tgz#3f83212fcb332c02dcfc272c9873f36f5f985358"
+  integrity sha512-d5y9AWB3tK/HD+h7qGLJX5Q2zgjws9KXS26mqIyHTIbhi5O6CNVhOsbMkU04c0u8E2thax3P0IYDhLI5vvrB4w==
   dependencies:
     clsx "^2.1.1"
     goober "^2.1.16"
     vite "^7.1.7"
 
-"@tanstack/router-devtools@^1.132.0":
-  version "1.132.51"
-  resolved "https://registry.npmjs.org/@tanstack/router-devtools/-/router-devtools-1.132.51.tgz"
-  integrity sha512-+ezqGerlafVGDap//LmF7M+SKQUi0j1virR86m+hbDzia8BQY1wfxYjdpvF835VXsaQ/XUCH8K1LaBX5U68Buw==
+"@tanstack/router-devtools@1.133.21":
+  version "1.133.21"
+  resolved "https://registry.yarnpkg.com/@tanstack/router-devtools/-/router-devtools-1.133.21.tgz#f1ac15700153c37cbe7c9e8d29478b0909fa8ed5"
+  integrity sha512-JNhPiip9fCZMKUgFpv9Yot6q6lVgrc3kEFi2ZFl1oIe++TwFQl+0+sDm5hfqnk8phi4Vhjf4fyRt1wx//6dF/g==
   dependencies:
-    "@tanstack/react-router-devtools" "1.132.51"
+    "@tanstack/react-router-devtools" "1.133.21"
     clsx "^2.1.1"
     goober "^2.1.16"
     vite "^7.1.7"
