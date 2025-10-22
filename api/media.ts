@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import busboy from 'busboy'
 import { 
   uploadFile, 
   deleteFile, 
@@ -44,26 +45,96 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const provider = getProviderInfo()
 
       if (provider.name === 'vercel-blob') {
-        const { filename } = req.query
+        // Extract filename and file data from FormData
+        let filename: string | undefined
+        let fileBuffer: Buffer | undefined
+        let contentType: string | undefined
+        
+        const reqContentType = req.headers['content-type'] || ''
+        if (reqContentType.includes('multipart/form-data')) {
+          try {
+            // Parse FormData using busboy to extract file and metadata
+            const result = await new Promise<{ filename?: string; buffer?: Buffer; contentType?: string }>((resolve, reject) => {
+              const bb = busboy({ headers: req.headers as any })
+              let foundFilename: string | undefined
+              let foundBuffer: Buffer | undefined
+              let foundContentType: string | undefined
+              const chunks: Buffer[] = []
+
+              bb.on('file', (fieldname, file, info) => {
+                foundFilename = info.filename
+                foundContentType = info.mimeType
+                
+                file.on('data', (data: Buffer) => {
+                  chunks.push(data)
+                })
+                
+                file.on('end', () => {
+                  foundBuffer = Buffer.concat(chunks)
+                })
+              })
+
+              bb.on('finish', () => {
+                resolve({ 
+                  filename: foundFilename, 
+                  buffer: foundBuffer,
+                  contentType: foundContentType 
+                })
+              })
+
+              bb.on('error', (err) => {
+                reject(err)
+              })
+
+              // Pipe the request to busboy
+              // @ts-ignore - req is a Node.js IncomingMessage
+              req.pipe(bb)
+            })
+            
+            filename = result.filename
+            fileBuffer = result.buffer
+            contentType = result.contentType
+          } catch (parseError) {
+            console.error('[API /media] Error parsing FormData:', parseError)
+            return res.status(400).json({ 
+              success: false, 
+              error: 'Failed to parse upload data' 
+            })
+          }
+        }
+        
+        // Also check query param as fallback
+        if (!filename) {
+          filename = req.query.filename as string | undefined
+        }
+        
         if (!filename || typeof filename !== 'string') {
-          return res.status(400).json({ success: false, error: 'filename query param is required' })
+          return res.status(400).json({ 
+            success: false, 
+            error: 'filename is required' 
+          })
+        }
+        
+        if (!fileBuffer) {
+          return res.status(400).json({ 
+            success: false, 
+            error: 'No file data provided' 
+          })
         }
 
         try {
-          // Return token directly for @vercel/blob/client compatibility
-          const token = process.env.BLOB_READ_WRITE_TOKEN
-          if (!token) {
-            return res.status(500).json({ success: false, error: 'BLOB_READ_WRITE_TOKEN not configured' })
-          }
-
-          // Return in the format expected by @vercel/blob/client
-          return res.status(200).json({
-            url: `https://blob.vercel-storage.com/${filename}`,
-            token,
+          // Upload the file using mediaService which will use Vercel Blob provider
+          const uploadedFile = await uploadFile(fileBuffer, filename, {
+            contentType: contentType,
+          })
+          
+          return res.status(201).json({
+            success: true,
+            data: uploadedFile,
           })
         } catch (err) {
-          console.error('[API /media] Vercel upload token generation failed', err)
-          return res.status(500).json({ success: false, error: 'Failed to generate upload token' })
+          console.error('[API /media] Vercel upload failed', err)
+          return res.status(500).json({ success: false, error: 'Failed to upload file' })
         }
       }
 
