@@ -30,9 +30,19 @@ export async function loginUser(credentials: LoginCredentials): Promise<LoginRes
   }
 
   try {
-    // Find user in database
+    // Find user in database - explicitly select only fields that exist
     const user = await prisma.user.findUnique({
       where: { email },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        name: true,
+        bio: true,
+        avatar: true,
+        createdAt: true,
+        updatedAt: true
+      }
     })
 
     if (!user) {

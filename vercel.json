@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "npm run prisma:generate && npm run build",
+  "buildCommand": "rm -rf node_modules/.prisma node_modules/@prisma/client && npm install && npm run prisma:generate && npm run build",
   "outputDirectory": "dist",
   "rewrites": [
     {
@@ -13,6 +13,7 @@
     }
   ],
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "PRISMA_GENERATE_SKIP_AUTOINSTALL": "false"
   }
 }
