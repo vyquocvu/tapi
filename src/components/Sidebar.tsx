@@ -7,7 +7,9 @@ import {
   Menu, 
   X,
   Server,
-  FileText
+  FileText,
+  Users,
+  Shield
 } from 'lucide-react'
 import { Button } from './ui/button'
 
@@ -69,6 +71,18 @@ export function Sidebar({ isCollapsed = false, onToggle }: SidebarProps) {
             to="/content-manager"
             icon={<FileText size={20} />}
             label="Content Manager"
+            isCollapsed={isCollapsed}
+          />
+          <SidebarLink
+            to="/user-management"
+            icon={<Users size={20} />}
+            label="Users"
+            isCollapsed={isCollapsed}
+          />
+          <SidebarLink
+            to="/role-management"
+            icon={<Shield size={20} />}
+            label="Roles"
             isCollapsed={isCollapsed}
           />
           <SidebarLink
