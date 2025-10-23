@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "rm -rf node_modules/.prisma node_modules/@prisma/client && npm ci && npm run prisma:generate && npm run build",
+  "buildCommand": "rm -rf node_modules/.prisma node_modules/@prisma/client && npm install && npm run prisma:generate && npm run build",
   "outputDirectory": "dist",
   "rewrites": [
     {
