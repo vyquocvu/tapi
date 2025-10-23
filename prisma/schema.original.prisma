@@ -25,6 +25,7 @@ model User {
   name      String
   bio       String?  // User biography
   avatar    String?  // Avatar image URL
+  isActive  Boolean  @default(true) // Account status
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
@@ -32,6 +33,9 @@ model User {
   posts              Post[]
   createdRevisions   ContentRevision[] @relation("RevisionCreator")
   createdMetadata    ContentMetadata[] @relation("MetadataCreator")
+  userRoles          UserRole[]
+  userPermissions    UserPermission[]
+  auditLogs          AuditLog[]
 }
 
 model Post {
@@ -146,4 +150,105 @@ model ContentRelation {
   @@unique([sourceType, sourceId, targetType, targetId, relationType])
   @@index([sourceType, sourceId])
   @@index([targetType, targetId])
+}
+
+// =============================================================================
+// RBAC TABLES - Role-Based Access Control
+// =============================================================================
+
+// Role: Defines user roles like Admin, Editor, Viewer, etc.
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique // e.g., "Admin", "Editor", "Viewer"
+  description String?  // Description of the role
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  userRoles       UserRole[]
+  rolePermissions RolePermission[]
+}
+
+// Permission: Defines specific permissions
+model Permission {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique // e.g., "users:create", "posts:edit", "content:delete"
+  resource    String   // Resource type: "users", "posts", "content", "roles", "permissions"
+  action      String   // Action: "create", "read", "update", "delete", "manage"
+  description String?  // Description of the permission
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  rolePermissions RolePermission[]
+  userPermissions UserPermission[]
+  
+  @@index([resource])
+  @@index([action])
+}
+
+// UserRole: Many-to-many relationship between users and roles
+model UserRole {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  roleId     Int
+  assignedAt DateTime @default(now())
+  assignedBy Int?     // User ID who assigned this role
+  
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+}
+
+// RolePermission: Many-to-many relationship between roles and permissions
+model RolePermission {
+  id           Int        @id @default(autoincrement())
+  roleId       Int
+  permissionId Int
+  assignedAt   DateTime   @default(now())
+  
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+// UserPermission: Direct permissions assigned to users (overrides role permissions)
+model UserPermission {
+  id           Int        @id @default(autoincrement())
+  userId       Int
+  permissionId Int
+  assignedAt   DateTime   @default(now())
+  assignedBy   Int?       // User ID who assigned this permission
+  
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, permissionId])
+  @@index([userId])
+  @@index([permissionId])
+}
+
+// AuditLog: Tracks all changes to users, roles, and permissions
+model AuditLog {
+  id          Int      @id @default(autoincrement())
+  userId      Int?     // User who performed the action
+  action      String   // Action performed: "create", "update", "delete", "assign", "revoke"
+  resource    String   // Resource affected: "user", "role", "permission", "user_role", etc.
+  resourceId  Int?     // ID of the affected resource
+  details     Json?    // Additional details about the change
+  ipAddress   String?  // IP address of the user
+  userAgent   String?  // User agent string
+  createdAt   DateTime @default(now())
+  
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  @@index([userId])
+  @@index([resource])
+  @@index([createdAt])
 }
