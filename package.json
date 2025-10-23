@@ -15,7 +15,7 @@
     "prisma:seed": "tsx prisma/seed.ts",
     "db:setup": "npm run prisma:generate && npm run prisma:migrate && npm run prisma:seed",
     "db:check": "node scripts/check-db-migrated.mjs",
-    "db:setup:check": "npm run db:check || npm run db:setup",
+    "db:setup:check": "npm run db:check || (test -n \"$DATABASE_URL\" && npm run db:setup) || echo 'Skipping database setup - DATABASE_URL not set'",
     "content-type:generate": "tsx scripts/content-types/generate.ts",
     "content-type:watch": "tsx scripts/content-types/watch.ts",
     "content-type:test": "tsx scripts/content-types/test.ts",

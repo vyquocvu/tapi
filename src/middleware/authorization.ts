@@ -26,6 +26,12 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
 
   try {
     const decoded = verifyToken(token)
+    if (!decoded) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid or expired token'
+      })
+    }
     req.user = decoded
     next()
   } catch (error) {
