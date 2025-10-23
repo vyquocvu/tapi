@@ -24,6 +24,153 @@ async function main() {
 
   console.log('✅ Created user:', user.name)
 
+  // Create roles
+  const adminRole = await prisma.role.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      name: 'Admin',
+      description: 'Full system access with all permissions',
+    },
+  })
+
+  const editorRole = await prisma.role.upsert({
+    where: { id: 2 },
+    update: {},
+    create: {
+      name: 'Editor',
+      description: 'Can create and edit content',
+    },
+  })
+
+  const viewerRole = await prisma.role.upsert({
+    where: { id: 3 },
+    update: {},
+    create: {
+      name: 'Viewer',
+      description: 'Can only view content',
+    },
+  })
+
+  console.log('✅ Created roles:', [adminRole.name, editorRole.name, viewerRole.name].join(', '))
+
+  // Create permissions
+  const permissions = [
+    // User management
+    { name: 'users:create', resource: 'users', action: 'create', description: 'Create new users' },
+    { name: 'users:read', resource: 'users', action: 'read', description: 'View users' },
+    { name: 'users:update', resource: 'users', action: 'update', description: 'Update users' },
+    { name: 'users:delete', resource: 'users', action: 'delete', description: 'Delete users' },
+    { name: 'users:manage', resource: 'users', action: 'manage', description: 'Full user management' },
+    
+    // Role management
+    { name: 'roles:create', resource: 'roles', action: 'create', description: 'Create new roles' },
+    { name: 'roles:read', resource: 'roles', action: 'read', description: 'View roles' },
+    { name: 'roles:update', resource: 'roles', action: 'update', description: 'Update roles' },
+    { name: 'roles:delete', resource: 'roles', action: 'delete', description: 'Delete roles' },
+    { name: 'roles:manage', resource: 'roles', action: 'manage', description: 'Full role management' },
+    
+    // Permission management
+    { name: 'permissions:create', resource: 'permissions', action: 'create', description: 'Create new permissions' },
+    { name: 'permissions:read', resource: 'permissions', action: 'read', description: 'View permissions' },
+    { name: 'permissions:update', resource: 'permissions', action: 'update', description: 'Update permissions' },
+    { name: 'permissions:delete', resource: 'permissions', action: 'delete', description: 'Delete permissions' },
+    { name: 'permissions:manage', resource: 'permissions', action: 'manage', description: 'Full permission management' },
+    
+    // Content management
+    { name: 'content:create', resource: 'content', action: 'create', description: 'Create content' },
+    { name: 'content:read', resource: 'content', action: 'read', description: 'View content' },
+    { name: 'content:update', resource: 'content', action: 'update', description: 'Update content' },
+    { name: 'content:delete', resource: 'content', action: 'delete', description: 'Delete content' },
+    { name: 'content:publish', resource: 'content', action: 'publish', description: 'Publish content' },
+  ]
+
+  const createdPermissions = []
+  for (let i = 0; i < permissions.length; i++) {
+    const perm = await prisma.permission.upsert({
+      where: { id: i + 1 },
+      update: {},
+      create: permissions[i],
+    })
+    createdPermissions.push(perm)
+  }
+
+  console.log('✅ Created permissions:', createdPermissions.length)
+
+  // Assign all permissions to Admin role
+  for (const perm of createdPermissions) {
+    await prisma.rolePermission.upsert({
+      where: {
+        roleId_permissionId: {
+          roleId: adminRole.id,
+          permissionId: perm.id,
+        }
+      },
+      update: {},
+      create: {
+        roleId: adminRole.id,
+        permissionId: perm.id,
+      },
+    })
+  }
+
+  // Assign content permissions to Editor role
+  const editorPermissions = createdPermissions.filter(p => 
+    p.resource === 'content' || (p.resource === 'users' && p.action === 'read')
+  )
+  for (const perm of editorPermissions) {
+    await prisma.rolePermission.upsert({
+      where: {
+        roleId_permissionId: {
+          roleId: editorRole.id,
+          permissionId: perm.id,
+        }
+      },
+      update: {},
+      create: {
+        roleId: editorRole.id,
+        permissionId: perm.id,
+      },
+    })
+  }
+
+  // Assign read-only permissions to Viewer role
+  const viewerPermissions = createdPermissions.filter(p => p.action === 'read')
+  for (const perm of viewerPermissions) {
+    await prisma.rolePermission.upsert({
+      where: {
+        roleId_permissionId: {
+          roleId: viewerRole.id,
+          permissionId: perm.id,
+        }
+      },
+      update: {},
+      create: {
+        roleId: viewerRole.id,
+        permissionId: perm.id,
+      },
+    })
+  }
+
+  console.log('✅ Assigned permissions to roles')
+
+  // Assign Admin role to demo user
+  await prisma.userRole.upsert({
+    where: {
+      userId_roleId: {
+        userId: user.id,
+        roleId: adminRole.id,
+      }
+    },
+    update: {},
+    create: {
+      userId: user.id,
+      roleId: adminRole.id,
+    },
+  })
+
+  console.log('✅ Assigned Admin role to demo user')
+
   // Create a sample category
   const techCategory = await prisma.category.upsert({
     where: { id: 1 },
@@ -330,6 +477,10 @@ async function main() {
   console.log('\n🎉 Database seeded successfully!')
   console.log('\nSummary:')
   console.log('  - 1 user created')
+  console.log('  - 3 roles created')
+  console.log('  - 20 permissions created')
+  console.log('  - Permissions assigned to roles')
+  console.log('  - Admin role assigned to demo user')
   console.log('  - 2 categories created')
   console.log('  - 3 articles created')
   console.log('  - 3 tags created')
