@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -343,6 +343,7 @@ function UserManagementComponent() {
 
   const openRolesDialog = (user: User) => {
     setManagingRolesUser(user)
+    setSelectedRoles(new Set()) // Reset selected roles
   }
 
   const handleSaveRoles = async () => {
@@ -391,10 +392,12 @@ function UserManagementComponent() {
   }
 
   // Update selected roles when user roles are loaded
-  if (userWithRoles && selectedRoles.size === 0) {
-    const roleIds = new Set(userWithRoles.userRoles?.map((ur) => ur.role.id) || [])
-    setSelectedRoles(roleIds)
-  }
+  useEffect(() => {
+    if (userWithRoles && managingRolesUser) {
+      const roleIds = new Set(userWithRoles.userRoles?.map((ur) => ur.role.id) || [])
+      setSelectedRoles(roleIds)
+    }
+  }, [userWithRoles, managingRolesUser])
 
   return (
     <div className="space-y-6">
