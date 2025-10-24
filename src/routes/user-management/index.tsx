@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { UserPlus, Edit, Trash2, Users } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
 
 export const Route = createFileRoute('/user-management/')({
   beforeLoad: async () => {
@@ -116,6 +117,7 @@ async function deleteUser(id: number): Promise<void> {
 
 function UserManagementComponent() {
   const queryClient = useQueryClient()
+  const { user: currentUser } = useAuth()
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [formData, setFormData] = useState({
@@ -369,6 +371,8 @@ function UserManagementComponent() {
                           variant="outline"
                           size="sm"
                           onClick={() => startEdit(user)}
+                          disabled={currentUser?.id === user.id}
+                          title={currentUser?.id === user.id ? "You cannot edit yourself" : "Edit user"}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -376,7 +380,8 @@ function UserManagementComponent() {
                           variant="destructive"
                           size="sm"
                           onClick={() => handleDelete(user.id)}
-                          disabled={deleteMutation.isPending}
+                          disabled={deleteMutation.isPending || currentUser?.id === user.id}
+                          title={currentUser?.id === user.id ? "You cannot delete yourself" : "Delete user"}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

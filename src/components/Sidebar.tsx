@@ -41,6 +41,16 @@ export function Sidebar() {
       label: 'Content Manager',
     },
     {
+      to: '/user-management',
+      icon: Users,
+      label: 'User Management',
+    },
+    {
+      to: '/role-management',
+      icon: Shield,
+      label: 'Role Management',
+    },
+    {
       to: '/api-dashboard',
       icon: Server,
       label: 'API Controller',
