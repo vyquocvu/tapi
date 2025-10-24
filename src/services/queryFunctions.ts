@@ -4,6 +4,7 @@
  */
 
 import { httpClient } from '@/lib/http'
+import { fetchJSON, authenticatedFetch } from '@/lib/auth-utils'
 import type { ContentTypeDefinition } from '../content-type-builder/types'
 
 export interface ContentTypeRegistry {
@@ -70,19 +71,7 @@ export interface ContentEntry {
  * Fetch entries for a content type
  */
 export async function fetchContentEntries(contentType: string): Promise<ContentEntry[]> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch(`/api/content?contentType=${encodeURIComponent(contentType)}`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  })
-  
-  if (!response.ok) {
-    throw new Error('Failed to fetch entries')
-  }
-  
-  const result = await response.json()
-  return result.data || []
+  return fetchJSON<ContentEntry[]>(`/api/content?contentType=${encodeURIComponent(contentType)}`)
 }
 
 /**
@@ -92,20 +81,10 @@ export async function createContentEntry(
   contentType: string,
   data: Record<string, any>
 ): Promise<ContentEntry> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch(`/api/content?contentType=${encodeURIComponent(contentType)}`, {
+  const response = await authenticatedFetch(`/api/content?contentType=${encodeURIComponent(contentType)}`, {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify(data),
   })
-  
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to create entry')
-  }
   
   const result = await response.json()
   return result.data
@@ -119,23 +98,13 @@ export async function updateContentEntry(
   id: number,
   data: Record<string, any>
 ): Promise<ContentEntry> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch(
+  const response = await authenticatedFetch(
     `/api/content?contentType=${encodeURIComponent(contentType)}&id=${id}`,
     {
       method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(data),
     }
   )
-  
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to update entry')
-  }
   
   const result = await response.json()
   return result.data
@@ -144,20 +113,14 @@ export async function updateContentEntry(
 /**
  * Delete a content entry
  */
-export async function deleteContentEntry(contentType: string, id: number): Promise<void> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch(
+export async function deleteContentEntry(
+  contentType: string,
+  id: number
+): Promise<void> {
+  await authenticatedFetch(
     `/api/content?contentType=${encodeURIComponent(contentType)}&id=${id}`,
     {
       method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
     }
   )
-  
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to delete entry')
-  }
 }
