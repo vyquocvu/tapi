@@ -15,6 +15,7 @@ import {
   notFoundResponse,
   serverErrorResponse,
   validationErrorResponse,
+  forbiddenResponse,
   HTTP_STATUS
 } from '../src/utils/apiResponse.js'
 import {
@@ -22,6 +23,7 @@ import {
   validateContentTypeUID,
   validatePaginationParams
 } from '../src/middleware/validation.js'
+import { checkPermission } from '../src/middleware/permissionEnforcement.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Set CORS headers
@@ -40,8 +42,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(HTTP_STATUS.UNAUTHORIZED).json(unauthorizedResponse())
   }
 
+  let user: any
   try {
-    verifyToken(token)
+    user = verifyToken(token)
   } catch (error) {
     return res.status(HTTP_STATUS.UNAUTHORIZED).json(
       unauthorizedResponse('Invalid or expired token')
@@ -68,6 +71,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // GET - Find entries or a specific entry
     if (req.method === 'GET') {
+      // Check permission
+      const permissionCheck = await checkPermission(
+        user.userId,
+        'content:read',
+        {
+          resource: 'content',
+          action: 'read',
+          ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
+          userAgent: req.headers['user-agent'] as string,
+        }
+      )
+
+      if (!permissionCheck.allowed) {
+        return res.status(HTTP_STATUS.FORBIDDEN).json(
+          forbiddenResponse(permissionCheck.error)
+        )
+      }
+
       // Get specific entry by ID
       if (id && typeof id === 'string') {
         const idValidation = validateId(id)
@@ -123,6 +144,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // POST - Create new entry
     if (req.method === 'POST') {
+      // Check permission
+      const permissionCheck = await checkPermission(
+        user.userId,
+        'content:create',
+        {
+          resource: 'content',
+          action: 'create',
+          ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
+          userAgent: req.headers['user-agent'] as string,
+        }
+      )
+
+      if (!permissionCheck.allowed) {
+        return res.status(HTTP_STATUS.FORBIDDEN).json(
+          forbiddenResponse(permissionCheck.error)
+        )
+      }
+
       const data = req.body
 
       if (!data || typeof data !== 'object') {
@@ -138,6 +177,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // PUT - Update existing entry
     if (req.method === 'PUT') {
+      // Check permission
+      const permissionCheck = await checkPermission(
+        user.userId,
+        'content:update',
+        {
+          resource: 'content',
+          action: 'update',
+          resourceId: id ? parseInt(id as string, 10) : undefined,
+          ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
+          userAgent: req.headers['user-agent'] as string,
+        }
+      )
+
+      if (!permissionCheck.allowed) {
+        return res.status(HTTP_STATUS.FORBIDDEN).json(
+          forbiddenResponse(permissionCheck.error)
+        )
+      }
+
       if (!id || typeof id !== 'string') {
         return res.status(HTTP_STATUS.BAD_REQUEST).json(
           badRequestResponse('ID parameter is required for updates')
@@ -170,6 +228,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // DELETE - Delete entry
     if (req.method === 'DELETE') {
+      // Check permission
+      const permissionCheck = await checkPermission(
+        user.userId,
+        'content:delete',
+        {
+          resource: 'content',
+          action: 'delete',
+          resourceId: id ? parseInt(id as string, 10) : undefined,
+          ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
+          userAgent: req.headers['user-agent'] as string,
+        }
+      )
+
+      if (!permissionCheck.allowed) {
+        return res.status(HTTP_STATUS.FORBIDDEN).json(
+          forbiddenResponse(permissionCheck.error)
+        )
+      }
+
       if (!id || typeof id !== 'string') {
         return res.status(HTTP_STATUS.BAD_REQUEST).json(
           badRequestResponse('ID parameter is required for deletion')

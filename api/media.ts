@@ -8,6 +8,17 @@ import {
   getProviderInfo 
 } from '../src/services/mediaService.js'
 import { generateVercelUploadUrl } from '../src/storage/providers/vercelBlob.js'
+import { verifyToken } from '../src/server/auth.js'
+import { checkPermission } from '../src/middleware/permissionEnforcement.js'
+import { 
+  successResponse,
+  unauthorizedResponse,
+  forbiddenResponse,
+  badRequestResponse,
+  notFoundResponse,
+  serverErrorResponse,
+  HTTP_STATUS
+} from '../src/utils/apiResponse.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Set CORS headers
@@ -20,28 +31,73 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).end()
   }
 
+  // Verify authentication for all requests
+  const token = req.headers.authorization?.replace('Bearer ', '')
+  if (!token) {
+    return res.status(HTTP_STATUS.UNAUTHORIZED).json(unauthorizedResponse())
+  }
+
+  let user: any
+  try {
+    user = verifyToken(token)
+  } catch (error) {
+    return res.status(HTTP_STATUS.UNAUTHORIZED).json(
+      unauthorizedResponse('Invalid or expired token')
+    )
+  }
+
   try {
     // GET - List files or get provider info
     if (req.method === 'GET') {
+      // Check permission
+      const permissionCheck = await checkPermission(
+        user.userId,
+        'media:read',
+        {
+          resource: 'media',
+          action: 'read',
+          ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
+          userAgent: req.headers['user-agent'] as string,
+        }
+      )
+
+      if (!permissionCheck.allowed) {
+        return res.status(HTTP_STATUS.FORBIDDEN).json(
+          forbiddenResponse(permissionCheck.error)
+        )
+      }
+
       const { action, folder } = req.query
 
       if (action === 'provider-info') {
         const info = getProviderInfo()
-        return res.status(200).json({
-          success: true,
-          data: info,
-        })
+        return res.status(HTTP_STATUS.OK).json(successResponse(info))
       }
 
       const files = await listFiles(folder as string)
-      return res.status(200).json({
-        success: true,
-        data: files,
-      })
+      return res.status(HTTP_STATUS.OK).json(successResponse(files))
     }
 
     // POST - Upload file or get upload token
     if (req.method === 'POST') {
+      // Check permission
+      const permissionCheck = await checkPermission(
+        user.userId,
+        'media:create',
+        {
+          resource: 'media',
+          action: 'create',
+          ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
+          userAgent: req.headers['user-agent'] as string,
+        }
+      )
+
+      if (!permissionCheck.allowed) {
+        return res.status(HTTP_STATUS.FORBIDDEN).json(
+          forbiddenResponse(permissionCheck.error)
+        )
+      }
+
       const provider = getProviderInfo()
 
       if (provider.name === 'vercel-blob') {
@@ -128,10 +184,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             contentType: contentType,
           })
           
-          return res.status(201).json({
-            success: true,
-            data: uploadedFile,
-          })
+          return res.status(HTTP_STATUS.CREATED).json(successResponse(uploadedFile))
         } catch (err) {
           console.error('[API /media] Vercel upload failed', err)
           return res.status(500).json({ success: false, error: 'Failed to upload file' })
@@ -147,28 +200,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // DELETE - Delete file
     if (req.method === 'DELETE') {
+      // Check permission
+      const permissionCheck = await checkPermission(
+        user.userId,
+        'media:delete',
+        {
+          resource: 'media',
+          action: 'delete',
+          resourceId: req.query.id ? parseInt(req.query.id as string, 10) : undefined,
+          ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
+          userAgent: req.headers['user-agent'] as string,
+        }
+      )
+
+      if (!permissionCheck.allowed) {
+        return res.status(HTTP_STATUS.FORBIDDEN).json(
+          forbiddenResponse(permissionCheck.error)
+        )
+      }
+
       const { id } = req.query
 
       if (!id || typeof id !== 'string') {
-        return res.status(400).json({
-          success: false,
-          error: 'File ID is required',
-        })
+        return res.status(HTTP_STATUS.BAD_REQUEST).json(
+          badRequestResponse('File ID is required')
+        )
       }
 
       const result = await deleteFile(id)
       
       if (!result) {
-        return res.status(404).json({
-          success: false,
-          error: 'File not found or could not be deleted',
-        })
+        return res.status(HTTP_STATUS.NOT_FOUND).json(
+          notFoundResponse('File')
+        )
       }
 
-      return res.status(200).json({
-        success: true,
-        message: 'File deleted successfully',
-      })
+      return res.status(HTTP_STATUS.OK).json(
+        successResponse({ message: 'File deleted successfully' })
+      )
     }
 
     return res.status(405).json({

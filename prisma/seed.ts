@@ -83,6 +83,17 @@ async function main() {
     { name: 'content:update', resource: 'content', action: 'update', description: 'Update content' },
     { name: 'content:delete', resource: 'content', action: 'delete', description: 'Delete content' },
     { name: 'content:publish', resource: 'content', action: 'publish', description: 'Publish content' },
+    
+    // Media management
+    { name: 'media:create', resource: 'media', action: 'create', description: 'Upload media files' },
+    { name: 'media:read', resource: 'media', action: 'read', description: 'View media files' },
+    { name: 'media:delete', resource: 'media', action: 'delete', description: 'Delete media files' },
+    
+    // Content Type management
+    { name: 'content-types:create', resource: 'content-types', action: 'create', description: 'Create content types' },
+    { name: 'content-types:read', resource: 'content-types', action: 'read', description: 'View content types' },
+    { name: 'content-types:update', resource: 'content-types', action: 'update', description: 'Update content types' },
+    { name: 'content-types:delete', resource: 'content-types', action: 'delete', description: 'Delete content types' },
   ]
 
   const createdPermissions = []
@@ -114,9 +125,12 @@ async function main() {
     })
   }
 
-  // Assign content permissions to Editor role
+  // Assign content and media permissions to Editor role
   const editorPermissions = createdPermissions.filter(p => 
-    p.resource === 'content' || (p.resource === 'users' && p.action === 'read')
+    p.resource === 'content' || 
+    p.resource === 'media' || 
+    (p.resource === 'content-types' && p.action === 'read') ||
+    (p.resource === 'users' && p.action === 'read')
   )
   for (const perm of editorPermissions) {
     await prisma.rolePermission.upsert({
