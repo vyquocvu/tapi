@@ -1,13 +1,9 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Plus, Trash2, Edit } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Card, CardContent } from '@/components/ui/card'
 import { queryKeys } from '@/lib/queryKeys'
+import { requireAuth } from '@/lib/auth-utils'
 import {
   fetchContentTypesArray,
   fetchContentEntries,
@@ -16,19 +12,10 @@ import {
   deleteContentEntry,
   type ContentEntry,
 } from '@/services/queryFunctions'
+import { ContentTypeSelector, EntriesList, EntryForm } from '@/components/content-manager'
 
 export const Route = createFileRoute('/content-manager/')({
-  beforeLoad: async () => {
-    const token = sessionStorage.getItem('authToken')
-    if (!token) {
-      throw redirect({
-        to: '/login',
-        search: {
-          redirect: '/content-manager',
-        },
-      })
-    }
-  },
+  beforeLoad: () => requireAuth('/content-manager'),
   component: ContentManagerComponent,
 })
 
@@ -174,146 +161,8 @@ function ContentManagerComponent() {
     }
   }
 
-  const getStatusBadge = (entry: ContentEntry) => {
-    if (entry.status) {
-      const statusColors: Record<string, string> = {
-        draft: 'bg-gray-100 text-gray-800',
-        published: 'bg-green-100 text-green-800',
-        archived: 'bg-orange-100 text-orange-800',
-      }
-      return (
-        <span className={`px-2 py-1 rounded text-xs font-medium ${statusColors[entry.status] || 'bg-gray-100 text-gray-800'}`}>
-          {entry.status}
-        </span>
-      )
-    }
-    if (entry.published !== undefined) {
-      return (
-        <span className={`px-2 py-1 rounded text-xs font-medium ${entry.published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-          {entry.published ? 'Published' : 'Draft'}
-        </span>
-      )
-    }
-    return null
-  }
-
-  const renderFieldInput = (fieldName: string, field: any) => {
-    const value = formData[fieldName] ?? field.default ?? ''
-
-    const handleChange = (val: any) => {
-      setFormData({ ...formData, [fieldName]: val })
-    }
-
-    switch (field.type) {
-      case 'boolean':
-        return (
-          <input
-            type="checkbox"
-            checked={!!value}
-            onChange={(e) => handleChange(e.target.checked)}
-            className="h-4 w-4"
-          />
-        )
-      
-      case 'text':
-      case 'richtext':
-        return (
-          <textarea
-            value={value}
-            onChange={(e) => handleChange(e.target.value)}
-            required={field.required}
-            rows={4}
-            className="w-full px-3 py-2 border rounded-md"
-          />
-        )
-      
-      case 'integer':
-      case 'biginteger':
-      case 'float':
-      case 'decimal':
-        return (
-          <Input
-            type="number"
-            value={value}
-            onChange={(e) => handleChange(Number(e.target.value))}
-            required={field.required}
-            min={field.min}
-            max={field.max}
-            step={field.type === 'integer' || field.type === 'biginteger' ? '1' : 'any'}
-          />
-        )
-      
-      case 'date':
-        return (
-          <Input
-            type="date"
-            value={value ? new Date(value).toISOString().split('T')[0] : ''}
-            onChange={(e) => handleChange(e.target.value)}
-            required={field.required}
-          />
-        )
-      
-      case 'datetime':
-        return (
-          <Input
-            type="datetime-local"
-            value={value ? new Date(value).toISOString().slice(0, 16) : ''}
-            onChange={(e) => handleChange(e.target.value)}
-            required={field.required}
-          />
-        )
-      
-      case 'time':
-        return (
-          <Input
-            type="time"
-            value={value}
-            onChange={(e) => handleChange(e.target.value)}
-            required={field.required}
-          />
-        )
-      
-      case 'enumeration':
-        return (
-          <select
-            value={value}
-            onChange={(e) => handleChange(e.target.value)}
-            required={field.required}
-            className="w-full px-3 py-2 border rounded-md"
-          >
-            <option value="">Select an option</option>
-            {field.values?.map((val: string) => (
-              <option key={val} value={val}>
-                {val}
-              </option>
-            ))}
-          </select>
-        )
-      
-      case 'relation':
-        return (
-          <Input
-            type="number"
-            value={value}
-            onChange={(e) => handleChange(Number(e.target.value))}
-            required={field.required}
-            placeholder={`${field.target} ID`}
-          />
-        )
-      
-      default:
-        return (
-          <Input
-            type={field.type === 'email' ? 'email' : field.type === 'password' ? 'password' : 'text'}
-            value={value}
-            onChange={(e) => handleChange(e.target.value)}
-            required={field.required}
-            minLength={field.minLength}
-            maxLength={field.maxLength}
-            pattern={field.regex}
-          />
-        )
-    }
+  const handleFieldChange = (fieldName: string, value: any) => {
+    setFormData({ ...formData, [fieldName]: value })
   }
 
   if (typesLoading) {
@@ -329,252 +178,46 @@ function ContentManagerComponent() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-4xl font-bold tracking-tight">Content Manager</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Content Manager</h1>
         <p className="mt-2 text-muted-foreground">Create, edit, and manage your content entries</p>
       </div>
 
       {/* Content Type Selection */}
       {mode === 'select' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Select Content Type</CardTitle>
-            <CardDescription>Choose a content type to manage its entries</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {Array.isArray(contentTypes) && contentTypes.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {contentTypes.map((contentType) => (
-                  <Card
-                    key={contentType.uid}
-                    className="cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={() => handleSelectContentType(contentType.uid)}
-                  >
-                    <CardHeader>
-                      <CardTitle className="text-lg">{contentType.displayName}</CardTitle>
-                      <CardDescription>
-                        {contentType.description || contentType.pluralName}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-xs text-muted-foreground">
-                        {contentType.fields ? Object.keys(contentType.fields).length : 0} fields
-                      </p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground mb-2">No content types found.</p>
-                <p className="text-muted-foreground">Create content types in the Content Type Builder first.</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <ContentTypeSelector contentTypes={contentTypes} onSelect={handleSelectContentType} />
       )}
 
       {/* List View */}
       {mode === 'list' && selectedContentTypeDef && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center gap-4 flex-wrap">
-            <Button onClick={() => setMode('select')} variant="outline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Content Types
-            </Button>
-            <div className="flex gap-2">
-              {selectedEntries.size > 0 && (
-                <Button onClick={handleBulkDelete} variant="destructive">
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete Selected ({selectedEntries.size})
-                </Button>
-              )}
-              <Button onClick={handleCreate}>
-                <Plus className="mr-2 h-4 w-4" />
-                Create New {selectedContentTypeDef.singularName}
-              </Button>
-            </div>
-          </div>
-
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          <Card>
-            <CardHeader>
-              <CardTitle>{selectedContentTypeDef.displayName}</CardTitle>
-              <CardDescription>{selectedContentTypeDef.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {entriesLoading ? (
-                <p className="text-center text-muted-foreground py-6">Loading entries...</p>
-              ) : entriesError ? (
-                <Alert variant="destructive">
-                  <AlertDescription>
-                    Error loading entries: {entriesError instanceof Error ? entriesError.message : 'Unknown error'}
-                  </AlertDescription>
-                </Alert>
-              ) : entries && entries.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="w-12 p-3 text-left text-sm font-semibold bg-muted">
-                          <input
-                            type="checkbox"
-                            checked={selectedEntries.size === entries.length}
-                            onChange={toggleSelectAll}
-                            className="h-4 w-4"
-                          />
-                        </th>
-                        <th className="p-3 text-left text-sm font-semibold bg-muted">ID</th>
-                        {Object.keys(selectedContentTypeDef.fields)
-                          .filter((key) => !['password'].includes(selectedContentTypeDef.fields[key].type))
-                          .slice(0, 4)
-                          .map((key) => (
-                            <th key={key} className="p-3 text-left text-sm font-semibold bg-muted uppercase">{key}</th>
-                          ))}
-                        <th className="p-3 text-left text-sm font-semibold bg-muted">Status</th>
-                        {selectedContentTypeDef.options?.timestamps && (
-                          <>
-                            <th className="p-3 text-left text-sm font-semibold bg-muted">Created</th>
-                            <th className="p-3 text-left text-sm font-semibold bg-muted">Updated</th>
-                          </>
-                        )}
-                        <th className="p-3 text-left text-sm font-semibold bg-muted">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {entries.map((entry) => (
-                        <tr key={entry.id} className="border-b hover:bg-muted/50">
-                          <td className="p-3 text-sm">
-                            <input
-                              type="checkbox"
-                              checked={selectedEntries.has(entry.id)}
-                              onChange={() => toggleEntrySelection(entry.id)}
-                              className="h-4 w-4"
-                            />
-                          </td>
-                          <td className="p-3 text-sm">{entry.id}</td>
-                          {Object.keys(selectedContentTypeDef.fields)
-                            .filter((key) => !['password'].includes(selectedContentTypeDef.fields[key].type))
-                            .slice(0, 4)
-                            .map((key) => {
-                              const value = entry[key]
-                              let displayValue = value
-                              
-                              if (value === null || value === undefined) {
-                                displayValue = '-'
-                              } else if (typeof value === 'boolean') {
-                                displayValue = value ? '✓' : '✗'
-                              } else if (typeof value === 'object') {
-                                displayValue = JSON.stringify(value).slice(0, 50)
-                              } else if (typeof value === 'string' && value.length > 50) {
-                                displayValue = value.slice(0, 50) + '...'
-                              }
-                              
-                              return <td key={key} className="p-3 text-sm">{displayValue}</td>
-                            })}
-                          <td className="p-3 text-sm">{getStatusBadge(entry)}</td>
-                          {selectedContentTypeDef.options?.timestamps && (
-                            <>
-                              <td className="p-3 text-sm">{entry.createdAt ? new Date(entry.createdAt).toLocaleDateString() : '-'}</td>
-                              <td className="p-3 text-sm">{entry.updatedAt ? new Date(entry.updatedAt).toLocaleDateString() : '-'}</td>
-                            </>
-                          )}
-                          <td className="p-3 text-sm">
-                            <div className="flex gap-2">
-                              <Button onClick={() => handleEdit(entry)} size="sm" variant="outline">
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                onClick={() => handleDelete(entry.id)}
-                                size="sm"
-                                variant="destructive"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground mb-4">No entries found.</p>
-                  <Button onClick={handleCreate}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create your first {selectedContentTypeDef.singularName}
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+        <EntriesList
+          contentType={selectedContentTypeDef}
+          entries={entries}
+          isLoading={entriesLoading}
+          error={entriesError}
+          selectedEntries={selectedEntries}
+          onBack={() => setMode('select')}
+          onCreate={handleCreate}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onBulkDelete={handleBulkDelete}
+          onToggleSelection={toggleEntrySelection}
+          onToggleSelectAll={toggleSelectAll}
+        />
       )}
 
       {/* Create/Edit Form */}
       {(mode === 'create' || mode === 'edit') && selectedContentTypeDef && (
-        <div className="manager-content">
-          <div className="manager-actions">
-            <Button onClick={() => setMode('list')} variant="outline">
-              ← Back to List
-            </Button>
-          </div>
-
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                {mode === 'create' ? 'Create' : 'Edit'} {selectedContentTypeDef.singularName}
-              </CardTitle>
-              <CardDescription>
-                {mode === 'create'
-                  ? `Create a new ${selectedContentTypeDef.singularName} entry`
-                  : `Edit ${selectedContentTypeDef.singularName} #${selectedEntry?.id}`}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {Object.entries(selectedContentTypeDef.fields)
-                  .filter(([_, field]) => field.type !== 'relation' || mode === 'create')
-                  .map(([fieldName, field]) => (
-                    <div key={fieldName} className="form-group">
-                      <Label htmlFor={fieldName}>
-                        {fieldName}
-                        {field.required && <span className="text-red-500 ml-1">*</span>}
-                      </Label>
-                      {renderFieldInput(fieldName, field)}
-                      {field.unique && (
-                        <small className="text-muted-foreground">Must be unique</small>
-                      )}
-                    </div>
-                  ))}
-
-                <div className="flex gap-2 pt-4">
-                  <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-                    {createMutation.isPending || updateMutation.isPending
-                      ? 'Saving...'
-                      : mode === 'create'
-                      ? 'Create'
-                      : 'Save'}
-                  </Button>
-                  <Button type="button" onClick={() => setMode('list')} variant="outline">
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
+        <EntryForm
+          mode={mode}
+          contentType={selectedContentTypeDef}
+          entry={selectedEntry}
+          formData={formData}
+          error={error}
+          isSubmitting={createMutation.isPending || updateMutation.isPending}
+          onBack={() => setMode('list')}
+          onSubmit={handleSubmit}
+          onFieldChange={handleFieldChange}
+        />
       )}
     </div>
   )

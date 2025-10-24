@@ -1,39 +1,18 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/AuthContext'
 import type { Post } from '../../lib/types'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { requireAuth, fetchJSON } from '@/lib/auth-utils'
 
 export const Route = createFileRoute('/dashboard/')({
-  beforeLoad: async () => {
-    // Check if user is authenticated via sessionStorage
-    const token = sessionStorage.getItem('authToken')
-    if (!token) {
-      throw redirect({
-        to: '/login',
-        search: {
-          redirect: '/dashboard',
-        },
-      })
-    }
-  },
+  beforeLoad: () => requireAuth('/dashboard'),
   component: DashboardComponent,
 })
 
 async function fetchPosts(): Promise<Post[]> {
-  const response = await fetch('/api/posts', {
-    headers: {
-      'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
-    },
-  })
-  
-  if (!response.ok) {
-    throw new Error('Failed to fetch posts')
-  }
-  
-  const result = await response.json()
-  return result.data || []
+  return fetchJSON<Post[]>('/api/posts')
 }
 
 function DashboardComponent() {
@@ -46,7 +25,7 @@ function DashboardComponent() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-4xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
       </div>
 
       <Card>

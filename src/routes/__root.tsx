@@ -5,7 +5,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { AuthProvider, useAuth } from '../contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Sidebar } from '@/components/Sidebar'
-import { useState } from 'react'
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 import '../app.css'
 
 const queryClient = new QueryClient({
@@ -24,12 +24,11 @@ export const Route = createRootRoute({
 function Navigation() {
   const { isAuthenticated, user, logout } = useAuth()
 
-  return (
-    <nav className="bg-slate-800 px-4 py-2">
-      <div className="flex justify-between items-center max-w-7xl mx-auto">
-        <div className="flex items-center gap-4">
-          {!isAuthenticated && (
-            <>
+  if (!isAuthenticated) {
+    return (
+      <nav className="bg-slate-800 px-4 py-2 w-full">
+        <div className="flex justify-between items-center max-w-7xl mx-auto">
+          <div className="flex items-center gap-4">
             <Link 
               to="/" 
               className="text-white hover:text-blue-400 transition-colors text-sm font-medium [&.active]:text-blue-400"
@@ -44,46 +43,40 @@ function Navigation() {
             >
               About
             </Link>
-            </>
-          )}
-        </div>
-        <div className="flex items-center gap-3">
-          {isAuthenticated ? (
-            <>
-              <span className="text-white text-xs">
-                {user?.name}
-              </span>
-              <Button 
-                onClick={logout} 
-                variant="outline"
-                size="sm"
-              >
-                Logout
-              </Button>
-            </>
-          ) : (
+          </div>
+          <div className="flex items-center gap-3">
             <Link to="/login">
               <Button variant="ghost" size="sm" className="text-white hover:text-blue-400 h-7 text-xs px-2">
                 Login
               </Button>
             </Link>
-          )}
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+    )
+  }
+
+  return (
+    <div className="flex flex-1 items-center justify-end gap-3">
+      <span className="text-sm text-muted-foreground">
+        {user?.name}
+      </span>
+      <Button 
+        onClick={logout} 
+        variant="outline"
+        size="sm"
+      >
+        Logout
+      </Button>
+    </div>
   )
 }
 
 function RootComponent() {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
-  
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <AuthenticatedLayout 
-          sidebarCollapsed={sidebarCollapsed}
-          setSidebarCollapsed={setSidebarCollapsed}
-        />
+        <AuthenticatedLayout />
         <ReactQueryDevtools buttonPosition="bottom-left" />
         <TanStackRouterDevtools position="bottom-right" />
       </AuthProvider>
@@ -91,36 +84,36 @@ function RootComponent() {
   )
 }
 
-function AuthenticatedLayout({ 
-  sidebarCollapsed, 
-  setSidebarCollapsed 
-}: { 
-  sidebarCollapsed: boolean
-  setSidebarCollapsed: (value: boolean) => void 
-}) {
+function AuthenticatedLayout() {
   const { isAuthenticated } = useAuth()
 
-  return (
-    <>
-      <Navigation />
-      <div className="flex">
-        {isAuthenticated && (
-          <Sidebar 
-            isCollapsed={sidebarCollapsed} 
-            onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} 
-          />
-        )}
-        <main 
-          className={`
-            flex-1 transition-all duration-300
-            ${isAuthenticated ? (sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64') : ''}
-          `}
-        >
+  if (!isAuthenticated) {
+    return (
+      <>
+        <Navigation />
+        <main>
           <div className="container max-w-7xl mx-auto px-4 py-4">
             <Outlet />
           </div>
         </main>
-      </div>
-    </>
+      </>
+    )
+  }
+
+  return (
+    <SidebarProvider defaultOpen={true}>
+      <Sidebar />
+      <SidebarInset>
+        <header className="flex h-14 items-center gap-4 border-b bg-background px-4">
+          <SidebarTrigger />
+          <Navigation />
+        </header>
+        <main className="flex-1 overflow-auto">
+          <div className="container max-w-7xl mx-auto px-4 py-4">
+            <Outlet />
+          </div>
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }

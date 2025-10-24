@@ -9,7 +9,7 @@ function HomeComponent() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-4xl font-bold tracking-tight">Home Page</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Home Page</h1>
         <p className="mt-4 text-lg text-muted-foreground">
           Welcome to the TanStack Start demo! This application demonstrates a full-stack 
           setup with TanStack Router for routing and TanStack Query for data management.

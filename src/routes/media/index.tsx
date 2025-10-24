@@ -1,25 +1,16 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Upload, Trash2, Image as ImageIcon, File as FileIcon, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Alert } from '@/components/ui/alert'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { useState, useRef } from 'react'
+import { requireAuth } from '@/lib/auth-utils'
 
 export const Route = createFileRoute('/media/')({
-  beforeLoad: async () => {
-    // Check if user is authenticated via sessionStorage
-    const token = sessionStorage.getItem('authToken')
-    if (!token) {
-      throw redirect({
-        to: '/login',
-        search: {
-          redirect: '/media',
-        },
-      })
-    }
-  },
+  beforeLoad: () => requireAuth('/media'),
   component: MediaManagerPage,
 })
 
@@ -170,9 +161,9 @@ function MediaManagerPage() {
           <p className="text-slate-600 mt-1">
             Upload and manage your media files
             {provider && (
-              <span className="ml-2 text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
+              <Badge variant="info" className="ml-2">
                 Provider: {provider.provider}
-              </span>
+              </Badge>
             )}
           </p>
         </div>
@@ -198,14 +189,18 @@ function MediaManagerPage() {
           </div>
           
           {uploadSuccess && (
-            <Alert className="bg-green-50 border-green-200 text-green-800">
-              {uploadSuccess}
+            <Alert className="bg-green-50 border-green-200">
+              <AlertDescription className="text-green-800">
+                {uploadSuccess}
+              </AlertDescription>
             </Alert>
           )}
 
           {uploadError && (
-            <Alert className="bg-red-50 border-red-200 text-red-800">
-              {uploadError}
+            <Alert variant="destructive">
+              <AlertDescription>
+                {uploadError}
+              </AlertDescription>
             </Alert>
           )}
 
@@ -240,8 +235,10 @@ function MediaManagerPage() {
         )}
 
         {error && (
-          <Alert className="bg-red-50 border-red-200 text-red-800">
-            Error loading files: {error.message}
+          <Alert variant="destructive">
+            <AlertDescription>
+              Error loading files: {error.message}
+            </AlertDescription>
           </Alert>
         )}
 

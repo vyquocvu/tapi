@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RoleManagementRouteImport } from './routes/role-management'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ContentTypeBuilderRouteImport } from './routes/content-type-builder'
 import { Route as AboutRouteImport } from './routes/about'
@@ -19,6 +20,11 @@ import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as ContentManagerIndexRouteImport } from './routes/content-manager/index'
 import { Route as ApiDashboardIndexRouteImport } from './routes/api-dashboard/index'
 
+const RoleManagementRoute = RoleManagementRouteImport.update({
+  id: '/role-management',
+  path: '/role-management',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -70,6 +76,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/content-type-builder': typeof ContentTypeBuilderRoute
   '/login': typeof LoginRoute
+  '/role-management': typeof RoleManagementRoute
   '/api-dashboard': typeof ApiDashboardIndexRoute
   '/content-manager': typeof ContentManagerIndexRoute
   '/dashboard': typeof DashboardIndexRoute
@@ -81,6 +88,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/content-type-builder': typeof ContentTypeBuilderRoute
   '/login': typeof LoginRoute
+  '/role-management': typeof RoleManagementRoute
   '/api-dashboard': typeof ApiDashboardIndexRoute
   '/content-manager': typeof ContentManagerIndexRoute
   '/dashboard': typeof DashboardIndexRoute
@@ -93,6 +101,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/content-type-builder': typeof ContentTypeBuilderRoute
   '/login': typeof LoginRoute
+  '/role-management': typeof RoleManagementRoute
   '/api-dashboard/': typeof ApiDashboardIndexRoute
   '/content-manager/': typeof ContentManagerIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -106,6 +115,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/content-type-builder'
     | '/login'
+    | '/role-management'
     | '/api-dashboard'
     | '/content-manager'
     | '/dashboard'
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/content-type-builder'
     | '/login'
+    | '/role-management'
     | '/api-dashboard'
     | '/content-manager'
     | '/dashboard'
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/content-type-builder'
     | '/login'
+    | '/role-management'
     | '/api-dashboard/'
     | '/content-manager/'
     | '/dashboard/'
@@ -140,6 +152,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   ContentTypeBuilderRoute: typeof ContentTypeBuilderRoute
   LoginRoute: typeof LoginRoute
+  RoleManagementRoute: typeof RoleManagementRoute
   ApiDashboardIndexRoute: typeof ApiDashboardIndexRoute
   ContentManagerIndexRoute: typeof ContentManagerIndexRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
@@ -149,6 +162,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/role-management': {
+      id: '/role-management'
+      path: '/role-management'
+      fullPath: '/role-management'
+      preLoaderRoute: typeof RoleManagementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -220,6 +240,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   ContentTypeBuilderRoute: ContentTypeBuilderRoute,
   LoginRoute: LoginRoute,
+  RoleManagementRoute: RoleManagementRoute,
   ApiDashboardIndexRoute: ApiDashboardIndexRoute,
   ContentManagerIndexRoute: ContentManagerIndexRoute,
   DashboardIndexRoute: DashboardIndexRoute,

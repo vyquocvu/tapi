@@ -1,8 +1,11 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { requireAuth, fetchJSON } from '@/lib/auth-utils'
 import type { 
   APIStatistics, 
   ActivityLog,
@@ -11,83 +14,28 @@ import type {
 import type { EndpointConfig } from '../../services/apiEndpointConfigService'
 
 export const Route = createFileRoute('/api-dashboard/')({
-  beforeLoad: async () => {
-    // Check if user is authenticated
-    const token = sessionStorage.getItem('authToken')
-    if (!token) {
-      throw redirect({
-        to: '/login',
-        search: {
-          redirect: '/api-dashboard',
-        },
-      })
-    }
-  },
+  beforeLoad: () => requireAuth('/api-dashboard'),
   component: APIDashboardComponent,
 })
 
 // Fetch functions
 async function fetchDashboardOverview() {
-  const response = await fetch('/api/api-dashboard', {
-    headers: {
-      'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
-    },
-  })
-  
-  if (!response.ok) {
-    throw new Error('Failed to fetch dashboard data')
-  }
-  
-  const result = await response.json()
-  return result.data
+  return fetchJSON('/api/api-dashboard')
 }
 
 async function fetchEndpointDocumentation() {
-  const response = await fetch('/api/api-dashboard?action=documentation', {
-    headers: {
-      'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
-    },
-  })
-  
-  if (!response.ok) {
-    throw new Error('Failed to fetch documentation')
-  }
-  
-  const result = await response.json()
-  return result.data as EndpointDocumentation[]
+  return fetchJSON<EndpointDocumentation[]>('/api/api-dashboard?action=documentation')
 }
 
 async function fetchEndpointConfigs() {
-  const response = await fetch('/api/api-dashboard?action=configs', {
-    headers: {
-      'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
-    },
-  })
-  
-  if (!response.ok) {
-    throw new Error('Failed to fetch endpoint configs')
-  }
-  
-  const result = await response.json()
-  return result.data as EndpointConfig[]
+  return fetchJSON<EndpointConfig[]>('/api/api-dashboard?action=configs')
 }
 
 async function generateContentTypeDocumentation(contentType: string) {
-  const response = await fetch(
-    `/api/api-dashboard?action=generate-docs&contentType=${encodeURIComponent(contentType)}`,
-    {
-      headers: {
-        'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
-      },
-    }
+  const result = await fetchJSON<{ markdown: string }>(
+    `/api/api-dashboard?action=generate-docs&contentType=${encodeURIComponent(contentType)}`
   )
-  
-  if (!response.ok) {
-    throw new Error('Failed to generate documentation')
-  }
-  
-  const result = await response.json()
-  return result.data.markdown
+  return result.markdown
 }
 
 function APIDashboardComponent() {
@@ -132,7 +80,7 @@ function APIDashboardComponent() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-4xl font-bold tracking-tight">API Controller Dashboard</h1>
+        <h1 className="text-3xl font-bold tracking-tight">API Controller Dashboard</h1>
         <p className="text-muted-foreground mt-2">
           Manage and monitor your REST API endpoints based on Content Type Builder
         </p>
@@ -253,39 +201,40 @@ function APIDashboardComponent() {
               ) : recentActivity.length > 0 ? (
                 <div className="space-y-2">
                   {recentActivity.map((log) => (
-                    <div
-                      key={log.id}
-                      className="flex items-center justify-between p-3 rounded-lg border"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-sm font-semibold">{log.method}</span>
-                          <span className="text-sm text-muted-foreground">{log.endpoint}</span>
-                          {log.contentType && (
-                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                              {log.contentType}
-                            </span>
-                          )}
+                    <Card key={log.id}>
+                      <CardContent className="p-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="font-mono">
+                                {log.method}
+                              </Badge>
+                              <span className="text-sm text-muted-foreground">{log.endpoint}</span>
+                              {log.contentType && (
+                                <Badge variant="info">{log.contentType}</Badge>
+                              )}
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              {new Date(log.timestamp).toLocaleString()}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Badge
+                              variant={
+                                log.statusCode >= 200 && log.statusCode < 300
+                                  ? 'success'
+                                  : log.statusCode >= 400
+                                  ? 'destructive'
+                                  : 'warning'
+                              }
+                            >
+                              {log.statusCode}
+                            </Badge>
+                            <span className="text-sm text-muted-foreground">{log.responseTime}ms</span>
+                          </div>
                         </div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {new Date(log.timestamp).toLocaleString()}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span
-                          className={`font-semibold ${
-                            log.statusCode >= 200 && log.statusCode < 300
-                              ? 'text-green-600'
-                              : log.statusCode >= 400
-                              ? 'text-red-600'
-                              : 'text-orange-600'
-                          }`}
-                        >
-                          {log.statusCode}
-                        </span>
-                        <span className="text-sm text-muted-foreground">{log.responseTime}ms</span>
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   ))}
                 </div>
               ) : (
@@ -349,46 +298,40 @@ function APIDashboardComponent() {
                       </h3>
                       <div className="space-y-2">
                         {category.endpoints.map((endpoint, idx) => (
-                          <div
-                            key={`${endpoint.path}-${endpoint.method}-${idx}`}
-                            className="p-4 rounded-lg border bg-card"
-                          >
-                            <div className="flex items-start justify-between mb-2">
-                              <div className="flex items-center gap-3">
-                                <span
-                                  className={`font-mono text-sm font-bold px-2 py-1 rounded ${
-                                    endpoint.method === 'GET'
-                                      ? 'bg-blue-100 text-blue-800'
-                                      : endpoint.method === 'POST'
-                                      ? 'bg-green-100 text-green-800'
-                                      : endpoint.method === 'PUT'
-                                      ? 'bg-orange-100 text-orange-800'
-                                      : 'bg-red-100 text-red-800'
-                                  }`}
-                                >
-                                  {endpoint.method}
-                                </span>
-                                <code className="text-sm">{endpoint.path}</code>
+                          <Card key={`${endpoint.path}-${endpoint.method}-${idx}`}>
+                            <CardContent className="p-4">
+                              <div className="flex items-start justify-between mb-2">
+                                <div className="flex items-center gap-3">
+                                  <Badge
+                                    variant={
+                                      endpoint.method === 'GET'
+                                        ? 'info'
+                                        : endpoint.method === 'POST'
+                                        ? 'success'
+                                        : endpoint.method === 'PUT'
+                                        ? 'warning'
+                                        : 'destructive'
+                                    }
+                                    className="font-mono"
+                                  >
+                                    {endpoint.method}
+                                  </Badge>
+                                  <code className="text-sm">{endpoint.path}</code>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {endpoint.isPublic ? (
+                                    <Badge variant="success">Public</Badge>
+                                  ) : (
+                                    <Badge variant="warning">Private</Badge>
+                                  )}
+                                  {endpoint.requiresAuth && (
+                                    <Badge variant="secondary">🔒 Auth Required</Badge>
+                                  )}
+                                </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                {endpoint.isPublic ? (
-                                  <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                                    Public
-                                  </span>
-                                ) : (
-                                  <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">
-                                    Private
-                                  </span>
-                                )}
-                                {endpoint.requiresAuth && (
-                                  <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
-                                    🔒 Auth Required
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            <p className="text-sm text-muted-foreground">{endpoint.description}</p>
-                          </div>
+                              <p className="text-sm text-muted-foreground">{endpoint.description}</p>
+                            </CardContent>
+                          </Card>
                         ))}
                       </div>
                     </div>
@@ -418,47 +361,43 @@ function APIDashboardComponent() {
               ) : configs && configs.length > 0 ? (
                 <div className="space-y-3">
                   {configs.map((config) => (
-                    <div key={config.uid} className="p-4 rounded-lg border bg-card">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h4 className="font-semibold">{config.uid}</h4>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {config.description}
-                          </p>
+                    <Card key={config.uid}>
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <CardTitle className="text-base">{config.uid}</CardTitle>
+                            <CardDescription>{config.description}</CardDescription>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {config.isPublic ? (
+                              <Badge variant="success">Public</Badge>
+                            ) : (
+                              <Badge variant="warning">Private</Badge>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {config.isPublic ? (
-                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                              Public
-                            </span>
-                          ) : (
-                            <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">
-                              Private
-                            </span>
-                          )}
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center gap-2 text-sm mb-3">
+                          <Badge variant="outline" className="font-mono">
+                            {config.path}
+                          </Badge>
+                          <span className="text-muted-foreground">•</span>
+                          <span className="text-muted-foreground">
+                            Rate limit: {config.rateLimit}/min
+                          </span>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <code className="text-xs bg-muted px-2 py-1 rounded">
-                          {config.path}
-                        </code>
-                        <span className="text-muted-foreground">•</span>
-                        <span className="text-muted-foreground">
-                          Rate limit: {config.rateLimit}/min
-                        </span>
-                      </div>
-                      <div className="mt-3 flex gap-2">
-                        <button
+                        <Button
                           onClick={() => handleGenerateDocs(config.uid)}
                           disabled={generateDocsMutation.isPending}
-                          className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50"
+                          size="sm"
                         >
                           {generateDocsMutation.isPending && selectedContentType === config.uid
                             ? 'Generating...'
                             : 'Generate Docs'}
-                        </button>
-                      </div>
-                    </div>
+                        </Button>
+                      </CardContent>
+                    </Card>
                   ))}
                 </div>
               ) : (
