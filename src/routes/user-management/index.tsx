@@ -5,8 +5,16 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
-import { UserPlus, Edit, Trash2, Users } from 'lucide-react'
+import { UserPlus, Edit, Trash2, Users, Shield } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Checkbox } from '@/components/ui/checkbox'
 
 export const Route = createFileRoute('/user-management/')({
   beforeLoad: async () => {
@@ -27,6 +35,15 @@ interface User {
   isActive: boolean
   createdAt: string
   updatedAt: string
+  userRoles?: {
+    role: Role
+  }[]
+}
+
+interface Role {
+  id: number
+  name: string
+  description: string | null
 }
 
 async function fetchUsers(): Promise<User[]> {
@@ -115,11 +132,79 @@ async function deleteUser(id: number): Promise<void> {
   }
 }
 
+async function fetchRoles(): Promise<Role[]> {
+  const token = sessionStorage.getItem('authToken')
+  const response = await fetch('/api/roles', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch roles')
+  }
+
+  const data = await response.json()
+  return data.data
+}
+
+async function fetchUserWithRoles(userId: number): Promise<User> {
+  const token = sessionStorage.getItem('authToken')
+  const response = await fetch(`/api/users?id=${userId}&includeRoles=true`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch user roles')
+  }
+
+  const data = await response.json()
+  return data.data
+}
+
+async function assignRoleToUser(userId: number, roleId: number): Promise<void> {
+  const token = sessionStorage.getItem('authToken')
+  const response = await fetch('/api/users/assign-role', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ userId, roleId }),
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to assign role')
+  }
+}
+
+async function removeRoleFromUser(userId: number, roleId: number): Promise<void> {
+  const token = sessionStorage.getItem('authToken')
+  const response = await fetch('/api/users/remove-role', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ userId, roleId }),
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error || 'Failed to remove role')
+  }
+}
+
 function UserManagementComponent() {
   const queryClient = useQueryClient()
   const { user: currentUser } = useAuth()
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [managingRolesUser, setManagingRolesUser] = useState<User | null>(null)
+  const [selectedRoles, setSelectedRoles] = useState<Set<number>>(new Set())
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -131,6 +216,17 @@ function UserManagementComponent() {
   const { data: users, isLoading: usersLoading } = useQuery<User[]>({
     queryKey: ['users'],
     queryFn: fetchUsers,
+  })
+
+  const { data: roles } = useQuery<Role[]>({
+    queryKey: ['roles'],
+    queryFn: fetchRoles,
+  })
+
+  const { data: userWithRoles } = useQuery<User>({
+    queryKey: ['user-roles', managingRolesUser?.id],
+    queryFn: () => fetchUserWithRoles(managingRolesUser!.id),
+    enabled: !!managingRolesUser,
   })
 
   const createMutation = useMutation({
@@ -164,6 +260,30 @@ function UserManagementComponent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
       alert('User deleted successfully')
+    },
+    onError: (error: Error) => {
+      alert(error.message)
+    },
+  })
+
+  const assignRoleMutation = useMutation({
+    mutationFn: ({ userId, roleId }: { userId: number; roleId: number }) =>
+      assignRoleToUser(userId, roleId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+      queryClient.invalidateQueries({ queryKey: ['user-roles'] })
+    },
+    onError: (error: Error) => {
+      alert(error.message)
+    },
+  })
+
+  const removeRoleMutation = useMutation({
+    mutationFn: ({ userId, roleId }: { userId: number; roleId: number }) =>
+      removeRoleFromUser(userId, roleId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+      queryClient.invalidateQueries({ queryKey: ['user-roles'] })
     },
     onError: (error: Error) => {
       alert(error.message)
@@ -219,6 +339,61 @@ function UserManagementComponent() {
     if (confirm('Are you sure you want to delete this user?')) {
       deleteMutation.mutate(id)
     }
+  }
+
+  const openRolesDialog = (user: User) => {
+    setManagingRolesUser(user)
+  }
+
+  const handleSaveRoles = async () => {
+    if (!managingRolesUser || !userWithRoles) return
+
+    const currentRoleIds = new Set(userWithRoles.userRoles?.map((ur) => ur.role.id) || [])
+    const newRoleIds = selectedRoles
+
+    // Find roles to add and remove
+    const toAdd = Array.from(newRoleIds).filter((id) => !currentRoleIds.has(id))
+    const toRemove = Array.from(currentRoleIds).filter((id) => !newRoleIds.has(id))
+
+    try {
+      // Add new roles
+      for (const roleId of toAdd) {
+        await assignRoleMutation.mutateAsync({
+          userId: managingRolesUser.id,
+          roleId,
+        })
+      }
+
+      // Remove old roles
+      for (const roleId of toRemove) {
+        await removeRoleMutation.mutateAsync({
+          userId: managingRolesUser.id,
+          roleId,
+        })
+      }
+
+      setManagingRolesUser(null)
+      setSelectedRoles(new Set())
+      alert('User roles updated successfully')
+    } catch (error) {
+      // Errors are handled by mutation onError
+    }
+  }
+
+  const toggleRole = (roleId: number) => {
+    const newSelected = new Set(selectedRoles)
+    if (newSelected.has(roleId)) {
+      newSelected.delete(roleId)
+    } else {
+      newSelected.add(roleId)
+    }
+    setSelectedRoles(newSelected)
+  }
+
+  // Update selected roles when user roles are loaded
+  if (userWithRoles && selectedRoles.size === 0) {
+    const roleIds = new Set(userWithRoles.userRoles?.map((ur) => ur.role.id) || [])
+    setSelectedRoles(roleIds)
   }
 
   return (
@@ -370,6 +545,14 @@ function UserManagementComponent() {
                         <Button
                           variant="outline"
                           size="sm"
+                          onClick={() => openRolesDialog(user)}
+                          title="Manage Roles"
+                        >
+                          <Shield className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => startEdit(user)}
                           disabled={currentUser?.id === user.id}
                           title={currentUser?.id === user.id ? "You cannot edit yourself" : "Edit user"}
@@ -394,6 +577,69 @@ function UserManagementComponent() {
           </div>
         )}
       </Card>
+
+      {/* Roles Management Dialog */}
+      <Dialog
+        open={!!managingRolesUser}
+        onOpenChange={(open) => {
+          if (!open) {
+            setManagingRolesUser(null)
+            setSelectedRoles(new Set())
+          }
+        }}
+      >
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Manage Roles for {managingRolesUser?.name}</DialogTitle>
+            <DialogDescription>
+              Select the roles this user should have. Changes will be saved when you click Save.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {roles?.map((role) => (
+              <div key={role.id} className="flex items-start space-x-3">
+                <Checkbox
+                  id={`role-${role.id}`}
+                  checked={selectedRoles.has(role.id)}
+                  onCheckedChange={() => toggleRole(role.id)}
+                />
+                <div className="grid gap-1 leading-none">
+                  <label
+                    htmlFor={`role-${role.id}`}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                  >
+                    {role.name}
+                  </label>
+                  {role.description && (
+                    <p className="text-xs text-muted-foreground">
+                      {role.description}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setManagingRolesUser(null)
+                setSelectedRoles(new Set())
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveRoles}
+              disabled={assignRoleMutation.isPending || removeRoleMutation.isPending}
+            >
+              {assignRoleMutation.isPending || removeRoleMutation.isPending ? 'Saving...' : 'Save Roles'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
