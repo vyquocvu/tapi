@@ -5,7 +5,9 @@ import {
   Image, 
   Settings,
   Server,
-  FileText
+  FileText,
+  Users,
+  Shield
 } from 'lucide-react'
 import {
   Sidebar as SidebarPrimitive,
