@@ -15,6 +15,18 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Checkbox } from '@/components/ui/checkbox'
+import {
+  fetchUsers,
+  fetchUser,
+  createUser,
+  updateUser,
+  deleteUser,
+  fetchRoles,
+  assignRoleToUser,
+  removeRoleFromUser,
+  type User,
+} from '@/services/queryFunctions'
+import { queryKeys, invalidateDomain } from '@/services/queryKeys'
 
 export const Route = createFileRoute('/user-management/')({
   beforeLoad: async () => {
@@ -25,178 +37,6 @@ export const Route = createFileRoute('/user-management/')({
   },
   component: UserManagementComponent,
 })
-
-interface User {
-  id: number
-  email: string
-  name: string
-  bio: string | null
-  avatar: string | null
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
-  userRoles?: {
-    role: Role
-  }[]
-}
-
-interface Role {
-  id: number
-  name: string
-  description: string | null
-}
-
-async function fetchUsers(): Promise<User[]> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch('/api/users', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch users')
-  }
-
-  const data = await response.json()
-  return data.data
-}
-
-async function createUser(userData: {
-  email: string
-  password: string
-  name: string
-  bio?: string
-  isActive?: boolean
-}): Promise<User> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch('/api/users', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(userData),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to create user')
-  }
-
-  const data = await response.json()
-  return data.data
-}
-
-async function updateUser(
-  id: number,
-  userData: Partial<{
-    email: string
-    password: string
-    name: string
-    bio: string
-    isActive: boolean
-  }>
-): Promise<User> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch(`/api/users?id=${id}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(userData),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to update user')
-  }
-
-  const data = await response.json()
-  return data.data
-}
-
-async function deleteUser(id: number): Promise<void> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch(`/api/users?id=${id}`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to delete user')
-  }
-}
-
-async function fetchRoles(): Promise<Role[]> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch('/api/roles', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch roles')
-  }
-
-  const data = await response.json()
-  return data.data
-}
-
-async function fetchUserWithRoles(userId: number): Promise<User> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch(`/api/users?id=${userId}&includeRoles=true`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch user roles')
-  }
-
-  const data = await response.json()
-  return data.data
-}
-
-async function assignRoleToUser(userId: number, roleId: number): Promise<void> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch('/api/users/assign-role', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ userId, roleId }),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to assign role')
-  }
-}
-
-async function removeRoleFromUser(userId: number, roleId: number): Promise<void> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch('/api/users/remove-role', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ userId, roleId }),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to remove role')
-  }
-}
 
 function UserManagementComponent() {
   const queryClient = useQueryClient()
@@ -213,26 +53,26 @@ function UserManagementComponent() {
     isActive: true,
   })
 
-  const { data: users, isLoading: usersLoading } = useQuery<User[]>({
-    queryKey: ['users'],
+  const { data: users, isLoading: usersLoading } = useQuery({
+    queryKey: queryKeys.users.lists(),
     queryFn: fetchUsers,
   })
 
-  const { data: roles } = useQuery<Role[]>({
-    queryKey: ['roles'],
+  const { data: roles } = useQuery({
+    queryKey: queryKeys.roles.lists(),
     queryFn: fetchRoles,
   })
 
-  const { data: userWithRoles } = useQuery<User>({
-    queryKey: ['user-roles', managingRolesUser?.id],
-    queryFn: () => fetchUserWithRoles(managingRolesUser!.id),
+  const { data: userWithRoles } = useQuery({
+    queryKey: queryKeys.users.detail(managingRolesUser?.id || 0, true),
+    queryFn: () => fetchUser(managingRolesUser!.id, true),
     enabled: !!managingRolesUser,
   })
 
   const createMutation = useMutation({
     mutationFn: createUser,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] })
+      queryClient.invalidateQueries({ queryKey: invalidateDomain.users() })
       setShowCreateForm(false)
       resetForm()
       alert('User created successfully')
@@ -245,7 +85,7 @@ function UserManagementComponent() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) => updateUser(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] })
+      queryClient.invalidateQueries({ queryKey: invalidateDomain.users() })
       setEditingUser(null)
       resetForm()
       alert('User updated successfully')
@@ -258,7 +98,7 @@ function UserManagementComponent() {
   const deleteMutation = useMutation({
     mutationFn: deleteUser,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] })
+      queryClient.invalidateQueries({ queryKey: invalidateDomain.users() })
       alert('User deleted successfully')
     },
     onError: (error: Error) => {
@@ -270,8 +110,7 @@ function UserManagementComponent() {
     mutationFn: ({ userId, roleId }: { userId: number; roleId: number }) =>
       assignRoleToUser(userId, roleId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] })
-      queryClient.invalidateQueries({ queryKey: ['user-roles'] })
+      queryClient.invalidateQueries({ queryKey: invalidateDomain.users() })
     },
     onError: (error: Error) => {
       alert(error.message)
@@ -282,8 +121,7 @@ function UserManagementComponent() {
     mutationFn: ({ userId, roleId }: { userId: number; roleId: number }) =>
       removeRoleFromUser(userId, roleId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] })
-      queryClient.invalidateQueries({ queryKey: ['user-roles'] })
+      queryClient.invalidateQueries({ queryKey: invalidateDomain.users() })
     },
     onError: (error: Error) => {
       alert(error.message)
@@ -349,7 +187,7 @@ function UserManagementComponent() {
   const handleSaveRoles = async () => {
     if (!managingRolesUser || !userWithRoles) return
 
-    const currentRoleIds = new Set(userWithRoles.userRoles?.map((ur) => ur.role.id) || [])
+    const currentRoleIds = new Set(userWithRoles.roles?.map((role) => role.id) || [])
     const newRoleIds = selectedRoles
 
     // Find roles to add and remove
@@ -394,7 +232,7 @@ function UserManagementComponent() {
   // Update selected roles when user roles are loaded
   useEffect(() => {
     if (userWithRoles && managingRolesUser) {
-      const roleIds = new Set(userWithRoles.userRoles?.map((ur) => ur.role.id) || [])
+      const roleIds = new Set(userWithRoles.roles?.map((role) => role.id) || [])
       setSelectedRoles(roleIds)
     }
   }, [userWithRoles, managingRolesUser])

@@ -51,6 +51,11 @@ export function Sidebar() {
       label: 'Role Management',
     },
     {
+      to: '/permissions',
+      icon: Shield,
+      label: 'Permissions',
+    },
+    {
       to: '/api-dashboard',
       icon: Server,
       label: 'API Controller',

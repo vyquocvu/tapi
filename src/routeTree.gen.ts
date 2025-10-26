@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RoleManagementRouteImport } from './routes/role-management'
+import { Route as PermissionsRouteImport } from './routes/permissions'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ContentTypeBuilderRouteImport } from './routes/content-type-builder'
 import { Route as AboutRouteImport } from './routes/about'
@@ -23,6 +24,11 @@ import { Route as ApiDashboardIndexRouteImport } from './routes/api-dashboard/in
 const RoleManagementRoute = RoleManagementRouteImport.update({
   id: '/role-management',
   path: '/role-management',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PermissionsRoute = PermissionsRouteImport.update({
+  id: '/permissions',
+  path: '/permissions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/content-type-builder': typeof ContentTypeBuilderRoute
   '/login': typeof LoginRoute
+  '/permissions': typeof PermissionsRoute
   '/role-management': typeof RoleManagementRoute
   '/api-dashboard': typeof ApiDashboardIndexRoute
   '/content-manager': typeof ContentManagerIndexRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/content-type-builder': typeof ContentTypeBuilderRoute
   '/login': typeof LoginRoute
+  '/permissions': typeof PermissionsRoute
   '/role-management': typeof RoleManagementRoute
   '/api-dashboard': typeof ApiDashboardIndexRoute
   '/content-manager': typeof ContentManagerIndexRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/content-type-builder': typeof ContentTypeBuilderRoute
   '/login': typeof LoginRoute
+  '/permissions': typeof PermissionsRoute
   '/role-management': typeof RoleManagementRoute
   '/api-dashboard/': typeof ApiDashboardIndexRoute
   '/content-manager/': typeof ContentManagerIndexRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/content-type-builder'
     | '/login'
+    | '/permissions'
     | '/role-management'
     | '/api-dashboard'
     | '/content-manager'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/content-type-builder'
     | '/login'
+    | '/permissions'
     | '/role-management'
     | '/api-dashboard'
     | '/content-manager'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/content-type-builder'
     | '/login'
+    | '/permissions'
     | '/role-management'
     | '/api-dashboard/'
     | '/content-manager/'
@@ -152,6 +164,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   ContentTypeBuilderRoute: typeof ContentTypeBuilderRoute
   LoginRoute: typeof LoginRoute
+  PermissionsRoute: typeof PermissionsRoute
   RoleManagementRoute: typeof RoleManagementRoute
   ApiDashboardIndexRoute: typeof ApiDashboardIndexRoute
   ContentManagerIndexRoute: typeof ContentManagerIndexRoute
@@ -167,6 +180,13 @@ declare module '@tanstack/react-router' {
       path: '/role-management'
       fullPath: '/role-management'
       preLoaderRoute: typeof RoleManagementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/permissions': {
+      id: '/permissions'
+      path: '/permissions'
+      fullPath: '/permissions'
+      preLoaderRoute: typeof PermissionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -240,6 +260,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   ContentTypeBuilderRoute: ContentTypeBuilderRoute,
   LoginRoute: LoginRoute,
+  PermissionsRoute: PermissionsRoute,
   RoleManagementRoute: RoleManagementRoute,
   ApiDashboardIndexRoute: ApiDashboardIndexRoute,
   ContentManagerIndexRoute: ContentManagerIndexRoute,

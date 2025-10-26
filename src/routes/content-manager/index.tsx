@@ -41,11 +41,12 @@ function ContentManagerComponent() {
   const {
     data: entries,
     isLoading: entriesLoading,
+    isFetching: entriesFetching,
     error: entriesError,
   } = useQuery({
     queryKey: queryKeys.contentEntries.byType(selectedContentType!),
     queryFn: () => fetchContentEntries(selectedContentType!),
-    enabled: !!selectedContentType && mode === 'list',
+    enabled: !!selectedContentType,
   })
 
   // Create mutation
@@ -192,7 +193,7 @@ function ContentManagerComponent() {
         <EntriesList
           contentType={selectedContentTypeDef}
           entries={entries}
-          isLoading={entriesLoading}
+          isLoading={entriesLoading || entriesFetching}
           error={entriesError}
           selectedEntries={selectedEntries}
           onBack={() => setMode('select')}

@@ -4,8 +4,8 @@ import type { ContentTypeBuilderMode, FieldWithId } from './types'
 import { ContentTypeList } from './ContentTypeList'
 import { ContentTypeForm } from './ContentTypeForm'
 import { PreviewMode } from './PreviewMode'
-import { httpClient } from '../../lib/http'
-import { queryKeys } from '../../lib/queryKeys'
+import { createContentType, updateContentType, deleteContentType } from '@/services/queryFunctions'
+import { invalidateDomain } from '@/services/queryKeys'
 
 export function ContentTypeBuilder() {
   const [mode, setMode] = useState<ContentTypeBuilderMode>('list')
@@ -27,15 +27,9 @@ export function ContentTypeBuilder() {
 
   // Create mutation
   const createMutation = useMutation({
-    mutationFn: async (contentType: any) => {
-      const response = await httpClient.post('/api/content-types', contentType)
-      if (!response.success) {
-        throw new Error(response.error || 'Failed to create content type')
-      }
-      return response.data
-    },
+    mutationFn: createContentType,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.contentTypes.all })
+      queryClient.invalidateQueries({ queryKey: invalidateDomain.contentTypes() })
       resetForm()
       setMode('list')
     },
@@ -46,17 +40,10 @@ export function ContentTypeBuilder() {
 
   // Update mutation
   const updateMutation = useMutation({
-    mutationFn: async ({ id, contentType }: { id: string; contentType: any }) => {
-      const response = await fetch(`/api/content-types/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(contentType),
-      })
-      if (!response.ok) throw new Error('Failed to update content type')
-      return response.json()
-    },
+    mutationFn: ({ id, contentType }: { id: string; contentType: any }) => 
+      updateContentType(id, contentType),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.contentTypes.all })
+      queryClient.invalidateQueries({ queryKey: invalidateDomain.contentTypes() })
       resetForm()
       setMode('list')
     },
@@ -67,15 +54,9 @@ export function ContentTypeBuilder() {
 
   // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const response = await fetch(`/api/content-types/${id}`, {
-        method: 'DELETE',
-      })
-      if (!response.ok) throw new Error('Failed to delete content type')
-      return response.json()
-    },
+    mutationFn: deleteContentType,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.contentTypes.all })
+      queryClient.invalidateQueries({ queryKey: invalidateDomain.contentTypes() })
     },
     onError: (error: any) => {
       setError(error.message || 'Failed to delete content type')
@@ -153,13 +134,19 @@ export function ContentTypeBuilder() {
       description,
       timestamps,
       softDelete,
-      fields,
+      fields: Object.fromEntries(
+        Object.entries(fields).map(([key, field]) => {
+          // Remove the 'id' property from each field for the API
+          const { id, ...fieldWithoutId } = field
+          return [key, fieldWithoutId]
+        })
+      ),
     }
 
     if (editingId) {
       updateMutation.mutate({ id: editingId, contentType })
     } else {
-      createMutation.mutate(contentType)
+      createMutation.mutate(contentType as any)
     }
   }
 

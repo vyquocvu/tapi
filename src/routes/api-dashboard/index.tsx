@@ -5,38 +5,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { requireAuth, fetchJSON } from '@/lib/auth-utils'
-import type { 
-  APIStatistics, 
-  ActivityLog,
-  EndpointDocumentation 
-} from '../../services/apiAnalyticsService'
-import type { EndpointConfig } from '../../services/apiEndpointConfigService'
+import { requireAuth } from '@/lib/auth-utils'
+import {
+  fetchEndpointConfigs,
+  fetchDashboardOverview,
+  fetchEndpointDocumentation,
+  generateContentTypeDocumentation,
+  type APIStatistics,
+  type ActivityLog,
+} from '@/services/queryFunctions'
+import { queryKeys } from '@/services/queryKeys'
 
 export const Route = createFileRoute('/api-dashboard/')({
   beforeLoad: () => requireAuth('/api-dashboard'),
   component: APIDashboardComponent,
 })
-
-// Fetch functions
-async function fetchDashboardOverview() {
-  return fetchJSON('/api/api-dashboard')
-}
-
-async function fetchEndpointDocumentation() {
-  return fetchJSON<EndpointDocumentation[]>('/api/api-dashboard?action=documentation')
-}
-
-async function fetchEndpointConfigs() {
-  return fetchJSON<EndpointConfig[]>('/api/api-dashboard?action=configs')
-}
-
-async function generateContentTypeDocumentation(contentType: string) {
-  const result = await fetchJSON<{ markdown: string }>(
-    `/api/api-dashboard?action=generate-docs&contentType=${encodeURIComponent(contentType)}`
-  )
-  return result.markdown
-}
 
 function APIDashboardComponent() {
   const [selectedTab, setSelectedTab] = useState<'overview' | 'endpoints' | 'content-types'>('overview')
@@ -45,18 +28,18 @@ function APIDashboardComponent() {
 
   // Fetch dashboard data
   const { data: overview, isLoading: overviewLoading, error: overviewError } = useQuery({
-    queryKey: ['api-dashboard-overview'],
+    queryKey: queryKeys.apiDashboard.overview(),
     queryFn: fetchDashboardOverview,
   })
 
   const { data: documentation, isLoading: docsLoading } = useQuery({
-    queryKey: ['api-documentation'],
+    queryKey: queryKeys.apiDashboard.documentation(),
     queryFn: fetchEndpointDocumentation,
     enabled: selectedTab === 'endpoints',
   })
 
   const { data: configs, isLoading: configsLoading } = useQuery({
-    queryKey: ['endpoint-configs'],
+    queryKey: queryKeys.apiDashboard.configs(),
     queryFn: fetchEndpointConfigs,
     enabled: selectedTab === 'content-types',
   })

@@ -14,6 +14,18 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Checkbox } from '@/components/ui/checkbox'
+import {
+  fetchRoles,
+  fetchRole,
+  createRole,
+  updateRole,
+  deleteRole,
+  fetchPermissions,
+  setRolePermissions,
+  type Role,
+  type Permission,
+} from '@/services/queryFunctions'
+import { queryKeys, invalidateDomain } from '@/services/queryKeys'
 
 export const Route = createFileRoute('/role-management')({
   beforeLoad: async () => {
@@ -24,157 +36,6 @@ export const Route = createFileRoute('/role-management')({
   },
   component: RoleManagementComponent,
 })
-
-interface Role {
-  id: number
-  name: string
-  description: string | null
-  createdAt: string
-  updatedAt: string
-  rolePermissions?: {
-    permission: Permission
-  }[]
-}
-
-interface Permission {
-  id: number
-  name: string
-  resource: string
-  action: string
-  description: string | null
-}
-
-async function fetchRoles(): Promise<Role[]> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch('/api/roles', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch roles')
-  }
-
-  const data = await response.json()
-  return data.data
-}
-
-async function createRole(roleData: {
-  name: string
-  description?: string
-}): Promise<Role> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch('/api/roles', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(roleData),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to create role')
-  }
-
-  const data = await response.json()
-  return data.data
-}
-
-async function updateRole(
-  id: number,
-  roleData: Partial<{
-    name: string
-    description: string
-  }>
-): Promise<Role> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch(`/api/roles?id=${id}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(roleData),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to update role')
-  }
-
-  const data = await response.json()
-  return data.data
-}
-
-async function deleteRole(id: number): Promise<void> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch(`/api/roles?id=${id}`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to delete role')
-  }
-}
-
-async function fetchRoleWithPermissions(roleId: number): Promise<Role> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch(`/api/roles?id=${roleId}&includePermissions=true`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch role permissions')
-  }
-
-  const data = await response.json()
-  return data.data
-}
-
-async function fetchPermissions(): Promise<Permission[]> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch('/api/permissions', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch permissions')
-  }
-
-  const data = await response.json()
-  return data.data
-}
-
-async function setRolePermissions(
-  roleId: number,
-  permissionIds: number[]
-): Promise<void> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch('/api/roles/set-permissions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ roleId, permissionIds }),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to update permissions')
-  }
-}
 
 function RoleManagementComponent() {
   const queryClient = useQueryClient()
@@ -187,26 +48,26 @@ function RoleManagementComponent() {
     description: '',
   })
 
-  const { data: roles, isLoading: rolesLoading } = useQuery<Role[]>({
-    queryKey: ['roles'],
+  const { data: roles, isLoading: rolesLoading } = useQuery({
+    queryKey: queryKeys.roles.lists(),
     queryFn: fetchRoles,
   })
 
-  const { data: permissions } = useQuery<Permission[]>({
-    queryKey: ['permissions'],
+  const { data: permissions } = useQuery({
+    queryKey: queryKeys.permissions.lists(),
     queryFn: fetchPermissions,
   })
 
-  const { data: roleWithPermissions } = useQuery<Role>({
-    queryKey: ['role-permissions', managingPermissionsRole?.id],
-    queryFn: () => fetchRoleWithPermissions(managingPermissionsRole!.id),
+  const { data: roleWithPermissions } = useQuery({
+    queryKey: queryKeys.roles.detail(managingPermissionsRole?.id || 0, true),
+    queryFn: () => fetchRole(managingPermissionsRole!.id, true),
     enabled: !!managingPermissionsRole,
   })
 
   const createMutation = useMutation({
     mutationFn: createRole,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roles'] })
+      queryClient.invalidateQueries({ queryKey: invalidateDomain.roles() })
       setShowCreateForm(false)
       resetForm()
       alert('Role created successfully')
@@ -219,7 +80,7 @@ function RoleManagementComponent() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) => updateRole(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roles'] })
+      queryClient.invalidateQueries({ queryKey: invalidateDomain.roles() })
       setEditingRole(null)
       resetForm()
       alert('Role updated successfully')
@@ -232,7 +93,7 @@ function RoleManagementComponent() {
   const deleteMutation = useMutation({
     mutationFn: deleteRole,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roles'] })
+      queryClient.invalidateQueries({ queryKey: invalidateDomain.roles() })
       alert('Role deleted successfully')
     },
     onError: (error: Error) => {
@@ -244,8 +105,7 @@ function RoleManagementComponent() {
     mutationFn: ({ roleId, permissionIds }: { roleId: number; permissionIds: number[] }) =>
       setRolePermissions(roleId, permissionIds),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roles'] })
-      queryClient.invalidateQueries({ queryKey: ['role-permissions'] })
+      queryClient.invalidateQueries({ queryKey: invalidateDomain.roles() })
       setManagingPermissionsRole(null)
       setSelectedPermissions(new Set())
       alert('Permissions updated successfully')
@@ -315,7 +175,7 @@ function RoleManagementComponent() {
   // Update selected permissions when role permissions are loaded
   if (roleWithPermissions && selectedPermissions.size === 0) {
     const permIds = new Set(
-      roleWithPermissions.rolePermissions?.map((rp) => rp.permission.id) || []
+      roleWithPermissions.permissions?.map((perm) => perm.id) || []
     )
     setSelectedPermissions(permIds)
   }
