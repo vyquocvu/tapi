@@ -36,19 +36,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).end()
   }
 
-  // Verify authentication for all requests
+  // Check for authentication token (optional for content operations)
   const token = req.headers.authorization?.replace('Bearer ', '')
-  if (!token) {
-    return res.status(HTTP_STATUS.UNAUTHORIZED).json(unauthorizedResponse())
-  }
-
-  let user: any
-  try {
-    user = verifyToken(token)
-  } catch (error) {
-    return res.status(HTTP_STATUS.UNAUTHORIZED).json(
-      unauthorizedResponse('Invalid or expired token')
-    )
+  let user: any = null
+  
+  if (token) {
+    try {
+      user = verifyToken(token)
+    } catch (error) {
+      // Token invalid, but we'll continue without user context
+      console.warn('Invalid token provided, continuing without authentication')
+    }
   }
 
   try {
@@ -71,22 +69,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // GET - Find entries or a specific entry
     if (req.method === 'GET') {
-      // Check permission
-      const permissionCheck = await checkPermission(
-        user.userId,
-        'content:read',
-        {
-          resource: 'content',
-          action: 'read',
-          ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
-          userAgent: req.headers['user-agent'] as string,
-        }
-      )
-
-      if (!permissionCheck.allowed) {
-        return res.status(HTTP_STATUS.FORBIDDEN).json(
-          forbiddenResponse(permissionCheck.error)
+      // Check permission only if user is authenticated
+      if (user) {
+        const permissionCheck = await checkPermission(
+          user.userId,
+          'content:read',
+          {
+            resource: 'content',
+            action: 'read',
+            ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
+            userAgent: req.headers['user-agent'] as string,
+          }
         )
+
+        if (!permissionCheck.allowed) {
+          return res.status(HTTP_STATUS.FORBIDDEN).json(
+            forbiddenResponse(permissionCheck.error)
+          )
+        }
       }
 
       // Get specific entry by ID
@@ -144,6 +144,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // POST - Create new entry
     if (req.method === 'POST') {
+      // Require authentication for create operations
+      if (!user) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json(unauthorizedResponse())
+      }
+
       // Check permission
       const permissionCheck = await checkPermission(
         user.userId,
@@ -177,6 +182,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // PUT - Update existing entry
     if (req.method === 'PUT') {
+      // Require authentication for update operations
+      if (!user) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json(unauthorizedResponse())
+      }
+
       // Check permission
       const permissionCheck = await checkPermission(
         user.userId,
@@ -228,6 +238,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // DELETE - Delete entry
     if (req.method === 'DELETE') {
+      // Require authentication for delete operations
+      if (!user) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json(unauthorizedResponse())
+      }
+
       // Check permission
       const permissionCheck = await checkPermission(
         user.userId,

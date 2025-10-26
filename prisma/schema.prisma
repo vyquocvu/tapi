@@ -266,8 +266,7 @@ model Article {
   publishedAt  DateTime?
   viewCount  Int? @default(0)
   status  ArticleStatus? @default(draft)
-  authorId Int
-  author   User @relation(fields: [authorId], references: [id])
+  authorId  Int?
   categoryId Int?
   category   Category? @relation(fields: [categoryId], references: [id])
   createdAt DateTime @default(now())

@@ -1,11 +1,12 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { Shield, Plus, Edit, Trash2, Key } from 'lucide-react'
+import { toast } from 'sonner'
 import {
   Dialog,
   DialogContent,
@@ -70,10 +71,10 @@ function RoleManagementComponent() {
       queryClient.invalidateQueries({ queryKey: invalidateDomain.roles() })
       setShowCreateForm(false)
       resetForm()
-      alert('Role created successfully')
+      toast.success('Role created successfully')
     },
     onError: (error: Error) => {
-      alert(error.message)
+      toast.error(error.message)
     },
   })
 
@@ -83,10 +84,10 @@ function RoleManagementComponent() {
       queryClient.invalidateQueries({ queryKey: invalidateDomain.roles() })
       setEditingRole(null)
       resetForm()
-      alert('Role updated successfully')
+      toast.success('Role updated successfully')
     },
     onError: (error: Error) => {
-      alert(error.message)
+      toast.error(error.message)
     },
   })
 
@@ -94,10 +95,10 @@ function RoleManagementComponent() {
     mutationFn: deleteRole,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: invalidateDomain.roles() })
-      alert('Role deleted successfully')
+      toast.success('Role deleted successfully')
     },
     onError: (error: Error) => {
-      alert(error.message)
+      toast.error(error.message)
     },
   })
 
@@ -108,10 +109,10 @@ function RoleManagementComponent() {
       queryClient.invalidateQueries({ queryKey: invalidateDomain.roles() })
       setManagingPermissionsRole(null)
       setSelectedPermissions(new Set())
-      alert('Permissions updated successfully')
+      toast.success('Permissions updated successfully')
     },
     onError: (error: Error) => {
-      alert(error.message)
+      toast.error(error.message)
     },
   })
 
@@ -173,12 +174,14 @@ function RoleManagementComponent() {
   }
 
   // Update selected permissions when role permissions are loaded
-  if (roleWithPermissions && selectedPermissions.size === 0) {
-    const permIds = new Set(
-      roleWithPermissions.permissions?.map((perm) => perm.id) || []
-    )
-    setSelectedPermissions(permIds)
-  }
+  useEffect(() => {
+    if (roleWithPermissions?.permissions) {
+      const permIds = new Set(
+        roleWithPermissions.permissions.map((perm) => perm.id)
+      )
+      setSelectedPermissions(permIds)
+    }
+  }, [roleWithPermissions])
 
   // Group permissions by resource
   const groupedPermissions = permissions?.reduce((acc, perm) => {
@@ -261,69 +264,69 @@ function RoleManagementComponent() {
           </form>
         </Card>
       )}
-
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Roles</h2>
-        {rolesLoading ? (
-          <div className="text-center py-8 text-muted-foreground">Loading...</div>
-        ) : !roles || roles.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">No roles found</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-3 font-semibold">Name</th>
-                  <th className="text-left p-3 font-semibold">Description</th>
-                  <th className="text-left p-3 font-semibold">Created</th>
-                  <th className="text-right p-3 font-semibold">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {roles.map((role) => (
-                  <tr key={role.id} className="border-b hover:bg-muted/50">
-                    <td className="p-3 font-medium">{role.name}</td>
-                    <td className="p-3 text-muted-foreground">
-                      {role.description || <em>No description</em>}
-                    </td>
-                    <td className="p-3">
-                      {new Date(role.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="p-3">
-                      <div className="flex gap-2 justify-end">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openPermissionsDialog(role)}
-                          title="Manage Permissions"
-                        >
-                          <Key className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => startEdit(role)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDelete(role.id, role.name)}
-                          disabled={deleteMutation.isPending}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
+      {!showCreateForm && (
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Roles</h2>
+          {rolesLoading ? (
+            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+          ) : !roles || roles.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">No roles found</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-3 font-semibold">Name</th>
+                    <th className="text-left p-3 font-semibold">Description</th>
+                    <th className="text-left p-3 font-semibold">Created</th>
+                    <th className="text-right p-3 font-semibold">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
-
+                </thead>
+                <tbody>
+                  {roles.map((role) => (
+                    <tr key={role.id} className="border-b hover:bg-muted/50">
+                      <td className="p-3 font-medium">{role.name}</td>
+                      <td className="p-3 text-muted-foreground">
+                        {role.description || <em>No description</em>}
+                      </td>
+                      <td className="p-3">
+                        {new Date(role.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="p-3">
+                        <div className="flex gap-2 justify-end">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openPermissionsDialog(role)}
+                            title="Manage Permissions"
+                          >
+                            <Key className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => startEdit(role)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(role.id, role.name)}
+                            disabled={deleteMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+      )}
       {/* Permissions Management Dialog */}
       <Dialog
         open={!!managingPermissionsRole}

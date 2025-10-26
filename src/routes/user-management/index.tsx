@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Checkbox } from '@/components/ui/checkbox'
+import { toast } from 'sonner'
 import {
   fetchUsers,
   fetchUser,
@@ -75,10 +76,10 @@ function UserManagementComponent() {
       queryClient.invalidateQueries({ queryKey: invalidateDomain.users() })
       setShowCreateForm(false)
       resetForm()
-      alert('User created successfully')
+      toast.success('User created successfully')
     },
     onError: (error: Error) => {
-      alert(error.message)
+      toast.error(error.message)
     },
   })
 
@@ -88,10 +89,10 @@ function UserManagementComponent() {
       queryClient.invalidateQueries({ queryKey: invalidateDomain.users() })
       setEditingUser(null)
       resetForm()
-      alert('User updated successfully')
+      toast.success('User updated successfully')
     },
     onError: (error: Error) => {
-      alert(error.message)
+      toast.error(error.message)
     },
   })
 
@@ -99,10 +100,10 @@ function UserManagementComponent() {
     mutationFn: deleteUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: invalidateDomain.users() })
-      alert('User deleted successfully')
+      toast.success('User deleted successfully')
     },
     onError: (error: Error) => {
-      alert(error.message)
+      toast.error(error.message)
     },
   })
 
@@ -113,7 +114,7 @@ function UserManagementComponent() {
       queryClient.invalidateQueries({ queryKey: invalidateDomain.users() })
     },
     onError: (error: Error) => {
-      alert(error.message)
+      toast.error(error.message)
     },
   })
 
@@ -124,7 +125,7 @@ function UserManagementComponent() {
       queryClient.invalidateQueries({ queryKey: invalidateDomain.users() })
     },
     onError: (error: Error) => {
-      alert(error.message)
+      toast.error(error.message)
     },
   })
 
@@ -213,7 +214,7 @@ function UserManagementComponent() {
 
       setManagingRolesUser(null)
       setSelectedRoles(new Set())
-      alert('User roles updated successfully')
+      toast.success('User roles updated successfully')
     } catch (error) {
       // Errors are handled by mutation onError
     }
@@ -343,81 +344,82 @@ function UserManagementComponent() {
           </form>
         </Card>
       )}
-
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Users</h2>
-        {usersLoading ? (
-          <div className="text-center py-8 text-muted-foreground">Loading...</div>
-        ) : !users || users.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">No users found</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-3 font-semibold">Name</th>
-                  <th className="text-left p-3 font-semibold">Email</th>
-                  <th className="text-left p-3 font-semibold">Status</th>
-                  <th className="text-left p-3 font-semibold">Created</th>
-                  <th className="text-right p-3 font-semibold">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => (
-                  <tr key={user.id} className="border-b hover:bg-muted/50">
-                    <td className="p-3">{user.name}</td>
-                    <td className="p-3">{user.email}</td>
-                    <td className="p-3">
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${
-                          user.isActive
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {user.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td className="p-3">
-                      {new Date(user.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="p-3">
-                      <div className="flex gap-2 justify-end">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openRolesDialog(user)}
-                          title="Manage Roles"
-                        >
-                          <Shield className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => startEdit(user)}
-                          disabled={currentUser?.id === user.id}
-                          title={currentUser?.id === user.id ? "You cannot edit yourself" : "Edit user"}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDelete(user.id)}
-                          disabled={deleteMutation.isPending || currentUser?.id === user.id}
-                          title={currentUser?.id === user.id ? "You cannot delete yourself" : "Delete user"}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
+      {!showCreateForm && (
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Users</h2>
+          {usersLoading ? (
+            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+          ) : !users || users.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">No users found</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-3 font-semibold">Name</th>
+                    <th className="text-left p-3 font-semibold">Email</th>
+                    <th className="text-left p-3 font-semibold">Status</th>
+                    <th className="text-left p-3 font-semibold">Created</th>
+                    <th className="text-right p-3 font-semibold">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
+                </thead>
+                <tbody>
+                  {users.map((user) => (
+                    <tr key={user.id} className="border-b hover:bg-muted/50">
+                      <td className="p-3">{user.name}</td>
+                      <td className="p-3">{user.email}</td>
+                      <td className="p-3">
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-medium ${
+                            user.isActive
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {user.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        {new Date(user.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="p-3">
+                        <div className="flex gap-2 justify-end">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openRolesDialog(user)}
+                            title="Manage Roles"
+                          >
+                            <Shield className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => startEdit(user)}
+                            disabled={currentUser?.id === user.id}
+                            title={currentUser?.id === user.id ? "You cannot edit yourself" : "Edit user"}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(user.id)}
+                            disabled={deleteMutation.isPending || currentUser?.id === user.id}
+                            title={currentUser?.id === user.id ? "You cannot delete yourself" : "Delete user"}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Roles Management Dialog */}
       <Dialog
