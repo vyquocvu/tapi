@@ -263,59 +263,61 @@ function RoleManagementComponent() {
         </Card>
       )}
 
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Roles</h2>
-        {rolesLoading ? (
-          <div className="text-center py-8 text-muted-foreground">Loading...</div>
-        ) : !roles || roles.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">No roles found</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-3 font-semibold">Name</th>
-                  <th className="text-left p-3 font-semibold">Description</th>
-                  <th className="text-left p-3 font-semibold">Created</th>
-                  <th className="text-right p-3 font-semibold">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {roles.map((role) => (
-                  <tr key={role.id} className="border-b hover:bg-muted/50">
-                    <td className="p-3 font-medium">{role.name}</td>
-                    <td className="p-3 text-muted-foreground">
-                      {role.description || <em>No description</em>}
-                    </td>
-                    <td className="p-3">
-                      {new Date(role.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="p-3">
-                      <div className="flex gap-2 justify-end">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => startEdit(role)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDelete(role.id, role.name)}
-                          disabled={deleteMutation.isPending}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
+      {!showCreateForm ? (
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Roles</h2>
+          {rolesLoading ? (
+            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+          ) : !roles || roles.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">No roles found</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-3 font-semibold">Name</th>
+                    <th className="text-left p-3 font-semibold">Description</th>
+                    <th className="text-left p-3 font-semibold">Created</th>
+                    <th className="text-right p-3 font-semibold">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
+                </thead>
+                <tbody>
+                  {roles.map((role) => (
+                    <tr key={role.id} className="border-b hover:bg-muted/50">
+                      <td className="p-3 font-medium">{role.name}</td>
+                      <td className="p-3 text-muted-foreground">
+                        {role.description || <em>No description</em>}
+                      </td>
+                      <td className="p-3">
+                        {new Date(role.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="p-3">
+                        <div className="flex gap-2 justify-end">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => startEdit(role)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(role.id, role.name)}
+                            disabled={deleteMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+      ) : ''}
     </div>
   )
 }
