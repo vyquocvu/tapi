@@ -18,7 +18,7 @@ import {
 import { queryKeys } from '@/services/queryKeys'
 import type { Permission } from '@/services/types'
 
-export const Route = createFileRoute('/permissions')({
+export const Route = createFileRoute('/permissions/')({
   beforeLoad: async () => {
     const token = sessionStorage.getItem('authToken')
     if (!token) {
@@ -303,7 +303,6 @@ function PermissionsComponent() {
           Create Permission
         </Button>
       </div>
-
       {showForm && (
         <Card className="p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
@@ -317,7 +316,7 @@ function PermissionsComponent() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {!editingPermission ? (
               /* Create Mode: Show collapsible resources with actions */
-              <div>
+              (<div>
                 <Label className="text-base">Select Resources and Actions *</Label>
                 <p className="text-xs text-muted-foreground mb-3">
                   Expand resources and check actions to create multiple permissions at once
@@ -398,10 +397,10 @@ function PermissionsComponent() {
                     )
                   })}
                 </div>
-              </div>
+              </div>)
             ) : (
               /* Edit Mode: Show resource + action fields */
-              <>
+              (<>
                 <div>
                   <Label htmlFor="name">Permission Name</Label>
                   <Input
@@ -415,7 +414,6 @@ function PermissionsComponent() {
                     Optional: Will auto-generate as "resource:action" if left empty
                   </p>
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="resource">Resource *</Label>
@@ -452,7 +450,6 @@ function PermissionsComponent() {
                     </div>
                   </div>
                 </div>
-
                 <div>
                   <Label htmlFor="description">Description</Label>
                   <Input
@@ -463,7 +460,7 @@ function PermissionsComponent() {
                     placeholder="Brief description of this permission"
                   />
                 </div>
-              </>
+              </>)
             )}
 
             <div className="flex gap-2">
@@ -480,7 +477,6 @@ function PermissionsComponent() {
           </form>
         </Card>
       )}
-
       {groupedPermissions && Object.keys(groupedPermissions).length > 0 ? (
         <div className="grid grid-cols-12 gap-6">
           {/* Left sidebar - Resource list */}

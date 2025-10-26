@@ -9,36 +9,21 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as RoleManagementRouteImport } from './routes/role-management'
-import { Route as PermissionsRouteImport } from './routes/permissions'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as ContentTypeBuilderRouteImport } from './routes/content-type-builder'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UserManagementIndexRouteImport } from './routes/user-management/index'
+import { Route as RoleManagementIndexRouteImport } from './routes/role-management/index'
+import { Route as PermissionsIndexRouteImport } from './routes/permissions/index'
 import { Route as MediaIndexRouteImport } from './routes/media/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as ContentTypeBuilderIndexRouteImport } from './routes/content-type-builder/index'
 import { Route as ContentManagerIndexRouteImport } from './routes/content-manager/index'
 import { Route as ApiDashboardIndexRouteImport } from './routes/api-dashboard/index'
 
-const RoleManagementRoute = RoleManagementRouteImport.update({
-  id: '/role-management',
-  path: '/role-management',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PermissionsRoute = PermissionsRouteImport.update({
-  id: '/permissions',
-  path: '/permissions',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ContentTypeBuilderRoute = ContentTypeBuilderRouteImport.update({
-  id: '/content-type-builder',
-  path: '/content-type-builder',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -56,6 +41,16 @@ const UserManagementIndexRoute = UserManagementIndexRouteImport.update({
   path: '/user-management/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RoleManagementIndexRoute = RoleManagementIndexRouteImport.update({
+  id: '/role-management/',
+  path: '/role-management/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PermissionsIndexRoute = PermissionsIndexRouteImport.update({
+  id: '/permissions/',
+  path: '/permissions/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MediaIndexRoute = MediaIndexRouteImport.update({
   id: '/media/',
   path: '/media/',
@@ -64,6 +59,11 @@ const MediaIndexRoute = MediaIndexRouteImport.update({
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/dashboard/',
   path: '/dashboard/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContentTypeBuilderIndexRoute = ContentTypeBuilderIndexRouteImport.update({
+  id: '/content-type-builder/',
+  path: '/content-type-builder/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContentManagerIndexRoute = ContentManagerIndexRouteImport.update({
@@ -80,41 +80,41 @@ const ApiDashboardIndexRoute = ApiDashboardIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/content-type-builder': typeof ContentTypeBuilderRoute
   '/login': typeof LoginRoute
-  '/permissions': typeof PermissionsRoute
-  '/role-management': typeof RoleManagementRoute
   '/api-dashboard': typeof ApiDashboardIndexRoute
   '/content-manager': typeof ContentManagerIndexRoute
+  '/content-type-builder': typeof ContentTypeBuilderIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/media': typeof MediaIndexRoute
+  '/permissions': typeof PermissionsIndexRoute
+  '/role-management': typeof RoleManagementIndexRoute
   '/user-management': typeof UserManagementIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/content-type-builder': typeof ContentTypeBuilderRoute
   '/login': typeof LoginRoute
-  '/permissions': typeof PermissionsRoute
-  '/role-management': typeof RoleManagementRoute
   '/api-dashboard': typeof ApiDashboardIndexRoute
   '/content-manager': typeof ContentManagerIndexRoute
+  '/content-type-builder': typeof ContentTypeBuilderIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/media': typeof MediaIndexRoute
+  '/permissions': typeof PermissionsIndexRoute
+  '/role-management': typeof RoleManagementIndexRoute
   '/user-management': typeof UserManagementIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/content-type-builder': typeof ContentTypeBuilderRoute
   '/login': typeof LoginRoute
-  '/permissions': typeof PermissionsRoute
-  '/role-management': typeof RoleManagementRoute
   '/api-dashboard/': typeof ApiDashboardIndexRoute
   '/content-manager/': typeof ContentManagerIndexRoute
+  '/content-type-builder/': typeof ContentTypeBuilderIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/media/': typeof MediaIndexRoute
+  '/permissions/': typeof PermissionsIndexRoute
+  '/role-management/': typeof RoleManagementIndexRoute
   '/user-management/': typeof UserManagementIndexRoute
 }
 export interface FileRouteTypes {
@@ -122,85 +122,64 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
-    | '/content-type-builder'
     | '/login'
-    | '/permissions'
-    | '/role-management'
     | '/api-dashboard'
     | '/content-manager'
+    | '/content-type-builder'
     | '/dashboard'
     | '/media'
+    | '/permissions'
+    | '/role-management'
     | '/user-management'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
-    | '/content-type-builder'
     | '/login'
-    | '/permissions'
-    | '/role-management'
     | '/api-dashboard'
     | '/content-manager'
+    | '/content-type-builder'
     | '/dashboard'
     | '/media'
+    | '/permissions'
+    | '/role-management'
     | '/user-management'
   id:
     | '__root__'
     | '/'
     | '/about'
-    | '/content-type-builder'
     | '/login'
-    | '/permissions'
-    | '/role-management'
     | '/api-dashboard/'
     | '/content-manager/'
+    | '/content-type-builder/'
     | '/dashboard/'
     | '/media/'
+    | '/permissions/'
+    | '/role-management/'
     | '/user-management/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  ContentTypeBuilderRoute: typeof ContentTypeBuilderRoute
   LoginRoute: typeof LoginRoute
-  PermissionsRoute: typeof PermissionsRoute
-  RoleManagementRoute: typeof RoleManagementRoute
   ApiDashboardIndexRoute: typeof ApiDashboardIndexRoute
   ContentManagerIndexRoute: typeof ContentManagerIndexRoute
+  ContentTypeBuilderIndexRoute: typeof ContentTypeBuilderIndexRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   MediaIndexRoute: typeof MediaIndexRoute
+  PermissionsIndexRoute: typeof PermissionsIndexRoute
+  RoleManagementIndexRoute: typeof RoleManagementIndexRoute
   UserManagementIndexRoute: typeof UserManagementIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/role-management': {
-      id: '/role-management'
-      path: '/role-management'
-      fullPath: '/role-management'
-      preLoaderRoute: typeof RoleManagementRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/permissions': {
-      id: '/permissions'
-      path: '/permissions'
-      fullPath: '/permissions'
-      preLoaderRoute: typeof PermissionsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/content-type-builder': {
-      id: '/content-type-builder'
-      path: '/content-type-builder'
-      fullPath: '/content-type-builder'
-      preLoaderRoute: typeof ContentTypeBuilderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -224,6 +203,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UserManagementIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/role-management/': {
+      id: '/role-management/'
+      path: '/role-management'
+      fullPath: '/role-management'
+      preLoaderRoute: typeof RoleManagementIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/permissions/': {
+      id: '/permissions/'
+      path: '/permissions'
+      fullPath: '/permissions'
+      preLoaderRoute: typeof PermissionsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/media/': {
       id: '/media/'
       path: '/media'
@@ -236,6 +229,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content-type-builder/': {
+      id: '/content-type-builder/'
+      path: '/content-type-builder'
+      fullPath: '/content-type-builder'
+      preLoaderRoute: typeof ContentTypeBuilderIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/content-manager/': {
@@ -258,14 +258,14 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  ContentTypeBuilderRoute: ContentTypeBuilderRoute,
   LoginRoute: LoginRoute,
-  PermissionsRoute: PermissionsRoute,
-  RoleManagementRoute: RoleManagementRoute,
   ApiDashboardIndexRoute: ApiDashboardIndexRoute,
   ContentManagerIndexRoute: ContentManagerIndexRoute,
+  ContentTypeBuilderIndexRoute: ContentTypeBuilderIndexRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   MediaIndexRoute: MediaIndexRoute,
+  PermissionsIndexRoute: PermissionsIndexRoute,
+  RoleManagementIndexRoute: RoleManagementIndexRoute,
   UserManagementIndexRoute: UserManagementIndexRoute,
 }
 export const routeTree = rootRouteImport

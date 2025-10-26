@@ -28,7 +28,7 @@ import {
 } from '@/services/queryFunctions'
 import { queryKeys, invalidateDomain } from '@/services/queryKeys'
 
-export const Route = createFileRoute('/role-management')({
+export const Route = createFileRoute('/role-management/')({
   beforeLoad: async () => {
     const token = sessionStorage.getItem('authToken')
     if (!token) {

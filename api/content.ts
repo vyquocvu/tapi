@@ -1,4 +1,14 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { createHandler } from './_lib/handler.js'
+import { createRouter } from './_lib/router.js'
+import {
+  successResponse,
+  unauthorizedResponse,
+  badRequestResponse,
+  notFoundResponse,
+  validationErrorResponse,
+  forbiddenResponse,
+  HTTP_STATUS,
+} from './_lib/response.js'
 import { 
   findMany,
   findOne,
@@ -7,17 +17,6 @@ import {
   deleteOne,
   count
 } from '../src/services/contentManagerService.js'
-import { verifyToken } from '../src/server/auth.js'
-import {
-  successResponse,
-  unauthorizedResponse,
-  badRequestResponse,
-  notFoundResponse,
-  serverErrorResponse,
-  validationErrorResponse,
-  forbiddenResponse,
-  HTTP_STATUS
-} from '../src/utils/apiResponse.js'
 import {
   validateId,
   validateContentTypeUID,
@@ -25,276 +24,277 @@ import {
 } from '../src/middleware/validation.js'
 import { checkPermission } from '../src/middleware/permissionEnforcement.js'
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end()
-  }
-
-  // Check for authentication token (optional for content operations)
-  const token = req.headers.authorization?.replace('Bearer ', '')
-  let user: any = null
-  
-  if (token) {
-    try {
-      user = verifyToken(token)
-    } catch (error) {
-      // Token invalid, but we'll continue without user context
-      console.warn('Invalid token provided, continuing without authentication')
-    }
-  }
-
-  try {
-    const { contentType, id } = req.query
-
-    // Validate contentType parameter
-    if (!contentType || typeof contentType !== 'string') {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json(
-        badRequestResponse('Content type parameter is required')
-      )
-    }
-
-    // Validate content type UID format
-    const uidValidation = validateContentTypeUID(contentType)
-    if (!uidValidation.isValid) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json(
-        validationErrorResponse(uidValidation.errors)
-      )
-    }
-
-    // GET - Find entries or a specific entry
-    if (req.method === 'GET') {
-      // Check permission only if user is authenticated
-      if (user) {
-        const permissionCheck = await checkPermission(
-          user.userId,
-          'content:read',
-          {
-            resource: 'content',
-            action: 'read',
-            ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
-            userAgent: req.headers['user-agent'] as string,
-          }
-        )
-
-        if (!permissionCheck.allowed) {
-          return res.status(HTTP_STATUS.FORBIDDEN).json(
-            forbiddenResponse(permissionCheck.error)
-          )
-        }
-      }
-
-      // Get specific entry by ID
-      if (id && typeof id === 'string') {
-        const idValidation = validateId(id)
-        if (!idValidation.isValid) {
-          return res.status(HTTP_STATUS.BAD_REQUEST).json(
-            validationErrorResponse(idValidation.errors)
-          )
-        }
-
-        const entryId = parseInt(id, 10)
-        const entry = await findOne(contentType, entryId)
-        if (!entry) {
-          return res.status(HTTP_STATUS.NOT_FOUND).json(
-            notFoundResponse('Entry')
-          )
-        }
-
-        return res.status(HTTP_STATUS.OK).json(successResponse(entry))
-      }
-
-      // Validate pagination parameters
-      const paginationValidation = validatePaginationParams(
-        req.query.skip as string | undefined,
-        req.query.take as string | undefined
-      )
-      if (!paginationValidation.isValid) {
-        return res.status(HTTP_STATUS.BAD_REQUEST).json(
-          validationErrorResponse(paginationValidation.errors)
-        )
-      }
-
-      // Get all entries with optional filters
-      const entries = await findMany(contentType, {
-        where: req.query.where ? JSON.parse(req.query.where as string) : undefined,
-        orderBy: req.query.orderBy ? JSON.parse(req.query.orderBy as string) : undefined,
-        skip: req.query.skip ? parseInt(req.query.skip as string, 10) : undefined,
-        take: req.query.take ? parseInt(req.query.take as string, 10) : undefined,
-      })
-
-      // Get total count if requested
-      let total: number | undefined
-      if (req.query.count === 'true') {
-        total = await count(
-          contentType,
-          req.query.where ? JSON.parse(req.query.where as string) : undefined
-        )
-      }
-
-      return res.status(HTTP_STATUS.OK).json(
-        successResponse(entries, total !== undefined ? { total } : undefined)
-      )
-    }
-
-    // POST - Create new entry
-    if (req.method === 'POST') {
-      // Require authentication for create operations
-      if (!user) {
-        return res.status(HTTP_STATUS.UNAUTHORIZED).json(unauthorizedResponse())
-      }
-
-      // Check permission
-      const permissionCheck = await checkPermission(
-        user.userId,
-        'content:create',
-        {
-          resource: 'content',
-          action: 'create',
-          ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
-          userAgent: req.headers['user-agent'] as string,
-        }
-      )
-
-      if (!permissionCheck.allowed) {
-        return res.status(HTTP_STATUS.FORBIDDEN).json(
-          forbiddenResponse(permissionCheck.error)
-        )
-      }
-
-      const data = req.body
-
-      if (!data || typeof data !== 'object') {
-        return res.status(HTTP_STATUS.BAD_REQUEST).json(
-          badRequestResponse('Request body must be an object')
-        )
-      }
-
-      const entry = await create(contentType, { data })
-
-      return res.status(HTTP_STATUS.CREATED).json(successResponse(entry))
-    }
-
-    // PUT - Update existing entry
-    if (req.method === 'PUT') {
-      // Require authentication for update operations
-      if (!user) {
-        return res.status(HTTP_STATUS.UNAUTHORIZED).json(unauthorizedResponse())
-      }
-
-      // Check permission
-      const permissionCheck = await checkPermission(
-        user.userId,
-        'content:update',
-        {
-          resource: 'content',
-          action: 'update',
-          resourceId: id ? parseInt(id as string, 10) : undefined,
-          ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
-          userAgent: req.headers['user-agent'] as string,
-        }
-      )
-
-      if (!permissionCheck.allowed) {
-        return res.status(HTTP_STATUS.FORBIDDEN).json(
-          forbiddenResponse(permissionCheck.error)
-        )
-      }
-
-      if (!id || typeof id !== 'string') {
-        return res.status(HTTP_STATUS.BAD_REQUEST).json(
-          badRequestResponse('ID parameter is required for updates')
-        )
-      }
-
-      const idValidation = validateId(id)
-      if (!idValidation.isValid) {
-        return res.status(HTTP_STATUS.BAD_REQUEST).json(
-          validationErrorResponse(idValidation.errors)
-        )
-      }
-
-      const entryId = parseInt(id, 10)
-      const data = req.body
-
-      if (!data || typeof data !== 'object') {
-        return res.status(HTTP_STATUS.BAD_REQUEST).json(
-          badRequestResponse('Request body must be an object')
-        )
-      }
-
-      const entry = await update(contentType, {
-        where: { id: entryId },
-        data,
-      })
-
-      return res.status(HTTP_STATUS.OK).json(successResponse(entry))
-    }
-
-    // DELETE - Delete entry
-    if (req.method === 'DELETE') {
-      // Require authentication for delete operations
-      if (!user) {
-        return res.status(HTTP_STATUS.UNAUTHORIZED).json(unauthorizedResponse())
-      }
-
-      // Check permission
-      const permissionCheck = await checkPermission(
-        user.userId,
-        'content:delete',
-        {
-          resource: 'content',
-          action: 'delete',
-          resourceId: id ? parseInt(id as string, 10) : undefined,
-          ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
-          userAgent: req.headers['user-agent'] as string,
-        }
-      )
-
-      if (!permissionCheck.allowed) {
-        return res.status(HTTP_STATUS.FORBIDDEN).json(
-          forbiddenResponse(permissionCheck.error)
-        )
-      }
-
-      if (!id || typeof id !== 'string') {
-        return res.status(HTTP_STATUS.BAD_REQUEST).json(
-          badRequestResponse('ID parameter is required for deletion')
-        )
-      }
-
-      const idValidation = validateId(id)
-      if (!idValidation.isValid) {
-        return res.status(HTTP_STATUS.BAD_REQUEST).json(
-          validationErrorResponse(idValidation.errors)
-        )
-      }
-
-      const entryId = parseInt(id, 10)
-
-      await deleteOne(contentType, {
-        where: { id: entryId },
-      })
-
-      return res.status(HTTP_STATUS.OK).json(
-        successResponse({ message: 'Entry deleted successfully' })
-      )
-    }
-
-    return res.status(HTTP_STATUS.METHOD_NOT_ALLOWED).json(
-      badRequestResponse('Method not allowed')
+const validateContentType = (contentType: any, res: any) => {
+  if (!contentType || typeof contentType !== 'string') {
+    res.status(HTTP_STATUS.BAD_REQUEST).json(
+      badRequestResponse('Content type parameter is required')
     )
-  } catch (error) {
-    console.error('[API /content] Error:', error)
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(
-      serverErrorResponse(
-        error instanceof Error ? error.message : 'Internal server error'
-      )
-    )
+    return false
   }
+
+  const uidValidation = validateContentTypeUID(contentType)
+  if (!uidValidation.isValid) {
+    res.status(HTTP_STATUS.BAD_REQUEST).json(
+      validationErrorResponse(uidValidation.errors.map(e => e.message))
+    )
+    return false
+  }
+
+  return true
 }
+
+const router = createRouter()
+
+// GET - Find entries or a specific entry
+router.get(async ({ req, res, user, params }) => {
+  const { contentType, id } = params
+  
+  if (!validateContentType(contentType, res)) return
+    // Check permission only if user is authenticated
+    if (user) {
+      const permissionCheck = await checkPermission(
+        user.userId,
+        'content:read',
+        {
+          resource: 'content',
+          action: 'read',
+          ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
+          userAgent: req.headers['user-agent'] as string,
+        }
+      )
+
+      if (!permissionCheck.allowed) {
+        res.status(HTTP_STATUS.FORBIDDEN).json(
+          forbiddenResponse(permissionCheck.error)
+        )
+        return
+      }
+    }
+
+    // Get specific entry by ID
+    if (id && typeof id === 'string') {
+      const idValidation = validateId(id)
+      if (!idValidation.isValid) {
+        res.status(HTTP_STATUS.BAD_REQUEST).json(
+          validationErrorResponse(idValidation.errors.map(e => e.message))
+        )
+        return
+      }
+
+      const entryId = parseInt(id, 10)
+      const entry = await findOne(contentType, entryId)
+      if (!entry) {
+        res.status(HTTP_STATUS.NOT_FOUND).json(notFoundResponse('Entry'))
+        return
+      }
+
+      res.status(HTTP_STATUS.OK).json(successResponse(entry))
+      return
+    }
+
+    // Validate pagination parameters
+    const paginationValidation = validatePaginationParams(
+      params.skip as string | undefined,
+      params.take as string | undefined
+    )
+    if (!paginationValidation.isValid) {
+      res.status(HTTP_STATUS.BAD_REQUEST).json(
+        validationErrorResponse(paginationValidation.errors.map(e => e.message))
+      )
+      return
+    }
+
+    // Get all entries with optional filters
+    const entries = await findMany(contentType, {
+      where: params.where ? JSON.parse(params.where as string) : undefined,
+      orderBy: params.orderBy ? JSON.parse(params.orderBy as string) : undefined,
+      skip: params.skip ? parseInt(params.skip as string, 10) : undefined,
+      take: params.take ? parseInt(params.take as string, 10) : undefined,
+    })
+
+    // Get total count if requested
+    let total: number | undefined
+    if (params.count === 'true') {
+      total = await count(
+        contentType,
+        params.where ? JSON.parse(params.where as string) : undefined
+      )
+    }
+
+    const response = total !== undefined 
+      ? { data: entries, total }
+      : entries
+
+    res.status(HTTP_STATUS.OK).json(successResponse(response))
+})
+
+// POST - Create new entry
+router.post(async ({ req, res, user, params }) => {
+  const { contentType } = params
+  
+  if (!validateContentType(contentType, res)) return
+
+  // Require authentication for create operations
+  if (!user) {
+    res.status(HTTP_STATUS.UNAUTHORIZED).json(unauthorizedResponse())
+    return
+  }
+
+  // Check permission
+  const permissionCheck = await checkPermission(
+    user.userId,
+    'content:create',
+    {
+      resource: 'content',
+      action: 'create',
+      ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
+      userAgent: req.headers['user-agent'] as string,
+    }
+  )
+
+  if (!permissionCheck.allowed) {
+    res.status(HTTP_STATUS.FORBIDDEN).json(
+      forbiddenResponse(permissionCheck.error)
+    )
+    return
+  }
+
+  const data = req.body
+
+  if (!data || typeof data !== 'object') {
+    res.status(HTTP_STATUS.BAD_REQUEST).json(
+      badRequestResponse('Request body must be an object')
+    )
+    return
+  }
+
+  const entry = await create(contentType as string, { data })
+  res.status(HTTP_STATUS.CREATED).json(successResponse(entry))
+})
+
+// PUT - Update existing entry
+router.put(async ({ req, res, user, params }) => {
+  const { contentType, id } = params
+  
+  if (!validateContentType(contentType, res)) return
+
+  // Require authentication for update operations
+  if (!user) {
+    res.status(HTTP_STATUS.UNAUTHORIZED).json(unauthorizedResponse())
+    return
+  }
+
+  // Check permission
+  const permissionCheck = await checkPermission(
+    user.userId,
+    'content:update',
+    {
+      resource: 'content',
+      action: 'update',
+      resourceId: id ? parseInt(id as string, 10) : undefined,
+      ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
+      userAgent: req.headers['user-agent'] as string,
+    }
+  )
+
+  if (!permissionCheck.allowed) {
+    res.status(HTTP_STATUS.FORBIDDEN).json(
+      forbiddenResponse(permissionCheck.error)
+    )
+    return
+  }
+
+  if (!id || typeof id !== 'string') {
+    res.status(HTTP_STATUS.BAD_REQUEST).json(
+      badRequestResponse('ID parameter is required for updates')
+    )
+    return
+  }
+
+  const idValidation = validateId(id)
+  if (!idValidation.isValid) {
+    res.status(HTTP_STATUS.BAD_REQUEST).json(
+      validationErrorResponse(idValidation.errors.map(e => e.message))
+    )
+    return
+  }
+
+  const entryId = parseInt(id, 10)
+  const data = req.body
+
+  if (!data || typeof data !== 'object') {
+    res.status(HTTP_STATUS.BAD_REQUEST).json(
+      badRequestResponse('Request body must be an object')
+    )
+    return
+  }
+
+  const entry = await update(contentType as string, {
+    where: { id: entryId },
+    data,
+  })
+
+  res.status(HTTP_STATUS.OK).json(successResponse(entry))
+})
+
+// DELETE - Delete entry
+router.delete(async ({ req, res, user, params }) => {
+  const { contentType, id } = params
+  
+  if (!validateContentType(contentType, res)) return
+
+  // Require authentication for delete operations
+  if (!user) {
+    res.status(HTTP_STATUS.UNAUTHORIZED).json(unauthorizedResponse())
+    return
+  }
+
+  // Check permission
+  const permissionCheck = await checkPermission(
+    user.userId,
+    'content:delete',
+    {
+      resource: 'content',
+      action: 'delete',
+      resourceId: id ? parseInt(id as string, 10) : undefined,
+      ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
+      userAgent: req.headers['user-agent'] as string,
+    }
+  )
+
+  if (!permissionCheck.allowed) {
+    res.status(HTTP_STATUS.FORBIDDEN).json(
+      forbiddenResponse(permissionCheck.error)
+    )
+    return
+  }
+
+  if (!id || typeof id !== 'string') {
+    res.status(HTTP_STATUS.BAD_REQUEST).json(
+      badRequestResponse('ID parameter is required for deletion')
+    )
+    return
+  }
+
+  const idValidation = validateId(id)
+  if (!idValidation.isValid) {
+    res.status(HTTP_STATUS.BAD_REQUEST).json(
+      validationErrorResponse(idValidation.errors.map(e => e.message))
+    )
+    return
+  }
+
+  const entryId = parseInt(id, 10)
+
+  await deleteOne(contentType as string, {
+    where: { id: entryId },
+  })
+
+  res.status(HTTP_STATUS.OK).json(
+    successResponse({ message: 'Entry deleted successfully' })
+  )
+})
+
+export default createHandler(async (context) => {
+  await router.handle(context)
+}, { optionalAuth: true })
