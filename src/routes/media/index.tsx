@@ -8,28 +8,18 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { useState, useRef } from 'react'
 import { requireAuth } from '@/lib/auth-utils'
+import {
+  fetchMediaFiles,
+  fetchMediaProviderInfo,
+  uploadMediaFile,
+  deleteMediaFile,
+} from '@/services/queryFunctions'
+import { queryKeys, invalidateDomain } from '@/services/queryKeys'
 
 export const Route = createFileRoute('/media/')({
   beforeLoad: () => requireAuth('/media'),
   component: MediaManagerPage,
 })
-
-interface MediaFile {
-  id: string
-  name: string
-  originalName: string
-  mimeType: string
-  size: number
-  url: string
-  provider: string
-  createdAt: string
-  updatedAt: string
-}
-
-interface ProviderInfo {
-  name: string
-  provider: string
-}
 
 function MediaManagerPage() {
   const queryClient = useQueryClient()
@@ -38,61 +28,28 @@ function MediaManagerPage() {
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null)
 
   // Fetch provider info
-  const { data: providerData } = useQuery<{ success: boolean; data: ProviderInfo }>({
-    queryKey: ['media-provider'],
-    queryFn: async () => {
-      const token = sessionStorage.getItem('authToken')
-      const response = await fetch('/api/media?action=provider-info', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      if (!response.ok) throw new Error('Failed to fetch provider info')
-      return response.json()
-    },
+  const { data: providerData } = useQuery({
+    queryKey: queryKeys.media.providerInfo(),
+    queryFn: fetchMediaProviderInfo,
   })
 
   // Fetch files
-  const { data: filesData, isLoading, error, refetch } = useQuery<{ success: boolean; data: MediaFile[] }>({
-    queryKey: ['media-files'],
-    queryFn: async () => {
-      const token = sessionStorage.getItem('authToken')
-      const response = await fetch('/api/media', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      if (!response.ok) throw new Error('Failed to fetch files')
-      return response.json()
-    },
+  const { data: files, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.media.lists(),
+    queryFn: fetchMediaFiles,
   })
 
   // Upload mutation
   const uploadMutation = useMutation({
-    mutationFn: async (file: File) => {
-      const token = sessionStorage.getItem('authToken')
+    mutationFn: (file: File) => {
       const formData = new FormData()
       formData.append('file', file)
-
-      const response = await fetch('/api/media', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to upload file')
-      }
-
-      return response.json()
+      return uploadMediaFile(formData)
     },
     onSuccess: () => {
       setUploadSuccess('File uploaded successfully!')
       setUploadError(null)
-      queryClient.invalidateQueries({ queryKey: ['media-files'] })
+      queryClient.invalidateQueries({ queryKey: invalidateDomain.media() })
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
@@ -106,24 +63,9 @@ function MediaManagerPage() {
 
   // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: async (fileId: string) => {
-      const token = sessionStorage.getItem('authToken')
-      const response = await fetch(`/api/media?id=${encodeURIComponent(fileId)}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to delete file')
-      }
-
-      return response.json()
-    },
+    mutationFn: deleteMediaFile,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['media-files'] })
+      queryClient.invalidateQueries({ queryKey: invalidateDomain.media() })
     },
   })
 
@@ -150,8 +92,7 @@ function MediaManagerPage() {
 
   const isImage = (mimeType: string) => mimeType.startsWith('image/')
 
-  const files = filesData?.data || []
-  const provider = providerData?.data
+  const provider = providerData
 
   return (
     <div className="space-y-6">
@@ -225,7 +166,7 @@ function MediaManagerPage() {
       {/* Files grid */}
       <div>
         <h2 className="text-lg font-semibold mb-4">
-          Files ({files.length})
+          Files ({files?.length || 0})
         </h2>
 
         {isLoading && (
@@ -242,7 +183,7 @@ function MediaManagerPage() {
           </Alert>
         )}
 
-        {!isLoading && !error && files.length === 0 && (
+        {!isLoading && !error && (!files || files.length === 0) && (
           <Card className="p-12 text-center text-slate-600">
             <Upload size={48} className="mx-auto mb-4 text-slate-400" />
             <p>No files uploaded yet</p>
@@ -250,7 +191,7 @@ function MediaManagerPage() {
           </Card>
         )}
 
-        {!isLoading && !error && files.length > 0 && (
+        {!isLoading && !error && files && files.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {files.map((file) => (
               <Card key={file.id} className="overflow-hidden">

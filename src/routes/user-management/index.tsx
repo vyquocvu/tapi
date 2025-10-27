@@ -1,12 +1,33 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
-import { UserPlus, Edit, Trash2, Users } from 'lucide-react'
+import { UserPlus, Edit, Trash2, Users, Shield } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Checkbox } from '@/components/ui/checkbox'
+import { toast } from 'sonner'
+import {
+  fetchUsers,
+  fetchUser,
+  createUser,
+  updateUser,
+  deleteUser,
+  fetchRoles,
+  assignRoleToUser,
+  removeRoleFromUser,
+  type User,
+} from '@/services/queryFunctions'
+import { queryKeys, invalidateDomain } from '@/services/queryKeys'
 
 export const Route = createFileRoute('/user-management/')({
   beforeLoad: async () => {
@@ -18,108 +39,13 @@ export const Route = createFileRoute('/user-management/')({
   component: UserManagementComponent,
 })
 
-interface User {
-  id: number
-  email: string
-  name: string
-  bio: string | null
-  avatar: string | null
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
-}
-
-async function fetchUsers(): Promise<User[]> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch('/api/users', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch users')
-  }
-
-  const data = await response.json()
-  return data.data
-}
-
-async function createUser(userData: {
-  email: string
-  password: string
-  name: string
-  bio?: string
-  isActive?: boolean
-}): Promise<User> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch('/api/users', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(userData),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to create user')
-  }
-
-  const data = await response.json()
-  return data.data
-}
-
-async function updateUser(
-  id: number,
-  userData: Partial<{
-    email: string
-    password: string
-    name: string
-    bio: string
-    isActive: boolean
-  }>
-): Promise<User> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch(`/api/users?id=${id}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(userData),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to update user')
-  }
-
-  const data = await response.json()
-  return data.data
-}
-
-async function deleteUser(id: number): Promise<void> {
-  const token = sessionStorage.getItem('authToken')
-  const response = await fetch(`/api/users?id=${id}`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to delete user')
-  }
-}
-
 function UserManagementComponent() {
   const queryClient = useQueryClient()
   const { user: currentUser } = useAuth()
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [managingRolesUser, setManagingRolesUser] = useState<User | null>(null)
+  const [selectedRoles, setSelectedRoles] = useState<Set<number>>(new Set())
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -128,45 +54,78 @@ function UserManagementComponent() {
     isActive: true,
   })
 
-  const { data: users, isLoading: usersLoading } = useQuery<User[]>({
-    queryKey: ['users'],
+  const { data: users, isLoading: usersLoading } = useQuery({
+    queryKey: queryKeys.users.lists(),
     queryFn: fetchUsers,
+  })
+
+  const { data: roles } = useQuery({
+    queryKey: queryKeys.roles.lists(),
+    queryFn: fetchRoles,
+  })
+
+  const { data: userWithRoles } = useQuery({
+    queryKey: queryKeys.users.detail(managingRolesUser?.id || 0, true),
+    queryFn: () => fetchUser(managingRolesUser!.id, true),
+    enabled: !!managingRolesUser,
   })
 
   const createMutation = useMutation({
     mutationFn: createUser,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] })
+      queryClient.invalidateQueries({ queryKey: invalidateDomain.users() })
       setShowCreateForm(false)
       resetForm()
-      alert('User created successfully')
+      toast.success('User created successfully')
     },
     onError: (error: Error) => {
-      alert(error.message)
+      toast.error(error.message)
     },
   })
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) => updateUser(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] })
+      queryClient.invalidateQueries({ queryKey: invalidateDomain.users() })
       setEditingUser(null)
       resetForm()
-      alert('User updated successfully')
+      toast.success('User updated successfully')
     },
     onError: (error: Error) => {
-      alert(error.message)
+      toast.error(error.message)
     },
   })
 
   const deleteMutation = useMutation({
     mutationFn: deleteUser,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] })
-      alert('User deleted successfully')
+      queryClient.invalidateQueries({ queryKey: invalidateDomain.users() })
+      toast.success('User deleted successfully')
     },
     onError: (error: Error) => {
-      alert(error.message)
+      toast.error(error.message)
+    },
+  })
+
+  const assignRoleMutation = useMutation({
+    mutationFn: ({ userId, roleId }: { userId: number; roleId: number }) =>
+      assignRoleToUser(userId, roleId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: invalidateDomain.users() })
+    },
+    onError: (error: Error) => {
+      toast.error(error.message)
+    },
+  })
+
+  const removeRoleMutation = useMutation({
+    mutationFn: ({ userId, roleId }: { userId: number; roleId: number }) =>
+      removeRoleFromUser(userId, roleId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: invalidateDomain.users() })
+    },
+    onError: (error: Error) => {
+      toast.error(error.message)
     },
   })
 
@@ -220,6 +179,64 @@ function UserManagementComponent() {
       deleteMutation.mutate(id)
     }
   }
+
+  const openRolesDialog = (user: User) => {
+    setManagingRolesUser(user)
+    setSelectedRoles(new Set()) // Reset selected roles
+  }
+
+  const handleSaveRoles = async () => {
+    if (!managingRolesUser || !userWithRoles) return
+
+    const currentRoleIds = new Set(userWithRoles.roles?.map((role) => role.id) || [])
+    const newRoleIds = selectedRoles
+
+    // Find roles to add and remove
+    const toAdd = Array.from(newRoleIds).filter((id) => !currentRoleIds.has(id))
+    const toRemove = Array.from(currentRoleIds).filter((id) => !newRoleIds.has(id))
+
+    try {
+      // Add new roles
+      for (const roleId of toAdd) {
+        await assignRoleMutation.mutateAsync({
+          userId: managingRolesUser.id,
+          roleId,
+        })
+      }
+
+      // Remove old roles
+      for (const roleId of toRemove) {
+        await removeRoleMutation.mutateAsync({
+          userId: managingRolesUser.id,
+          roleId,
+        })
+      }
+
+      setManagingRolesUser(null)
+      setSelectedRoles(new Set())
+      toast.success('User roles updated successfully')
+    } catch (error) {
+      // Errors are handled by mutation onError
+    }
+  }
+
+  const toggleRole = (roleId: number) => {
+    const newSelected = new Set(selectedRoles)
+    if (newSelected.has(roleId)) {
+      newSelected.delete(roleId)
+    } else {
+      newSelected.add(roleId)
+    }
+    setSelectedRoles(newSelected)
+  }
+
+  // Update selected roles when user roles are loaded
+  useEffect(() => {
+    if (userWithRoles && managingRolesUser) {
+      const roleIds = new Set(userWithRoles.roles?.map((role) => role.id) || [])
+      setSelectedRoles(roleIds)
+    }
+  }, [userWithRoles, managingRolesUser])
 
   return (
     <div className="space-y-6">
@@ -327,8 +344,7 @@ function UserManagementComponent() {
           </form>
         </Card>
       )}
-
-      {!showCreateForm ? (
+      {!showCreateForm && (
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Users</h2>
           {usersLoading ? (
@@ -354,10 +370,11 @@ function UserManagementComponent() {
                       <td className="p-3">{user.email}</td>
                       <td className="p-3">
                         <span
-                          className={`px-2 py-1 rounded text-xs font-medium ${user.isActive
+                          className={`px-2 py-1 rounded text-xs font-medium ${
+                            user.isActive
                               ? 'bg-green-100 text-green-800'
                               : 'bg-red-100 text-red-800'
-                            }`}
+                          }`}
                         >
                           {user.isActive ? 'Active' : 'Inactive'}
                         </span>
@@ -367,6 +384,14 @@ function UserManagementComponent() {
                       </td>
                       <td className="p-3">
                         <div className="flex gap-2 justify-end">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openRolesDialog(user)}
+                            title="Manage Roles"
+                          >
+                            <Shield className="h-4 w-4" />
+                          </Button>
                           <Button
                             variant="outline"
                             size="sm"
@@ -393,7 +418,71 @@ function UserManagementComponent() {
               </table>
             </div>
           )}
-        </Card>) : ''}
+        </Card>
+      )}
+
+      {/* Roles Management Dialog */}
+      <Dialog
+        open={!!managingRolesUser}
+        onOpenChange={(open) => {
+          if (!open) {
+            setManagingRolesUser(null)
+            setSelectedRoles(new Set())
+          }
+        }}
+      >
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Manage Roles for {managingRolesUser?.name}</DialogTitle>
+            <DialogDescription>
+              Select the roles this user should have. Changes will be saved when you click Save.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {roles?.map((role) => (
+              <div key={role.id} className="flex items-start space-x-3">
+                <Checkbox
+                  id={`role-${role.id}`}
+                  checked={selectedRoles.has(role.id)}
+                  onCheckedChange={() => toggleRole(role.id)}
+                />
+                <div className="grid gap-1 leading-none">
+                  <label
+                    htmlFor={`role-${role.id}`}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                  >
+                    {role.name}
+                  </label>
+                  {role.description && (
+                    <p className="text-xs text-muted-foreground">
+                      {role.description}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setManagingRolesUser(null)
+                setSelectedRoles(new Set())
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveRoles}
+              disabled={assignRoleMutation.isPending || removeRoleMutation.isPending}
+            >
+              {assignRoleMutation.isPending || removeRoleMutation.isPending ? 'Saving...' : 'Save Roles'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

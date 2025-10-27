@@ -1140,14 +1140,14 @@
 
 "@floating-ui/core@^1.7.3":
   version "1.7.3"
-  resolved "https://registry.yarnpkg.com/@floating-ui/core/-/core-1.7.3.tgz#462d722f001e23e46d86fd2bd0d21b7693ccb8b7"
+  resolved "https://registry.npmjs.org/@floating-ui/core/-/core-1.7.3.tgz"
   integrity sha512-sGnvb5dmrJaKEZ+LDIpguvdX3bDlEllmv4/ClQ9awcmCZrlx5jQyyMWFM5kBI+EyNOCDDiKk8il0zeuX3Zlg/w==
   dependencies:
     "@floating-ui/utils" "^0.2.10"
 
 "@floating-ui/dom@^1.7.4":
   version "1.7.4"
-  resolved "https://registry.yarnpkg.com/@floating-ui/dom/-/dom-1.7.4.tgz#ee667549998745c9c3e3e84683b909c31d6c9a77"
+  resolved "https://registry.npmjs.org/@floating-ui/dom/-/dom-1.7.4.tgz"
   integrity sha512-OOchDgh4F2CchOX94cRVqhvy7b3AFb+/rQXyswmzmGakRfkMgoWVjfnLWkRirfLEfuD4ysVW16eXzwt3jHIzKA==
   dependencies:
     "@floating-ui/core" "^1.7.3"
@@ -1155,14 +1155,14 @@
 
 "@floating-ui/react-dom@^2.0.0":
   version "2.1.6"
-  resolved "https://registry.yarnpkg.com/@floating-ui/react-dom/-/react-dom-2.1.6.tgz#189f681043c1400561f62972f461b93f01bf2231"
+  resolved "https://registry.npmjs.org/@floating-ui/react-dom/-/react-dom-2.1.6.tgz"
   integrity sha512-4JX6rEatQEvlmgU80wZyq9RT96HZJa88q8hp0pBd+LrczeDI4o6uA2M+uvxngVHo4Ihr8uibXxH6+70zhAFrVw==
   dependencies:
     "@floating-ui/dom" "^1.7.4"
 
 "@floating-ui/utils@^0.2.10":
   version "0.2.10"
-  resolved "https://registry.yarnpkg.com/@floating-ui/utils/-/utils-0.2.10.tgz#a2a1e3812d14525f725d011a73eceb41fef5bc1c"
+  resolved "https://registry.npmjs.org/@floating-ui/utils/-/utils-0.2.10.tgz"
   integrity sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==
 
 "@google-cloud/paginator@^5.0.0":
@@ -1301,12 +1301,12 @@
 
 "@prisma/client@6.18.0":
   version "6.18.0"
-  resolved "https://registry.yarnpkg.com/@prisma/client/-/client-6.18.0.tgz#95f0efe03b5827d9bf5c80b6b7298e46094b5fbf"
+  resolved "https://registry.npmjs.org/@prisma/client/-/client-6.18.0.tgz"
   integrity sha512-jnL2I9gDnPnw4A+4h5SuNn8Gc+1mL1Z79U/3I9eE2gbxJG1oSA+62ByPW4xkeDgwE0fqMzzpAZ7IHxYnLZ4iQA==
 
 "@prisma/config@6.18.0":
   version "6.18.0"
-  resolved "https://registry.yarnpkg.com/@prisma/config/-/config-6.18.0.tgz#3f8f2eca12ceb41f81e34b186b3aa2619959086c"
+  resolved "https://registry.npmjs.org/@prisma/config/-/config-6.18.0.tgz"
   integrity sha512-rgFzspCpwsE+q3OF/xkp0fI2SJ3PfNe9LLMmuSVbAZ4nN66WfBiKqJKo/hLz3ysxiPQZf8h1SMf2ilqPMeWATQ==
   dependencies:
     c12 "3.1.0"
@@ -1316,17 +1316,17 @@
 
 "@prisma/debug@6.18.0":
   version "6.18.0"
-  resolved "https://registry.yarnpkg.com/@prisma/debug/-/debug-6.18.0.tgz#e0137fa407b6d10b00ba5ff6e37733341c505d9c"
+  resolved "https://registry.npmjs.org/@prisma/debug/-/debug-6.18.0.tgz"
   integrity sha512-PMVPMmxPj0ps1VY75DIrT430MoOyQx9hmm174k6cmLZpcI95rAPXOQ+pp8ANQkJtNyLVDxnxVJ0QLbrm/ViBcg==
 
 "@prisma/engines-version@6.18.0-8.34b5a692b7bd79939a9a2c3ef97d816e749cda2f":
   version "6.18.0-8.34b5a692b7bd79939a9a2c3ef97d816e749cda2f"
-  resolved "https://registry.yarnpkg.com/@prisma/engines-version/-/engines-version-6.18.0-8.34b5a692b7bd79939a9a2c3ef97d816e749cda2f.tgz#bc99947a00f3481679bc8ccb3ed38a15f5b3afbd"
+  resolved "https://registry.npmjs.org/@prisma/engines-version/-/engines-version-6.18.0-8.34b5a692b7bd79939a9a2c3ef97d816e749cda2f.tgz"
   integrity sha512-T7Af4QsJQnSgWN1zBbX+Cha5t4qjHRxoeoWpK4JugJzG/ipmmDMY5S+O0N1ET6sCBNVkf6lz+Y+ZNO9+wFU8pQ==
 
 "@prisma/engines@6.18.0":
   version "6.18.0"
-  resolved "https://registry.yarnpkg.com/@prisma/engines/-/engines-6.18.0.tgz#e1048e6dbb491f7b6eae367ea4674f295e4bd532"
+  resolved "https://registry.npmjs.org/@prisma/engines/-/engines-6.18.0.tgz"
   integrity sha512-i5RzjGF/ex6AFgqEe2o1IW8iIxJGYVQJVRau13kHPYEL1Ck8Zvwuzamqed/1iIljs5C7L+Opiz5TzSsUebkriA==
   dependencies:
     "@prisma/debug" "6.18.0"
@@ -1336,7 +1336,7 @@
 
 "@prisma/fetch-engine@6.18.0":
   version "6.18.0"
-  resolved "https://registry.yarnpkg.com/@prisma/fetch-engine/-/fetch-engine-6.18.0.tgz#448367111b1cff9bbf2bc906c29e8e2216d5f3c3"
+  resolved "https://registry.npmjs.org/@prisma/fetch-engine/-/fetch-engine-6.18.0.tgz"
   integrity sha512-TdaBvTtBwP3IoqVYoGIYpD4mWlk0pJpjTJjir/xLeNWlwog7Sl3bD2J0jJ8+5+q/6RBg+acb9drsv5W6lqae7A==
   dependencies:
     "@prisma/debug" "6.18.0"
@@ -1345,10 +1345,15 @@
 
 "@prisma/get-platform@6.18.0":
   version "6.18.0"
-  resolved "https://registry.yarnpkg.com/@prisma/get-platform/-/get-platform-6.18.0.tgz#807bcbfd30affabafec54d128ad755850f707af2"
+  resolved "https://registry.npmjs.org/@prisma/get-platform/-/get-platform-6.18.0.tgz"
   integrity sha512-uXNJCJGhxTCXo2B25Ta91Rk1/Nmlqg9p7G9GKh8TPhxvAyXCvMNQoogj4JLEUy+3ku8g59cpyQIKFhqY2xO2bg==
   dependencies:
     "@prisma/debug" "6.18.0"
+
+"@radix-ui/number@1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@radix-ui/number/-/number-1.1.1.tgz#7b2c9225fbf1b126539551f5985769d0048d9090"
+  integrity sha512-MkKCwxlXTgz6CFoJx3pCwn07GKp36+aZyu/u2Ln2VrA5DcdyCZkASEDBTd8x5whTQQL5CiYf4prXKLcgQdv29g==
 
 "@radix-ui/primitive@1.1.3":
   version "1.1.3"
@@ -1369,10 +1374,48 @@
 
 "@radix-ui/react-arrow@1.1.7":
   version "1.1.7"
-  resolved "https://registry.yarnpkg.com/@radix-ui/react-arrow/-/react-arrow-1.1.7.tgz#e14a2657c81d961598c5e72b73dd6098acc04f09"
+  resolved "https://registry.npmjs.org/@radix-ui/react-arrow/-/react-arrow-1.1.7.tgz"
   integrity sha512-F+M1tLhO+mlQaOWspE8Wstg+z6PwxwRd8oQ8IXceWz92kfAmalTRf0EjrouQeo7QssEPfCn05B4Ihs1K9WQ/7w==
   dependencies:
     "@radix-ui/react-primitive" "2.1.3"
+
+"@radix-ui/react-checkbox@^1.3.3":
+  version "1.3.3"
+  resolved "https://registry.npmjs.org/@radix-ui/react-checkbox/-/react-checkbox-1.3.3.tgz"
+  integrity sha512-wBbpv+NQftHDdG86Qc0pIyXk5IR3tM8Vd0nWLKDcX8nNn4nXFOFwsKuqw2okA/1D/mpaAkmuyndrPJTYDNZtFw==
+  dependencies:
+    "@radix-ui/primitive" "1.1.3"
+    "@radix-ui/react-compose-refs" "1.1.2"
+    "@radix-ui/react-context" "1.1.2"
+    "@radix-ui/react-presence" "1.1.5"
+    "@radix-ui/react-primitive" "2.1.3"
+    "@radix-ui/react-use-controllable-state" "1.2.2"
+    "@radix-ui/react-use-previous" "1.1.1"
+    "@radix-ui/react-use-size" "1.1.1"
+
+"@radix-ui/react-collapsible@^1.1.12":
+  version "1.1.12"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-collapsible/-/react-collapsible-1.1.12.tgz#e2cc69a4490a2920f97c3c3150b0bf21281e3c49"
+  integrity sha512-Uu+mSh4agx2ib1uIGPP4/CKNULyajb3p92LsVXmH2EHVMTfZWpll88XJ0j4W0z3f8NK1eYl1+Mf/szHPmcHzyA==
+  dependencies:
+    "@radix-ui/primitive" "1.1.3"
+    "@radix-ui/react-compose-refs" "1.1.2"
+    "@radix-ui/react-context" "1.1.2"
+    "@radix-ui/react-id" "1.1.1"
+    "@radix-ui/react-presence" "1.1.5"
+    "@radix-ui/react-primitive" "2.1.3"
+    "@radix-ui/react-use-controllable-state" "1.2.2"
+    "@radix-ui/react-use-layout-effect" "1.1.1"
+
+"@radix-ui/react-collection@1.1.7":
+  version "1.1.7"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-collection/-/react-collection-1.1.7.tgz#d05c25ca9ac4695cc19ba91f42f686e3ea2d9aec"
+  integrity sha512-Fh9rGN0MoI4ZFUNyfFVNU4y9LUz93u9/0K+yLgA2bwRojxM8JU1DyvvMBabnZPBgMWREAJvU2jjVzq+LrFUglw==
+  dependencies:
+    "@radix-ui/react-compose-refs" "1.1.2"
+    "@radix-ui/react-context" "1.1.2"
+    "@radix-ui/react-primitive" "2.1.3"
+    "@radix-ui/react-slot" "1.2.3"
 
 "@radix-ui/react-compose-refs@1.1.2":
   version "1.1.2"
@@ -1403,6 +1446,11 @@
     "@radix-ui/react-use-controllable-state" "1.2.2"
     aria-hidden "^1.2.4"
     react-remove-scroll "^2.6.3"
+
+"@radix-ui/react-direction@1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-direction/-/react-direction-1.1.1.tgz#39e5a5769e676c753204b792fbe6cf508e550a14"
+  integrity sha512-1UEWRX6jnOA2y4H5WczZ44gOOjTEmlqv1uNW4GAJEO5+bauCBhv8snY65Iw5/VOS/ghKN9gr2KjnLKxrsvoMVw==
 
 "@radix-ui/react-dismissable-layer@1.1.11":
   version "1.1.11"
@@ -1445,7 +1493,7 @@
 
 "@radix-ui/react-popper@1.2.8":
   version "1.2.8"
-  resolved "https://registry.yarnpkg.com/@radix-ui/react-popper/-/react-popper-1.2.8.tgz#a79f39cdd2b09ab9fb50bf95250918422c4d9602"
+  resolved "https://registry.npmjs.org/@radix-ui/react-popper/-/react-popper-1.2.8.tgz"
   integrity sha512-0NJQ4LFFUuWkE7Oxf0htBKS6zLkkjBH+hM1uk7Ng705ReR8m/uelduy1DBo0PyBXPKVnBA6YBlU94MBGXrSBCw==
   dependencies:
     "@floating-ui/react-dom" "^2.0.0"
@@ -1482,30 +1530,50 @@
   dependencies:
     "@radix-ui/react-slot" "1.2.3"
 
+"@radix-ui/react-select@^2.2.6":
+  version "2.2.6"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-select/-/react-select-2.2.6.tgz#022cf8dab16bf05d0d1b4df9e53e4bea1b744fd9"
+  integrity sha512-I30RydO+bnn2PQztvo25tswPH+wFBjehVGtmagkU78yMdwTwVf12wnAOF+AeP8S2N8xD+5UPbGhkUfPyvT+mwQ==
+  dependencies:
+    "@radix-ui/number" "1.1.1"
+    "@radix-ui/primitive" "1.1.3"
+    "@radix-ui/react-collection" "1.1.7"
+    "@radix-ui/react-compose-refs" "1.1.2"
+    "@radix-ui/react-context" "1.1.2"
+    "@radix-ui/react-direction" "1.1.1"
+    "@radix-ui/react-dismissable-layer" "1.1.11"
+    "@radix-ui/react-focus-guards" "1.1.3"
+    "@radix-ui/react-focus-scope" "1.1.7"
+    "@radix-ui/react-id" "1.1.1"
+    "@radix-ui/react-popper" "1.2.8"
+    "@radix-ui/react-portal" "1.1.9"
+    "@radix-ui/react-primitive" "2.1.3"
+    "@radix-ui/react-slot" "1.2.3"
+    "@radix-ui/react-use-callback-ref" "1.1.1"
+    "@radix-ui/react-use-controllable-state" "1.2.2"
+    "@radix-ui/react-use-layout-effect" "1.1.1"
+    "@radix-ui/react-use-previous" "1.1.1"
+    "@radix-ui/react-visually-hidden" "1.2.3"
+    aria-hidden "^1.2.4"
+    react-remove-scroll "^2.6.3"
+
 "@radix-ui/react-separator@^1.1.7":
   version "1.1.7"
-  resolved "https://registry.yarnpkg.com/@radix-ui/react-separator/-/react-separator-1.1.7.tgz#a18bd7fd07c10fda1bba14f2a3032e7b1a2b3470"
+  resolved "https://registry.npmjs.org/@radix-ui/react-separator/-/react-separator-1.1.7.tgz"
   integrity sha512-0HEb8R9E8A+jZjvmFCy/J4xhbXy3TV+9XSnGJ3KvTtjlIUy/YQ/p6UYZvi7YbeoeXdyU9+Y3scizK6hkY37baA==
   dependencies:
     "@radix-ui/react-primitive" "2.1.3"
 
-"@radix-ui/react-slot@1.2.3":
+"@radix-ui/react-slot@1.2.3", "@radix-ui/react-slot@^1.2.3":
   version "1.2.3"
   resolved "https://registry.npmjs.org/@radix-ui/react-slot/-/react-slot-1.2.3.tgz"
   integrity sha512-aeNmHnBxbi2St0au6VBVC7JXFlhLlOnvIIlePNniyUNAClzmtAUEY8/pBiK3iHjufOlwA+c20/8jngo7xcrg8A==
   dependencies:
     "@radix-ui/react-compose-refs" "1.1.2"
 
-"@radix-ui/react-slot@^1.2.3":
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/@radix-ui/react-slot/-/react-slot-1.2.3.tgz#502d6e354fc847d4169c3bc5f189de777f68cfe1"
-  integrity sha512-aeNmHnBxbi2St0au6VBVC7JXFlhLlOnvIIlePNniyUNAClzmtAUEY8/pBiK3iHjufOlwA+c20/8jngo7xcrg8A==
-  dependencies:
-    "@radix-ui/react-compose-refs" "1.1.2"
-
 "@radix-ui/react-tooltip@^1.2.8":
   version "1.2.8"
-  resolved "https://registry.yarnpkg.com/@radix-ui/react-tooltip/-/react-tooltip-1.2.8.tgz#3f50267e25bccfc9e20bb3036bfd9ab4c2c30c2c"
+  resolved "https://registry.npmjs.org/@radix-ui/react-tooltip/-/react-tooltip-1.2.8.tgz"
   integrity sha512-tY7sVt1yL9ozIxvmbtN5qtmH2krXcBCfjEiCgKGLqunJHvgvZG2Pcl2oQ3kbcZARb1BGEHdkLzcYGO8ynVlieg==
   dependencies:
     "@radix-ui/primitive" "1.1.3"
@@ -1553,30 +1621,35 @@
   resolved "https://registry.npmjs.org/@radix-ui/react-use-layout-effect/-/react-use-layout-effect-1.1.1.tgz"
   integrity sha512-RbJRS4UWQFkzHTTwVymMTUv8EqYhOp8dOOviLj2ugtTiXRaRQS7GLGxZTLL1jWhMeoSCf5zmcZkqTl9IiYfXcQ==
 
+"@radix-ui/react-use-previous@1.1.1":
+  version "1.1.1"
+  resolved "https://registry.npmjs.org/@radix-ui/react-use-previous/-/react-use-previous-1.1.1.tgz"
+  integrity sha512-2dHfToCj/pzca2Ck724OZ5L0EVrr3eHRNsG/b3xQJLA2hZpVCS99bLAX+hm1IHXDEnzU6by5z/5MIY794/a8NQ==
+
 "@radix-ui/react-use-rect@1.1.1":
   version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@radix-ui/react-use-rect/-/react-use-rect-1.1.1.tgz#01443ca8ed071d33023c1113e5173b5ed8769152"
+  resolved "https://registry.npmjs.org/@radix-ui/react-use-rect/-/react-use-rect-1.1.1.tgz"
   integrity sha512-QTYuDesS0VtuHNNvMh+CjlKJ4LJickCMUAqjlE3+j8w+RlRpwyX3apEQKGFzbZGdo7XNG1tXa+bQqIE7HIXT2w==
   dependencies:
     "@radix-ui/rect" "1.1.1"
 
 "@radix-ui/react-use-size@1.1.1":
   version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@radix-ui/react-use-size/-/react-use-size-1.1.1.tgz#6de276ffbc389a537ffe4316f5b0f24129405b37"
+  resolved "https://registry.npmjs.org/@radix-ui/react-use-size/-/react-use-size-1.1.1.tgz"
   integrity sha512-ewrXRDTAqAXlkl6t/fkXWNAhFX9I+CkKlw6zjEwk86RSPKwZr3xpBRso655aqYafwtnbpHLj6toFzmd6xdVptQ==
   dependencies:
     "@radix-ui/react-use-layout-effect" "1.1.1"
 
 "@radix-ui/react-visually-hidden@1.2.3":
   version "1.2.3"
-  resolved "https://registry.yarnpkg.com/@radix-ui/react-visually-hidden/-/react-visually-hidden-1.2.3.tgz#a8c38c8607735dc9f05c32f87ab0f9c2b109efbf"
+  resolved "https://registry.npmjs.org/@radix-ui/react-visually-hidden/-/react-visually-hidden-1.2.3.tgz"
   integrity sha512-pzJq12tEaaIhqjbzpCuv/OypJY/BPavOofm+dbab+MHLajy277+1lLm6JFcGgF5eskJ6mquGirhXY2GD/8u8Ug==
   dependencies:
     "@radix-ui/react-primitive" "2.1.3"
 
 "@radix-ui/rect@1.1.1":
   version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@radix-ui/rect/-/rect-1.1.1.tgz#78244efe12930c56fd255d7923865857c41ac8cb"
+  resolved "https://registry.npmjs.org/@radix-ui/rect/-/rect-1.1.1.tgz"
   integrity sha512-HPwpGIzkl28mWyZqG52jiqDJ12waP11Pa1lGoiyUkIEuMLBP0oeK/C89esbXrxsky5we7dfd8U58nm0SgAWpVw==
 
 "@rolldown/pluginutils@1.0.0-beta.27":
@@ -3102,7 +3175,7 @@ cjs-module-lexer@1.2.3:
 
 class-variance-authority@^0.7.1:
   version "0.7.1"
-  resolved "https://registry.yarnpkg.com/class-variance-authority/-/class-variance-authority-0.7.1.tgz#4008a798a0e4553a781a57ac5177c9fb5d043787"
+  resolved "https://registry.npmjs.org/class-variance-authority/-/class-variance-authority-0.7.1.tgz"
   integrity sha512-Ka+9Trutv7G8M6WT6SeiRWz792K5qEqIGEGzXKhAE6xOWAY6pPH8U+9IY3oCMv6kqTmLsv7Xh/2w2RigkePMsg==
   dependencies:
     clsx "^2.1.1"
@@ -3375,7 +3448,7 @@ ee-first@1.1.1:
 
 effect@3.18.4:
   version "3.18.4"
-  resolved "https://registry.yarnpkg.com/effect/-/effect-3.18.4.tgz#e241fde5cc090608c51c5e29e2da357bb5d0e815"
+  resolved "https://registry.npmjs.org/effect/-/effect-3.18.4.tgz"
   integrity sha512-b1LXQJLe9D11wfnOKAk3PKxuqYshQ0Heez+y5pnkd3jLj1yx9QhM72zZ9uUrOQyNvrs2GZZd/3maL0ZV18YuDA==
   dependencies:
     "@standard-schema/spec" "^1.0.0"
@@ -4334,7 +4407,7 @@ lru-cache@^5.1.1:
 
 lucide-react@^0.547.0:
   version "0.547.0"
-  resolved "https://registry.yarnpkg.com/lucide-react/-/lucide-react-0.547.0.tgz#fa3bee9384fb383ebe1fef1d80c0867aa9fa80a7"
+  resolved "https://registry.npmjs.org/lucide-react/-/lucide-react-0.547.0.tgz"
   integrity sha512-YLChGBWKq8ynr1UWP8WWRPhHhyuBAXfSBnHSgfoj51L//9TU3d0zvxpigf5C1IJ4vnEoTzthl5awPK55PiZhdA==
 
 make-dir@^3.1.0:
@@ -4513,6 +4586,11 @@ negotiator@^1.0.0:
   version "1.0.0"
   resolved "https://registry.npmjs.org/negotiator/-/negotiator-1.0.0.tgz"
   integrity sha512-8Ofs/AUQh8MaEcrlq5xOX0CQ9ypTF5dl78mjlMNfOK08fzpgTHQRQPBxcPlEtIw0yRpws+Zo/3r+5WRby7u3Gg==
+
+next-themes@^0.4.6:
+  version "0.4.6"
+  resolved "https://registry.yarnpkg.com/next-themes/-/next-themes-0.4.6.tgz#8d7e92d03b8fea6582892a50a928c9b23502e8b6"
+  integrity sha512-pZvgD5L0IEvX5/9GWyHMf3m8BKiVQwsCMHfoFosXtXBMnaS0ZnIJ9ST4b4NqLVKDEm8QBxoNNGNaBv2JNF6XNA==
 
 node-fetch-native@^1.6.6:
   version "1.6.7"
@@ -4783,7 +4861,7 @@ pretty-ms@7.0.1:
 
 prisma@6.18.0:
   version "6.18.0"
-  resolved "https://registry.yarnpkg.com/prisma/-/prisma-6.18.0.tgz#ac6e7d2687b49a53c516d9f5a296f7d0cb5664ea"
+  resolved "https://registry.npmjs.org/prisma/-/prisma-6.18.0.tgz"
   integrity sha512-bXWy3vTk8mnRmT+SLyZBQoC2vtV9Z8u7OHvEu+aULYxwiop/CPiFZ+F56KsNRNf35jw+8wcu8pmLsjxpBxAO9g==
   dependencies:
     "@prisma/config" "6.18.0"
@@ -5162,6 +5240,11 @@ signal-exit@^3.0.0:
   version "3.0.7"
   resolved "https://registry.npmjs.org/signal-exit/-/signal-exit-3.0.7.tgz"
   integrity sha512-wnD2ZE+l+SPC/uoS0vXeE9L1+0wuaMqKlfz9AMUo38JsyLSBWSFcHR1Rri62LZc12vLr1gb3jl7iwQhgwpAbGQ==
+
+sonner@^2.0.7:
+  version "2.0.7"
+  resolved "https://registry.yarnpkg.com/sonner/-/sonner-2.0.7.tgz#810c1487a67ec3370126e0f400dfb9edddc3e4f6"
+  integrity sha512-W6ZN4p58k8aDKA4XPcx2hpIQXBRAgyiWVkYhT7CvK6D3iAu7xjvVyhQHg2/iaKJZ1XVJ4r7XuwGL+WGEK37i9w==
 
 source-map-js@^1.2.1:
   version "1.2.1"

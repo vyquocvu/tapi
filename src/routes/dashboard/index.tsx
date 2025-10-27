@@ -1,26 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../../contexts/AuthContext'
-import type { Post } from '../../lib/types'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { requireAuth, fetchJSON } from '@/lib/auth-utils'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { requireAuth } from '@/lib/auth-utils'
 
 export const Route = createFileRoute('/dashboard/')({
   beforeLoad: () => requireAuth('/dashboard'),
   component: DashboardComponent,
 })
 
-async function fetchPosts(): Promise<Post[]> {
-  return fetchJSON<Post[]>('/api/posts')
-}
-
 function DashboardComponent() {
   const { user } = useAuth()
-  const { data: posts, isLoading, error } = useQuery<Post[]>({
-    queryKey: ['posts'],
-    queryFn: fetchPosts,
-  })
 
   return (
     <div className="space-y-6">
@@ -36,46 +25,6 @@ function DashboardComponent() {
           <p className="text-muted-foreground mt-2">Email: {user?.email}</p>
         </CardContent>
       </Card>
-
-      <div>
-        <h2 className="text-2xl font-semibold tracking-tight mb-4">Posts</h2>
-        
-        {isLoading && (
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-center text-muted-foreground">Loading posts...</p>
-            </CardContent>
-          </Card>
-        )}
-        
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>
-              Error loading posts: {error instanceof Error ? error.message : 'Unknown error'}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {posts && posts.length > 0 ? (
-          <div className="space-y-4">
-            {posts.map((post) => (
-              <Card key={post.id}>
-                <CardHeader>
-                  <CardTitle>{post.title}</CardTitle>
-                  <CardDescription>
-                    By {post.author?.name} • {new Date(post.createdAt).toLocaleDateString()}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">{post.body}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          !isLoading && <p className="text-muted-foreground">No posts available.</p>
-        )}
-      </div>
 
       <Card>
         <CardHeader>

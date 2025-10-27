@@ -44,11 +44,9 @@
         ],
         "default": "draft"
       },
-      "author": {
-        "type": "relation",
-        "relationType": "manyToOne",
-        "target": "api::user.user",
-        "required": true
+      "authorId": {
+        "type": "integer",
+        "required": false
       },
       "category": {
         "type": "relation",
@@ -80,43 +78,6 @@
       },
       "description": {
         "type": "text"
-      },
-      "articles": {
-        "type": "relation",
-        "relationType": "oneToMany",
-        "target": "api::article.article"
-      }
-    },
-    "options": {
-      "timestamps": true
-    }
-  },
-  "api::user.user": {
-    "uid": "api::user.user",
-    "displayName": "User",
-    "singularName": "user",
-    "pluralName": "users",
-    "description": "Application users",
-    "fields": {
-      "email": {
-        "type": "email",
-        "required": true,
-        "unique": true
-      },
-      "password": {
-        "type": "password",
-        "required": true
-      },
-      "name": {
-        "type": "string",
-        "required": true,
-        "maxLength": 255
-      },
-      "bio": {
-        "type": "text"
-      },
-      "avatar": {
-        "type": "string"
       },
       "articles": {
         "type": "relation",

@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent } from '@/components/ui/card'
 import { queryKeys } from '@/lib/queryKeys'
-import { requireAuth } from '@/lib/auth-utils'
 import {
   fetchContentTypesArray,
   fetchContentEntries,
@@ -15,7 +14,6 @@ import {
 import { ContentTypeSelector, EntriesList, EntryForm } from '@/components/content-manager'
 
 export const Route = createFileRoute('/content-manager/')({
-  beforeLoad: () => requireAuth('/content-manager'),
   component: ContentManagerComponent,
 })
 
@@ -41,11 +39,12 @@ function ContentManagerComponent() {
   const {
     data: entries,
     isLoading: entriesLoading,
+    isFetching: entriesFetching,
     error: entriesError,
   } = useQuery({
     queryKey: queryKeys.contentEntries.byType(selectedContentType!),
     queryFn: () => fetchContentEntries(selectedContentType!),
-    enabled: !!selectedContentType && mode === 'list',
+    enabled: !!selectedContentType,
   })
 
   // Create mutation
@@ -192,7 +191,7 @@ function ContentManagerComponent() {
         <EntriesList
           contentType={selectedContentTypeDef}
           entries={entries}
-          isLoading={entriesLoading}
+          isLoading={entriesLoading || entriesFetching}
           error={entriesError}
           selectedEntries={selectedEntries}
           onBack={() => setMode('select')}

@@ -28,8 +28,6 @@ model User {
   updatedAt DateTime @updatedAt
   
   // Relations
-  posts              Post[]
-  articles           Article[]
   createdRevisions   ContentRevision[] @relation("RevisionCreator")
   createdMetadata    ContentMetadata[] @relation("MetadataCreator")
   userRoles          UserRole[]
@@ -45,7 +43,6 @@ model Post {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   authorId  Int
-  author    User     @relation(fields: [authorId], references: [id])
 }
 
 // =============================================================================
@@ -266,8 +263,7 @@ model Article {
   publishedAt  DateTime?
   viewCount  Int? @default(0)
   status  ArticleStatus? @default(draft)
-  authorId Int
-  author   User @relation(fields: [authorId], references: [id])
+  authorId  Int?
   categoryId Int?
   category   Category? @relation(fields: [categoryId], references: [id])
   createdAt DateTime @default(now())

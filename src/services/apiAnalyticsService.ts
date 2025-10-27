@@ -118,13 +118,7 @@ export function getAPIEndpoints(): APIEndpoint[] {
       requiresAuth: false,
       description: 'Health check and system status'
     },
-    {
-      path: '/api/posts',
-      method: 'GET',
-      isPublic: false,
-      requiresAuth: true,
-      description: 'Legacy endpoint - Get all published posts'
-    }
+
   ]
 }
 

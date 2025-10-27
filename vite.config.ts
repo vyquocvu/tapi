@@ -17,7 +17,6 @@ function apiPlugin() {
       server.middlewares.use('/api', async (req: Connect.IncomingMessage, res: any, next) => {
         // Dynamically import services (ESM modules)
         const { loginUser } = await import('./src/services/authService.js')
-        const { getAllPosts } = await import('./src/services/postService.js')
         const { 
           getAllContentTypes,
           getContentType, 
@@ -75,6 +74,13 @@ function apiPlugin() {
           removePermissionFromRole,
           setRolePermissions
         } = await import('./src/services/roleService.js')
+        const {
+          getAllPermissions,
+          getPermissionById,
+          createPermission,
+          updatePermission,
+          deletePermission
+        } = await import('./src/services/permissionService.js')
         const { createAuditLog } = await import('./src/services/auditLogService.js')
         const multer = (await import('multer')).default
 
@@ -111,32 +117,7 @@ function apiPlugin() {
             }
           })
           return
-        }
-
-        // Handle GET /api/posts
-        if (req.url === '/posts' && req.method === 'GET') {
-          try {
-            console.log('[Vite API /posts] Fetching all posts')
-            const posts = await getAllPosts()
-            console.log(`[Vite API /posts] Successfully fetched ${posts.length} posts`)
-            res.statusCode = 200
-            res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify({
-              success: true,
-              data: posts,
-            }))
-          } catch (error) {
-            console.error('[Vite API /posts] Error fetching posts:', error)
-            res.statusCode = 500
-            res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify({
-              success: false,
-              error: 'Failed to fetch posts',
-              details: error instanceof Error ? error.message : 'Unknown error',
-            }))
-          }
-          return
-        }
+        }        
 
         // Handle GET /api/me (protected route example)
         if (req.url === '/me' && req.method === 'GET') {
@@ -1417,6 +1398,207 @@ function apiPlugin() {
               res.end(JSON.stringify({
                 success: true,
                 message: 'Role deleted successfully',
+              }))
+            } catch (error) {
+              res.statusCode = 500
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: false,
+                error: error instanceof Error ? error.message : 'Internal server error',
+              }))
+            }
+            return
+          }
+
+          // If we get here, the endpoint wasn't recognized
+          res.statusCode = 404
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({
+            success: false,
+            error: 'Endpoint not found',
+          }))
+          return
+        }
+
+        // Handle /api/permissions
+        if (req.url?.startsWith('/permissions')) {
+          // Verify authentication for all permissions requests
+          let authenticatedUser: any
+          try {
+            const context = createContext(req)
+            authenticatedUser = requireAuth(context)
+          } catch (error) {
+            res.statusCode = 401
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({
+              success: false,
+              error: 'Unauthorized',
+            }))
+            return
+          }
+
+          const url = new URL(req.url, `http://${req.headers.host}`)
+          const permissionId = url.searchParams.get('id')
+
+          // GET /api/permissions - List all permissions or get specific permission
+          if (req.method === 'GET') {
+            try {
+              if (permissionId) {
+                const id = parseInt(permissionId)
+                const permissionData = await getPermissionById(id)
+
+                if (!permissionData) {
+                  res.statusCode = 404
+                  res.setHeader('Content-Type', 'application/json')
+                  res.end(JSON.stringify({
+                    success: false,
+                    error: 'Permission not found',
+                  }))
+                  return
+                }
+
+                res.statusCode = 200
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: true,
+                  data: permissionData,
+                }))
+              } else {
+                const permissions = await getAllPermissions()
+                
+                res.statusCode = 200
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: true,
+                  data: permissions,
+                }))
+              }
+            } catch (error) {
+              res.statusCode = 500
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: false,
+                error: error instanceof Error ? error.message : 'Internal server error',
+              }))
+            }
+            return
+          }
+
+          // POST /api/permissions - Create permission
+          if (req.method === 'POST') {
+            let body = ''
+            req.on('data', chunk => {
+              body += chunk.toString()
+            })
+            req.on('end', async () => {
+              try {
+                const { name, resource, action, description } = JSON.parse(body)
+
+                if (!name || !resource || !action) {
+                  res.statusCode = 400
+                  res.setHeader('Content-Type', 'application/json')
+                  res.end(JSON.stringify({
+                    success: false,
+                    error: 'name, resource, and action are required',
+                  }))
+                  return
+                }
+
+                const newPermission = await createPermission({ name, resource, action, description })
+
+                // Audit log
+                await createAuditLog({
+                  userId: authenticatedUser.userId,
+                  action: 'create',
+                  resource: 'permission',
+                  resourceId: newPermission.id,
+                  details: { name, resource, action, description },
+                  ipAddress: req.socket?.remoteAddress,
+                  userAgent: req.headers['user-agent']
+                })
+
+                res.statusCode = 201
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: true,
+                  data: newPermission,
+                }))
+              } catch (error) {
+                res.statusCode = 500
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: false,
+                  error: error instanceof Error ? error.message : 'Internal server error',
+                }))
+              }
+            })
+            return
+          }
+
+          // PUT /api/permissions?id=123 - Update permission
+          if (req.method === 'PUT' && permissionId) {
+            let body = ''
+            req.on('data', chunk => {
+              body += chunk.toString()
+            })
+            req.on('end', async () => {
+              try {
+                const id = parseInt(permissionId)
+                const { name, resource, action, description } = JSON.parse(body)
+
+                const updatedPermission = await updatePermission(id, { name, resource, action, description })
+
+                // Audit log
+                await createAuditLog({
+                  userId: authenticatedUser.userId,
+                  action: 'update',
+                  resource: 'permission',
+                  resourceId: id,
+                  details: JSON.parse(body),
+                  ipAddress: req.socket?.remoteAddress,
+                  userAgent: req.headers['user-agent']
+                })
+
+                res.statusCode = 200
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: true,
+                  data: updatedPermission,
+                }))
+              } catch (error) {
+                res.statusCode = 500
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: false,
+                  error: error instanceof Error ? error.message : 'Internal server error',
+                }))
+              }
+            })
+            return
+          }
+
+          // DELETE /api/permissions?id=123 - Delete permission
+          if (req.method === 'DELETE' && permissionId) {
+            try {
+              const id = parseInt(permissionId)
+              
+              await deletePermission(id)
+
+              // Audit log
+              await createAuditLog({
+                userId: authenticatedUser.userId,
+                action: 'delete',
+                resource: 'permission',
+                resourceId: id,
+                ipAddress: req.socket?.remoteAddress,
+                userAgent: req.headers['user-agent']
+              })
+
+              res.statusCode = 200
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: true,
+                message: 'Permission deleted successfully',
               }))
             } catch (error) {
               res.statusCode = 500

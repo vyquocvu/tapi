@@ -1,239 +1,150 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { createAuthHandler, type HandlerContext } from './_lib/handler.js'
+import { successResponse, badRequestResponse, notFoundResponse, HTTP_STATUS } from './_lib/response.js'
+import { createRouter } from './_lib/router.js'
 import * as userManagementService from '../src/services/userManagementService.js'
 import * as auditLogService from '../src/services/auditLogService.js'
-import { verifyToken } from '../src/server/auth.js'
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', 'true')
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
-  )
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end()
-  }
-
-  // Authenticate
-  const authHeader = req.headers.authorization as string
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({
-      success: false,
-      error: 'Authentication required'
-    })
-  }
-
-  const token = authHeader.substring(7)
-  let user: any
-  
-  try {
-    user = verifyToken(token)
-  } catch (error) {
-    return res.status(401).json({
-      success: false,
-      error: 'Invalid or expired token'
-    })
-  }
-
-  try {
-    // GET /api/users - List all users
-    if (req.method === 'GET' && !req.query.id) {
-      const includeInactive = req.query.includeInactive === 'true'
-      const users = await userManagementService.getAllUsers(includeInactive)
-      
-      return res.status(200).json({
-        success: true,
-        data: users
-      })
-    }
-
-    // GET /api/users?id=123 - Get user by ID
-    if (req.method === 'GET' && req.query.id) {
-      const userId = parseInt(req.query.id as string)
-      const includeRoles = req.query.includeRoles === 'true'
-      
-      let userData
-      if (includeRoles) {
-        userData = await userManagementService.getUserWithRolesAndPermissions(userId)
-      } else {
-        userData = await userManagementService.getUserById(userId)
-      }
-
-      if (!userData) {
-        return res.status(404).json({
-          success: false,
-          error: 'User not found'
-        })
-      }
-
-      return res.status(200).json({
-        success: true,
-        data: userData
-      })
-    }
-
-    // POST /api/users - Create user
-    if (req.method === 'POST') {
-      const { email, password, name, bio, avatar, isActive } = req.body
-
-      if (!email || !password || !name) {
-        return res.status(400).json({
-          success: false,
-          error: 'Email, password, and name are required'
-        })
-      }
-
-      const newUser = await userManagementService.createUser({
-        email,
-        password,
-        name,
-        bio,
-        avatar,
-        isActive
-      })
-
-      // Audit log
-      await auditLogService.createAuditLog({
-        userId: user.userId,
-        action: 'create',
-        resource: 'user',
-        resourceId: newUser.id,
-        details: { email: newUser.email, name: newUser.name },
-        ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
-        userAgent: req.headers['user-agent']
-      })
-
-      return res.status(201).json({
-        success: true,
-        data: newUser
-      })
-    }
-
-    // PUT /api/users?id=123 - Update user
-    if (req.method === 'PUT' && req.query.id) {
-      const userId = parseInt(req.query.id as string)
-      const { email, password, name, bio, avatar, isActive } = req.body
-
-      const updatedUser = await userManagementService.updateUser(userId, {
-        email,
-        password,
-        name,
-        bio,
-        avatar,
-        isActive
-      })
-
-      // Audit log
-      await auditLogService.createAuditLog({
-        userId: user.userId,
-        action: 'update',
-        resource: 'user',
-        resourceId: userId,
-        details: req.body,
-        ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
-        userAgent: req.headers['user-agent']
-      })
-
-      return res.status(200).json({
-        success: true,
-        data: updatedUser
-      })
-    }
-
-    // DELETE /api/users?id=123 - Delete user
-    if (req.method === 'DELETE' && req.query.id) {
-      const userId = parseInt(req.query.id as string)
-      
-      await userManagementService.deleteUser(userId)
-
-      // Audit log
-      await auditLogService.createAuditLog({
-        userId: user.userId,
-        action: 'delete',
-        resource: 'user',
-        resourceId: userId,
-        ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
-        userAgent: req.headers['user-agent']
-      })
-
-      return res.status(200).json({
-        success: true,
-        message: 'User deleted successfully'
-      })
-    }
-
-    // POST /api/users/assign-role - Assign role to user
-    if (req.method === 'POST' && req.url?.includes('/assign-role')) {
-      const { userId, roleId } = req.body
-
-      if (!userId || !roleId) {
-        return res.status(400).json({
-          success: false,
-          error: 'userId and roleId are required'
-        })
-      }
-
-      await userManagementService.assignRoleToUser(userId, roleId, user.userId)
-
-      // Audit log
-      await auditLogService.createAuditLog({
-        userId: user.userId,
-        action: 'assign',
-        resource: 'user_role',
-        resourceId: userId,
-        details: { roleId },
-        ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
-        userAgent: req.headers['user-agent']
-      })
-
-      return res.status(200).json({
-        success: true,
-        message: 'Role assigned successfully'
-      })
-    }
-
-    // POST /api/users/remove-role - Remove role from user
-    if (req.method === 'POST' && req.url?.includes('/remove-role')) {
-      const { userId, roleId } = req.body
-
-      if (!userId || !roleId) {
-        return res.status(400).json({
-          success: false,
-          error: 'userId and roleId are required'
-        })
-      }
-
-      await userManagementService.removeRoleFromUser(userId, roleId)
-
-      // Audit log
-      await auditLogService.createAuditLog({
-        userId: user.userId,
-        action: 'revoke',
-        resource: 'user_role',
-        resourceId: userId,
-        details: { roleId },
-        ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
-        userAgent: req.headers['user-agent']
-      })
-
-      return res.status(200).json({
-        success: true,
-        message: 'Role removed successfully'
-      })
-    }
-
-    return res.status(404).json({
-      success: false,
-      error: 'Endpoint not found'
-    })
-  } catch (error: any) {
-    console.error('Users API error:', error)
-    return res.status(500).json({
-      success: false,
-      error: error.message || 'Internal server error'
-    })
-  }
+// Helper to create audit log
+const audit = async (
+  user: NonNullable<HandlerContext['user']>,
+  action: string,
+  resource: string,
+  resourceId: number,
+  details: any,
+  req: HandlerContext['req']
+) => {
+  await auditLogService.createAuditLog({
+    userId: user.userId,
+    action,
+    resource,
+    resourceId,
+    details,
+    ipAddress: req.headers['x-forwarded-for'] as string || req.socket?.remoteAddress,
+    userAgent: req.headers['user-agent']
+  })
 }
+
+const router = createRouter()
+
+// POST /api/users/assign-role - Assign role to user
+router.post('/assign-role', async ({ req, res, user }) => {
+  const { userId, roleId } = req.body
+
+  if (!userId || !roleId) {
+    res.status(HTTP_STATUS.BAD_REQUEST).json(
+      badRequestResponse('userId and roleId are required')
+    )
+    return
+  }
+
+  await userManagementService.assignRoleToUser(userId, roleId, user!.userId)
+  await audit(user!, 'assign', 'user_role', userId, { roleId }, req)
+
+  res.status(HTTP_STATUS.OK).json(successResponse({ message: 'Role assigned successfully' }))
+})
+
+// POST /api/users/remove-role - Remove role from user
+router.post('/remove-role', async ({ req, res, user }) => {
+  const { userId, roleId } = req.body
+
+  if (!userId || !roleId) {
+    res.status(HTTP_STATUS.BAD_REQUEST).json(
+      badRequestResponse('userId and roleId are required')
+    )
+    return
+  }
+
+  await userManagementService.removeRoleFromUser(userId, roleId)
+  await audit(user!, 'revoke', 'user_role', userId, { roleId }, req)
+
+  res.status(HTTP_STATUS.OK).json(successResponse({ message: 'Role removed successfully' }))
+})
+
+// GET /api/users - List all users or get user by ID
+router.get(async ({ res, params }) => {
+  if (!params.id) {
+    const includeInactive = params.includeInactive === 'true'
+    const users = await userManagementService.getAllUsers(includeInactive)
+    res.status(HTTP_STATUS.OK).json(successResponse(users))
+    return
+  }
+
+  const userId = parseInt(params.id as string)
+  const includeRoles = params.includeRoles === 'true'
+  
+  let userData
+  if (includeRoles) {
+    userData = await userManagementService.getUserWithRolesAndPermissions(userId)
+  } else {
+    userData = await userManagementService.getUserById(userId)
+  }
+
+  if (!userData) {
+    res.status(HTTP_STATUS.NOT_FOUND).json(notFoundResponse('User'))
+    return
+  }
+
+  res.status(HTTP_STATUS.OK).json(successResponse(userData))
+})
+
+// POST /api/users - Create user
+router.post(async ({ req, res, user }) => {
+  const { email, password, name, bio, avatar, isActive } = req.body
+
+  if (!email || !password || !name) {
+    res.status(HTTP_STATUS.BAD_REQUEST).json(
+      badRequestResponse('Email, password, and name are required')
+    )
+    return
+  }
+
+  const newUser = await userManagementService.createUser({
+    email,
+    password,
+    name,
+    bio,
+    avatar,
+    isActive
+  })
+
+  await audit(user!, 'create', 'user', newUser.id, { email: newUser.email, name: newUser.name }, req)
+
+  res.status(HTTP_STATUS.CREATED).json(successResponse(newUser))
+})
+
+// PUT /api/users - Update user
+router.put(async ({ req, res, user, params }) => {
+  if (!params.id) return
+
+  const userId = parseInt(params.id as string)
+  const { email, password, name, bio, avatar, isActive } = req.body
+
+  const updatedUser = await userManagementService.updateUser(userId, {
+    email,
+    password,
+    name,
+    bio,
+    avatar,
+    isActive
+  })
+
+  await audit(user!, 'update', 'user', userId, req.body, req)
+
+  res.status(HTTP_STATUS.OK).json(successResponse(updatedUser))
+})
+
+// DELETE /api/users - Delete user
+router.delete(async ({ req, res, user, params }) => {
+  if (!params.id) return
+
+  const userId = parseInt(params.id as string)
+  
+  await userManagementService.deleteUser(userId)
+  await audit(user!, 'delete', 'user', userId, {}, req)
+
+  res.status(HTTP_STATUS.OK).json(successResponse({ message: 'User deleted successfully' }))
+})
+
+export default createAuthHandler(async (context) => {
+  await router.handle(context)
+})

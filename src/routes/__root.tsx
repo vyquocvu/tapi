@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from '../contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Sidebar } from '@/components/Sidebar'
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
+import { Toaster } from '@/components/ui/sonner'
 import '../app.css'
 
 const queryClient = new QueryClient({
@@ -77,6 +78,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <AuthenticatedLayout />
+        <Toaster />
         <ReactQueryDevtools buttonPosition="bottom-left" />
         <TanStackRouterDevtools position="bottom-right" />
       </AuthProvider>

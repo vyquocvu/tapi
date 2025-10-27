@@ -207,7 +207,6 @@ Retry-After: 60
 - Smooth migration path
 
 **Files:**
-- `src/services/postService.ts` - Updated to use Article model
 
 ## Architecture Improvements
 
