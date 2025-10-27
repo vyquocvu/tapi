@@ -28,7 +28,6 @@ model User {
   updatedAt DateTime @updatedAt
   
   // Relations
-  posts              Post[]
   articles           Article[]
   createdRevisions   ContentRevision[] @relation("RevisionCreator")
   createdMetadata    ContentMetadata[] @relation("MetadataCreator")

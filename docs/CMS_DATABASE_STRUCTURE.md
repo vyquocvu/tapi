@@ -32,7 +32,6 @@ The central user/authentication model.
 | updatedAt | DateTime | Last update timestamp |
 
 **Relations:**
-- `posts` - One-to-many with Post
 - `articles` - One-to-many with Article (custom content type)
 - `createdRevisions` - One-to-many with ContentRevision
 - `createdMetadata` - One-to-many with ContentMetadata

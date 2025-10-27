@@ -16,10 +16,4 @@ export const queryKeys = {
     byType: (contentType: string) => ['content-entries', contentType] as const,
     detail: (contentType: string, id: number) => ['content-entries', contentType, id] as const,
   },
-  
-  // Add other query keys here as needed
-  posts: {
-    all: ['posts'] as const,
-    detail: (id: number) => ['posts', id] as const,
-  },
 } as const

@@ -17,7 +17,6 @@ function apiPlugin() {
       server.middlewares.use('/api', async (req: Connect.IncomingMessage, res: any, next) => {
         // Dynamically import services (ESM modules)
         const { loginUser } = await import('./src/services/authService.js')
-        const { getAllPosts } = await import('./src/services/postService.js')
         const { 
           getAllContentTypes,
           getContentType, 
@@ -118,32 +117,7 @@ function apiPlugin() {
             }
           })
           return
-        }
-
-        // Handle GET /api/posts
-        if (req.url === '/posts' && req.method === 'GET') {
-          try {
-            console.log('[Vite API /posts] Fetching all posts')
-            const posts = await getAllPosts()
-            console.log(`[Vite API /posts] Successfully fetched ${posts.length} posts`)
-            res.statusCode = 200
-            res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify({
-              success: true,
-              data: posts,
-            }))
-          } catch (error) {
-            console.error('[Vite API /posts] Error fetching posts:', error)
-            res.statusCode = 500
-            res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify({
-              success: false,
-              error: 'Failed to fetch posts',
-              details: error instanceof Error ? error.message : 'Unknown error',
-            }))
-          }
-          return
-        }
+        }        
 
         // Handle GET /api/me (protected route example)
         if (req.url === '/me' && req.method === 'GET') {
