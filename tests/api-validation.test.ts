@@ -3,6 +3,7 @@
  * Tests for REST API endpoints validation
  */
 
+import { describe, it, expect } from 'vitest'
 import {
   validateRequiredFields,
   validateEmail,

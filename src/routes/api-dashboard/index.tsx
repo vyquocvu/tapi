@@ -1,16 +1,19 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { requireAuth } from '@/lib/auth-utils'
 import {
   fetchEndpointConfigs,
   fetchDashboardOverview,
   fetchEndpointDocumentation,
   generateContentTypeDocumentation,
+  updateEndpointConfig,
   type APIStatistics,
   type ActivityLog,
 } from '@/services/queryFunctions'
@@ -25,6 +28,7 @@ function APIDashboardComponent() {
   const [selectedTab, setSelectedTab] = useState<'overview' | 'endpoints' | 'content-types'>('overview')
   const [selectedContentType, setSelectedContentType] = useState<string | null>(null)
   const [generatedDocs, setGeneratedDocs] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
   // Fetch dashboard data
   const { data: overview, isLoading: overviewLoading, error: overviewError } = useQuery({
@@ -55,9 +59,22 @@ function APIDashboardComponent() {
     },
   })
 
+  // Update endpoint config mutation
+  const updateConfigMutation = useMutation({
+    mutationFn: updateEndpointConfig,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.apiDashboard.configs() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.apiDashboard.overview() })
+    },
+  })
+
   const handleGenerateDocs = (contentType: string) => {
     setSelectedContentType(contentType)
     generateDocsMutation.mutate(contentType)
+  }
+
+  const handleToggleIsPublic = (uid: string, isPublic: boolean) => {
+    updateConfigMutation.mutate({ uid, config: { isPublic } })
   }
 
   return (
@@ -361,19 +378,31 @@ function APIDashboardComponent() {
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <div className="flex items-center gap-2 text-sm mb-3">
-                          <Badge variant="outline" className="font-mono">
-                            {config.path}
-                          </Badge>
-                          <span className="text-muted-foreground">•</span>
-                          <span className="text-muted-foreground">
-                            Rate limit: {config.rateLimit}/min
-                          </span>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-sm">
+                            <Badge variant="outline" className="font-mono">
+                              {config.path}
+                            </Badge>
+                            <span className="text-muted-foreground">•</span>
+                            <span className="text-muted-foreground">
+                              Rate limit: {config.rateLimit}/min
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Switch
+                              id={`public-switch-${config.uid}`}
+                              checked={config.isPublic}
+                              onCheckedChange={(checked) => handleToggleIsPublic(config.uid, checked)}
+                              disabled={updateConfigMutation.isPending}
+                            />
+                            <Label htmlFor={`public-switch-${config.uid}`}>Public Access</Label>
+                          </div>
                         </div>
                         <Button
                           onClick={() => handleGenerateDocs(config.uid)}
                           disabled={generateDocsMutation.isPending}
                           size="sm"
+                          className="mt-4"
                         >
                           {generateDocsMutation.isPending && selectedContentType === config.uid
                             ? 'Generating...'

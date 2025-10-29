@@ -438,3 +438,19 @@ export async function generateContentTypeDocumentation(contentType: string): Pro
   )
   return result.markdown
 }
+
+export async function updateEndpointConfig({
+  uid,
+  config,
+}: {
+  uid: string
+  config: Partial<EndpointConfig>
+}): Promise<EndpointConfig> {
+  return fetchAPI<EndpointConfig>(
+    `/api/api-dashboard?contentType=${encodeURIComponent(uid)}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify(config),
+    }
+  )
+}

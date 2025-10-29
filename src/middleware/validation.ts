@@ -199,7 +199,16 @@ export function validateContentTypeUID(uid: string): ValidationResult {
 export function validateId(id: string | number): ValidationResult {
   const errors: ValidationError[] = []
   
-  const numId = typeof id === 'string' ? parseInt(id, 10) : id
+  if (typeof id === 'string' && !/^\d+$/.test(id)) {
+    errors.push({
+      field: 'id',
+      message: 'ID must be an integer',
+      value: id,
+    });
+    return { isValid: false, errors };
+  }
+
+  const numId = typeof id === 'string' ? parseInt(id, 10) : id;
   
   if (isNaN(numId) || numId <= 0) {
     errors.push({

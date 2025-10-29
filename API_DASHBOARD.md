@@ -25,7 +25,7 @@ The API Controller Dashboard provides a comprehensive interface for managing and
 
 ### 🔧 Content Type APIs Tab
 - **Dynamic Endpoint Configuration**: Manage API settings for each content type
-- **Visibility Controls**: Toggle between public and private access (UI ready, backend extensible)
+- **Visibility Controls**: Toggle between public and private access
 - **Rate Limiting**: View and manage rate limits per content type
 - **Documentation Generation**: Auto-generate markdown API docs from content type schemas
 - **OpenAPI Support**: Generate OpenAPI/Swagger specifications (available via API)
@@ -166,7 +166,7 @@ Content-Type: application/json
 
 {
   "isPublic": false,
-  "allowedRoles": ["authenticated"],
+  "allowedRoles": "authenticated",
   "rateLimit": 100,
   "description": "Custom description"
 }

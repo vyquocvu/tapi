@@ -3,76 +3,118 @@
  * Manages endpoint visibility and access control settings
  */
 
+import { PrismaClient } from '@prisma/client'
 import { getContentType, getAllContentTypes } from './contentTypeService.js'
+
+const prisma = new PrismaClient()
 
 export interface EndpointConfig {
   uid: string // For dynamic content endpoints
   path: string
   isPublic: boolean
-  allowedRoles?: string[]
+  allowedRoles?: string
   rateLimit?: number
   description?: string
 }
 
 /**
  * Get endpoint configuration for a specific content type
- * In a real implementation, this would be stored in a database
+ * Fetches from DB or creates a default config if not found
  */
 export async function getEndpointConfig(contentTypeUid: string): Promise<EndpointConfig | null> {
   const contentType = await getContentType(contentTypeUid)
   if (!contentType) {
     return null
   }
+
+  let config = await prisma.apiEndpointConfig.findUnique({
+    where: { contentTypeUid },
+  })
+
+  if (!config) {
+    config = await prisma.apiEndpointConfig.create({
+      data: {
+        contentTypeUid,
+        isPublic: false,
+        allowedRoles: 'authenticated',
+        rateLimit: 100,
+        description: `CRUD endpoints for ${contentType.displayName}`,
+      },
+    })
+  }
   
-  // Default configuration - all endpoints are private by default
   return {
     uid: contentTypeUid,
     path: `/api/content?contentType=${contentTypeUid}`,
-    isPublic: false,
-    allowedRoles: ['authenticated'],
-    rateLimit: 100,
-    description: `CRUD endpoints for ${contentType.displayName}`
+    isPublic: config.isPublic,
+    allowedRoles: config.allowedRoles || 'authenticated',
+    rateLimit: config.rateLimit || 100,
+    description: config.description || `CRUD endpoints for ${contentType.displayName}`,
   }
 }
 
 /**
  * Get all endpoint configurations for content types
+ * Ensures all content types have a configuration in the DB
  */
 export async function getAllEndpointConfigs(): Promise<EndpointConfig[]> {
   const contentTypes = await getAllContentTypes()
-  
-  return Object.values(contentTypes).map(ct => ({
-    uid: ct.uid,
-    path: `/api/content?contentType=${ct.uid}`,
-    isPublic: false,
-    allowedRoles: ['authenticated'],
-    rateLimit: 100,
-    description: `CRUD endpoints for ${ct.displayName}`
-  }))
+  const configs = await prisma.apiEndpointConfig.findMany()
+
+  const configMap = new Map(configs.map(c => [c.contentTypeUid, c]))
+
+  for (const ct of Object.values(contentTypes)) {
+    if (!configMap.has(ct.uid)) {
+      const newConfig = await prisma.apiEndpointConfig.create({
+        data: {
+          contentTypeUid: ct.uid,
+          isPublic: false,
+          allowedRoles: 'authenticated',
+          rateLimit: 100,
+          description: `CRUD endpoints for ${ct.displayName}`,
+        },
+      })
+      configMap.set(ct.uid, newConfig)
+    }
+  }
+
+  return Object.values(contentTypes).map(ct => {
+    const config = configMap.get(ct.uid)!
+    return {
+      uid: ct.uid,
+      path: `/api/content?contentType=${ct.uid}`,
+      isPublic: config.isPublic,
+      allowedRoles: config.allowedRoles || 'authenticated',
+      rateLimit: config.rateLimit || 100,
+      description: config.description || `CRUD endpoints for ${ct.displayName}`,
+    }
+  })
 }
 
 /**
- * Update endpoint configuration
- * In a real implementation, this would update the database
+ * Update endpoint configuration in the database
  */
 export async function updateEndpointConfig(
   contentTypeUid: string,
   config: Partial<EndpointConfig>
 ): Promise<EndpointConfig> {
-  const contentType = await getContentType(contentTypeUid)
-  if (!contentType) {
-    throw new Error(`Content type '${contentTypeUid}' not found`)
-  }
-  
-  // In production, this would update the database
-  // For now, return the updated config
+  const updatedConfig = await prisma.apiEndpointConfig.update({
+    where: { contentTypeUid },
+    data: {
+      isPublic: config.isPublic,
+      allowedRoles: config.allowedRoles,
+      rateLimit: config.rateLimit,
+      description: config.description,
+    },
+  })
+
   return {
     uid: contentTypeUid,
     path: `/api/content?contentType=${contentTypeUid}`,
-    isPublic: config.isPublic ?? false,
-    allowedRoles: config.allowedRoles ?? ['authenticated'],
-    rateLimit: config.rateLimit ?? 100,
-    description: config.description ?? `CRUD endpoints for ${contentType.displayName}`
+    isPublic: updatedConfig.isPublic,
+    allowedRoles: updatedConfig.allowedRoles || 'authenticated',
+    rateLimit: updatedConfig.rateLimit || 100,
+    description: updatedConfig.description || '',
   }
 }
 
@@ -83,6 +125,11 @@ export async function generateAPIDocumentation(contentTypeUid: string): Promise<
   const contentType = await getContentType(contentTypeUid)
   if (!contentType) {
     throw new Error(`Content type '${contentTypeUid}' not found`)
+  }
+
+  const config = await getEndpointConfig(contentTypeUid)
+  if (!config) {
+    throw new Error(`Configuration for content type '${contentTypeUid}' not found`)
   }
   
   const { displayName, singularName, pluralName, description, fields } = contentType
@@ -148,10 +195,13 @@ ${fieldDocs}
 
 ## Authentication
 
+This endpoint is **${config.isPublic ? 'public' : 'private'}**.
+${!config.isPublic ? `
 All endpoints require JWT authentication:
 \`\`\`
 Authorization: Bearer <your-jwt-token>
 \`\`\`
+` : ''}
 `.trim()
 }
 
@@ -306,14 +356,9 @@ export async function generateOpenAPISpec(contentTypeUid: string): Promise<any> 
           required
         }
       },
-      securitySchemes: {
-        bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT'
-        }
-      }
+      securitySchemes:_SEC_SCHEMES_PLACEHOLDER_,
     },
     security: [{ bearerAuth: [] }]
   }
 }
+const _SEC_SCHEMES_PLACEHOLDER_ = { bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }};
