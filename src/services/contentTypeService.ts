@@ -1,6 +1,6 @@
 /**
  * Content Type Service
- * Manages content type definitions
+ * Manages content type definitions with in-memory caching
  */
 
 import { 
@@ -12,13 +12,24 @@ import fs from 'fs/promises'
 import path from 'path'
 
 const CONTENT_TYPES_FILE = path.join(process.cwd(), 'content-types', 'definitions.json')
+const CACHE_TTL = 5000 // 5 seconds cache TTL
 
 const builder = new ContentTypeBuilder()
+
+// In-memory cache for content types
+let cachedRegistry: ContentTypeRegistry | null = null
+let cacheTimestamp: number = 0
 
 /**
  * Load content types from file
  */
 async function loadContentTypes(): Promise<ContentTypeRegistry> {
+  // Return cached version if still valid
+  const now = Date.now()
+  if (cachedRegistry && (now - cacheTimestamp) < CACHE_TTL) {
+    return cachedRegistry
+  }
+
   try {
     const content = await fs.readFile(CONTENT_TYPES_FILE, 'utf-8')
     const definitions = JSON.parse(content)
@@ -29,7 +40,13 @@ async function loadContentTypes(): Promise<ContentTypeRegistry> {
       builder.define(definition as ContentTypeDefinition)
     }
     
-    return builder.getAll()
+    const registry = builder.getAll()
+    
+    // Update cache
+    cachedRegistry = registry
+    cacheTimestamp = now
+    
+    return registry
   } catch (error) {
     // If file doesn't exist, return empty registry
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
@@ -40,7 +57,7 @@ async function loadContentTypes(): Promise<ContentTypeRegistry> {
 }
 
 /**
- * Save content types to file
+ * Save content types to file and invalidate cache
  */
 async function saveContentTypes(registry: ContentTypeRegistry): Promise<void> {
   // Ensure directory exists
@@ -52,6 +69,10 @@ async function saveContentTypes(registry: ContentTypeRegistry): Promise<void> {
     JSON.stringify(registry, null, 2),
     'utf-8'
   )
+  
+  // Invalidate cache to force reload on next access
+  cachedRegistry = null
+  cacheTimestamp = 0
 }
 
 /**
