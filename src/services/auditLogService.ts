@@ -22,16 +22,75 @@ export interface AuditLog {
   createdAt: Date
 }
 
+// Audit log queue for batching (optional performance optimization)
+let auditLogQueue: CreateAuditLogInput[] = []
+let flushTimeout: NodeJS.Timeout | null = null
+const BATCH_SIZE = 50
+const BATCH_TIMEOUT_MS = 5000
+
 /**
- * Create an audit log entry
+ * Flush queued audit logs to database
  */
-export async function createAuditLog(input: CreateAuditLogInput): Promise<AuditLog> {
-  return await prisma.auditLog.create({
-    data: {
-      ...input,
-      details: input.details ? JSON.stringify(input.details) : null
-    }
-  })
+async function flushAuditLogs(): Promise<void> {
+  if (auditLogQueue.length === 0) return
+
+  const logsToWrite = [...auditLogQueue]
+  auditLogQueue = []
+
+  try {
+    await prisma.auditLog.createMany({
+      data: logsToWrite.map(log => ({
+        ...log,
+        details: log.details ? JSON.stringify(log.details) : null
+      }))
+    })
+  } catch (error) {
+    console.error('Error flushing audit logs:', error)
+    // Re-add failed logs to queue
+    auditLogQueue.unshift(...logsToWrite)
+  }
+}
+
+/**
+ * Schedule a batch flush
+ */
+function scheduleBatchFlush(): void {
+  if (flushTimeout) {
+    clearTimeout(flushTimeout)
+  }
+  flushTimeout = setTimeout(() => {
+    flushAuditLogs()
+    flushTimeout = null
+  }, BATCH_TIMEOUT_MS)
+}
+
+/**
+ * Create an audit log entry (batched for performance)
+ * Set batch=false for immediate write (important logs)
+ */
+export async function createAuditLog(
+  input: CreateAuditLogInput,
+  options: { batch?: boolean } = { batch: true }
+): Promise<AuditLog | void> {
+  // Immediate write for important logs or when batching disabled
+  if (!options.batch) {
+    return await prisma.auditLog.create({
+      data: {
+        ...input,
+        details: input.details ? JSON.stringify(input.details) : null
+      }
+    })
+  }
+
+  // Add to batch queue
+  auditLogQueue.push(input)
+
+  // Flush if batch size reached
+  if (auditLogQueue.length >= BATCH_SIZE) {
+    await flushAuditLogs()
+  } else {
+    scheduleBatchFlush()
+  }
 }
 
 /**
