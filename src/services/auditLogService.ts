@@ -10,6 +10,11 @@ export interface CreateAuditLogInput {
   userAgent?: string
 }
 
+// Internal type for queue management with retry tracking
+interface QueuedAuditLog extends CreateAuditLogInput {
+  _retryCount?: number
+}
+
 export interface AuditLog {
   id: number
   userId: number | null
@@ -23,9 +28,10 @@ export interface AuditLog {
 }
 
 // Audit log queue for batching (optional performance optimization)
-let auditLogQueue: CreateAuditLogInput[] = []
+let auditLogQueue: QueuedAuditLog[] = []
 let flushTimeout: NodeJS.Timeout | null = null
 let isFlushingQueue = false // Prevent concurrent flushes
+let isShuttingDown = false // Prevent multiple shutdown handlers
 const BATCH_SIZE = 50
 const BATCH_TIMEOUT_MS = 5000
 const MAX_RETRY_ATTEMPTS = 3
@@ -52,11 +58,10 @@ async function flushAuditLogs(): Promise<void> {
     console.error('Error flushing audit logs:', error)
     
     // Only retry if we haven't exceeded max attempts
-    // Mark failed logs with retry count to prevent infinite loops
-    const retriableLogs = logsToWrite.filter((log: any) => {
+    const retriableLogs = logsToWrite.filter((log) => {
       const retryCount = (log._retryCount || 0) + 1
       if (retryCount <= MAX_RETRY_ATTEMPTS) {
-        (log as any)._retryCount = retryCount
+        log._retryCount = retryCount
         return true
       }
       // Log dropped entries for monitoring
@@ -92,12 +97,21 @@ function scheduleBatchFlush(): void {
  * Flush remaining logs on shutdown
  */
 async function shutdownHandler(): Promise<void> {
-  console.log('Flushing remaining audit logs...')
-  if (flushTimeout) {
-    clearTimeout(flushTimeout)
-    flushTimeout = null
+  // Prevent multiple shutdown executions
+  if (isShuttingDown) return
+  isShuttingDown = true
+  
+  try {
+    console.log('Flushing remaining audit logs...')
+    if (flushTimeout) {
+      clearTimeout(flushTimeout)
+      flushTimeout = null
+    }
+    await flushAuditLogs()
+    console.log('Audit logs flushed successfully')
+  } catch (error) {
+    console.error('Error during audit log shutdown:', error)
   }
-  await flushAuditLogs()
 }
 
 // Register shutdown handlers
