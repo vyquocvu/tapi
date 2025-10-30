@@ -9,6 +9,18 @@ import { contentTypeWatcherPlugin } from './scripts/content-types/vite-plugin.js
 // Load environment variables
 dotenv.config()
 
+// Helper function to parse request body efficiently
+async function parseRequestBody(req: Connect.IncomingMessage): Promise<any> {
+  const chunks: Buffer[] = []
+  
+  for await (const chunk of req) {
+    chunks.push(Buffer.from(chunk))
+  }
+  
+  const body = Buffer.concat(chunks).toString('utf-8')
+  return JSON.parse(body)
+}
+
 // API middleware plugin for handling API routes
 function apiPlugin() {
   return {
@@ -86,38 +98,32 @@ function apiPlugin() {
 
         // Handle POST /api/login
         if (req.url === '/login' && req.method === 'POST') {
-          let body = ''
-          req.on('data', chunk => {
-            body += chunk.toString()
-          })
-          req.on('end', async () => {
-            try {
-              const credentials = JSON.parse(body)
-              console.log('[Vite API /login] Attempting login for:', credentials.email)
-              const result = await loginUser(credentials)
+          try {
+            const credentials = await parseRequestBody(req)
+            console.log('[Vite API /login] Attempting login for:', credentials.email)
+            const result = await loginUser(credentials)
 
-              if (result.success) {
-                console.log('[Vite API /login] Login successful for:', credentials.email)
-              } else {
-                console.warn('[Vite API /login] Login failed for:', credentials.email, 'Error:', result.error)
-              }
-
-              res.statusCode = result.success ? 200 : 401
-              res.setHeader('Content-Type', 'application/json')
-              res.end(JSON.stringify(result))
-            } catch (error) {
-              console.error('[Vite API /login] Unexpected error:', error)
-              res.statusCode = 500
-              res.setHeader('Content-Type', 'application/json')
-              res.end(JSON.stringify({
-                success: false,
-                error: 'Internal server error',
-                details: error instanceof Error ? error.message : 'Unknown error',
-              }))
+            if (result.success) {
+              console.log('[Vite API /login] Login successful for:', credentials.email)
+            } else {
+              console.warn('[Vite API /login] Login failed for:', credentials.email, 'Error:', result.error)
             }
-          })
+
+            res.statusCode = result.success ? 200 : 401
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify(result))
+          } catch (error) {
+            console.error('[Vite API /login] Unexpected error:', error)
+            res.statusCode = 500
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({
+              success: false,
+              error: 'Internal server error',
+              details: error instanceof Error ? error.message : 'Unknown error',
+            }))
+          }
           return
-        }        
+        }
 
         // Handle GET /api/me (protected route example)
         if (req.url === '/me' && req.method === 'GET') {
@@ -220,68 +226,56 @@ function apiPlugin() {
 
           // POST - Create new content type
           if (req.method === 'POST') {
-            let body = ''
-            req.on('data', chunk => {
-              body += chunk.toString()
-            })
-            req.on('end', async () => {
-              try {
-                const definition = JSON.parse(body)
-                const created = await createContentType(definition)
-                res.statusCode = 201
-                res.setHeader('Content-Type', 'application/json')
-                res.end(JSON.stringify({
-                  success: true,
-                  data: created,
-                }))
-              } catch (error) {
-                res.statusCode = 500
-                res.setHeader('Content-Type', 'application/json')
-                res.end(JSON.stringify({
-                  success: false,
-                  error: error instanceof Error ? error.message : 'Internal server error',
-                }))
-              }
-            })
+            try {
+              const definition = await parseRequestBody(req)
+              const created = await createContentType(definition)
+              res.statusCode = 201
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: true,
+                data: created,
+              }))
+            } catch (error) {
+              res.statusCode = 500
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: false,
+                error: error instanceof Error ? error.message : 'Internal server error',
+              }))
+            }
             return
           }
 
           // PUT - Update content type
           if (req.method === 'PUT') {
-            let body = ''
-            req.on('data', chunk => {
-              body += chunk.toString()
-            })
-            req.on('end', async () => {
-              try {
-                const url = new URL(req.url!, `http://${req.headers.host}`)
-                const uid = url.searchParams.get('uid')
-                if (!uid) {
-                  res.statusCode = 400
-                  res.setHeader('Content-Type', 'application/json')
-                  res.end(JSON.stringify({
-                    success: false,
-                    error: 'UID is required',
-                  }))
-                  return
-                }
-                const definition = JSON.parse(body)
-                const updated = await updateContentType(uid, definition)
-                res.statusCode = 200
-                res.setHeader('Content-Type', 'application/json')
-                res.end(JSON.stringify({
-                  success: true,
-                  data: updated,
-                }))
-              } catch (error) {
-                res.statusCode = 500
+            try {
+              const url = new URL(req.url!, `http://${req.headers.host}`)
+              const uid = url.searchParams.get('uid')
+              if (!uid) {
+                res.statusCode = 400
                 res.setHeader('Content-Type', 'application/json')
                 res.end(JSON.stringify({
                   success: false,
-                  error: error instanceof Error ? error.message : 'Internal server error',
+                  error: 'UID is required',
                 }))
+                return
               }
-            })
+              const definition = await parseRequestBody(req)
+              const updated = await updateContentType(uid, definition)
+              res.statusCode = 200
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: true,
+                data: updated,
+              }))
+            } catch (error) {
+              res.statusCode = 500
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: false,
+                error: error instanceof Error ? error.message : 'Internal server error',
+              }))
+            }
             return
           }
 
@@ -414,29 +408,23 @@ function apiPlugin() {
 
           // POST - Create new entry
           if (req.method === 'POST') {
-            let body = ''
-            req.on('data', chunk => {
-              body += chunk.toString()
-            })
-            req.on('end', async () => {
-              try {
-                const data = JSON.parse(body)
-                const entry = await create(contentType, { data })
-                res.statusCode = 201
-                res.setHeader('Content-Type', 'application/json')
-                res.end(JSON.stringify({
-                  success: true,
-                  data: entry,
-                }))
-              } catch (error) {
-                res.statusCode = 500
-                res.setHeader('Content-Type', 'application/json')
-                res.end(JSON.stringify({
-                  success: false,
-                  error: error instanceof Error ? error.message : 'Internal server error',
-                }))
-              }
-            })
+            try {
+              const data = await parseRequestBody(req)
+              const entry = await create(contentType, { data })
+              res.statusCode = 201
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: true,
+                data: entry,
+              }))
+            } catch (error) {
+              res.statusCode = 500
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: false,
+                error: error instanceof Error ? error.message : 'Internal server error',
+              }))
+            }
             return
           }
 
@@ -463,32 +451,26 @@ function apiPlugin() {
               return
             }
 
-            let body = ''
-            req.on('data', chunk => {
-              body += chunk.toString()
-            })
-            req.on('end', async () => {
-              try {
-                const data = JSON.parse(body)
-                const entry = await update(contentType, {
-                  where: { id: entryId },
-                  data,
-                })
-                res.statusCode = 200
-                res.setHeader('Content-Type', 'application/json')
-                res.end(JSON.stringify({
-                  success: true,
-                  data: entry,
-                }))
-              } catch (error) {
-                res.statusCode = 500
-                res.setHeader('Content-Type', 'application/json')
-                res.end(JSON.stringify({
-                  success: false,
-                  error: error instanceof Error ? error.message : 'Internal server error',
-                }))
-              }
-            })
+            try {
+              const data = await parseRequestBody(req)
+              const entry = await update(contentType, {
+                where: { id: entryId },
+                data,
+              })
+              res.statusCode = 200
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: true,
+                data: entry,
+              }))
+            } catch (error) {
+              res.statusCode = 500
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: false,
+                error: error instanceof Error ? error.message : 'Internal server error',
+              }))
+            }
             return
           }
 
@@ -622,30 +604,24 @@ function apiPlugin() {
               return
             }
 
-            let body = ''
-            req.on('data', chunk => {
-              body += chunk.toString()
-            })
-            req.on('end', async () => {
-              try {
-                const config = JSON.parse(body)
-                const updated = await updateEndpointConfig(contentType, config)
+            try {
+              const config = await parseRequestBody(req)
+              const updated = await updateEndpointConfig(contentType, config)
 
-                res.statusCode = 200
-                res.setHeader('Content-Type', 'application/json')
-                res.end(JSON.stringify({
-                  success: true,
-                  data: updated,
-                }))
-              } catch (error) {
-                res.statusCode = 500
-                res.setHeader('Content-Type', 'application/json')
-                res.end(JSON.stringify({
-                  success: false,
-                  error: error instanceof Error ? error.message : 'Internal server error',
-                }))
-              }
-            })
+              res.statusCode = 200
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: true,
+                data: updated,
+              }))
+            } catch (error) {
+              res.statusCode = 500
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: false,
+                error: error instanceof Error ? error.message : 'Internal server error',
+              }))
+            }
           } catch (error) {
             res.statusCode = 401
             res.setHeader('Content-Type', 'application/json')
@@ -884,161 +860,32 @@ function apiPlugin() {
 
           // POST /api/users - Create user or handle special actions
           if (req.method === 'POST') {
-            let body = ''
-            req.on('data', chunk => {
-              body += chunk.toString()
-            })
-            req.on('end', async () => {
-              try {
-                // Check if it's a special action endpoint
-                if (req.url?.includes('/assign-role')) {
-                  const { userId, roleId } = JSON.parse(body)
+            try {
+              const body = await parseRequestBody(req)
+              
+              // Check if it's a special action endpoint
+              if (req.url?.includes('/assign-role')) {
+                const { userId, roleId } = body
 
-                  if (!userId || !roleId) {
-                    res.statusCode = 400
-                    res.setHeader('Content-Type', 'application/json')
-                    res.end(JSON.stringify({
-                      success: false,
-                      error: 'userId and roleId are required',
-                    }))
-                    return
-                  }
-
-                  await assignRoleToUser(userId, roleId, authenticatedUser.userId)
-
-                  // Audit log
-                  await createAuditLog({
-                    userId: authenticatedUser.userId,
-                    action: 'assign',
-                    resource: 'user_role',
-                    resourceId: userId,
-                    details: { roleId },
-                    ipAddress: req.socket?.remoteAddress,
-                    userAgent: req.headers['user-agent']
-                  })
-
-                  res.statusCode = 200
-                  res.setHeader('Content-Type', 'application/json')
-                  res.end(JSON.stringify({
-                    success: true,
-                    message: 'Role assigned successfully',
-                  }))
-                  return
-                }
-
-                if (req.url?.includes('/remove-role')) {
-                  const { userId, roleId } = JSON.parse(body)
-
-                  if (!userId || !roleId) {
-                    res.statusCode = 400
-                    res.setHeader('Content-Type', 'application/json')
-                    res.end(JSON.stringify({
-                      success: false,
-                      error: 'userId and roleId are required',
-                    }))
-                    return
-                  }
-
-                  await removeRoleFromUser(userId, roleId)
-
-                  // Audit log
-                  await createAuditLog({
-                    userId: authenticatedUser.userId,
-                    action: 'revoke',
-                    resource: 'user_role',
-                    resourceId: userId,
-                    details: { roleId },
-                    ipAddress: req.socket?.remoteAddress,
-                    userAgent: req.headers['user-agent']
-                  })
-
-                  res.statusCode = 200
-                  res.setHeader('Content-Type', 'application/json')
-                  res.end(JSON.stringify({
-                    success: true,
-                    message: 'Role removed successfully',
-                  }))
-                  return
-                }
-
-                // Regular user creation
-                const { email, password, name, bio, avatar, isActive } = JSON.parse(body)
-
-                if (!email || !password || !name) {
+                if (!userId || !roleId) {
                   res.statusCode = 400
                   res.setHeader('Content-Type', 'application/json')
                   res.end(JSON.stringify({
                     success: false,
-                    error: 'Email, password, and name are required',
+                    error: 'userId and roleId are required',
                   }))
                   return
                 }
 
-                const newUser = await createUser({
-                  email,
-                  password,
-                  name,
-                  bio,
-                  avatar,
-                  isActive
-                })
+                await assignRoleToUser(userId, roleId, authenticatedUser.userId)
 
                 // Audit log
                 await createAuditLog({
                   userId: authenticatedUser.userId,
-                  action: 'create',
-                  resource: 'user',
-                  resourceId: newUser.id,
-                  details: { email: newUser.email, name: newUser.name },
-                  ipAddress: req.socket?.remoteAddress,
-                  userAgent: req.headers['user-agent']
-                })
-
-                res.statusCode = 201
-                res.setHeader('Content-Type', 'application/json')
-                res.end(JSON.stringify({
-                  success: true,
-                  data: newUser,
-                }))
-              } catch (error) {
-                res.statusCode = 500
-                res.setHeader('Content-Type', 'application/json')
-                res.end(JSON.stringify({
-                  success: false,
-                  error: error instanceof Error ? error.message : 'Internal server error',
-                }))
-              }
-            })
-            return
-          }
-
-          // PUT /api/users?id=123 - Update user
-          if (req.method === 'PUT' && userId) {
-            let body = ''
-            req.on('data', chunk => {
-              body += chunk.toString()
-            })
-            req.on('end', async () => {
-              try {
-                const id = parseInt(userId)
-                const { email, password, name, bio, avatar, isActive } = JSON.parse(body)
-
-                const updatedUser = await updateUser(id, {
-                  email,
-                  password,
-                  name,
-                  bio,
-                  avatar,
-                  isActive
-                })
-
-                // Audit log
-                await createAuditLog({
-                  userId: authenticatedUser.userId,
-                  action: 'update',
-                  resource: 'user',
-                  resourceId: id,
-                  details: JSON.parse(body),
+                  action: 'assign',
+                  resource: 'user_role',
+                  resourceId: userId,
+                  details: { roleId },
                   ipAddress: req.socket?.remoteAddress,
                   userAgent: req.headers['user-agent']
                 })
@@ -1047,17 +894,137 @@ function apiPlugin() {
                 res.setHeader('Content-Type', 'application/json')
                 res.end(JSON.stringify({
                   success: true,
-                  data: updatedUser,
+                  message: 'Role assigned successfully',
                 }))
-              } catch (error) {
-                res.statusCode = 500
+                return
+              }
+
+              if (req.url?.includes('/remove-role')) {
+                const { userId, roleId } = body
+
+                if (!userId || !roleId) {
+                  res.statusCode = 400
+                  res.setHeader('Content-Type', 'application/json')
+                  res.end(JSON.stringify({
+                    success: false,
+                    error: 'userId and roleId are required',
+                  }))
+                  return
+                }
+
+                await removeRoleFromUser(userId, roleId)
+
+                // Audit log
+                await createAuditLog({
+                  userId: authenticatedUser.userId,
+                  action: 'revoke',
+                  resource: 'user_role',
+                  resourceId: userId,
+                  details: { roleId },
+                  ipAddress: req.socket?.remoteAddress,
+                  userAgent: req.headers['user-agent']
+                })
+
+                res.statusCode = 200
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({
+                  success: true,
+                  message: 'Role removed successfully',
+                }))
+                return
+              }
+
+              // Regular user creation
+              const { email, password, name, bio, avatar, isActive } = body
+
+              if (!email || !password || !name) {
+                res.statusCode = 400
                 res.setHeader('Content-Type', 'application/json')
                 res.end(JSON.stringify({
                   success: false,
-                  error: error instanceof Error ? error.message : 'Internal server error',
+                  error: 'Email, password, and name are required',
                 }))
+                return
               }
-            })
+
+              const newUser = await createUser({
+                email,
+                password,
+                name,
+                bio,
+                avatar,
+                isActive
+              })
+
+              // Audit log
+              await createAuditLog({
+                userId: authenticatedUser.userId,
+                action: 'create',
+                resource: 'user',
+                resourceId: newUser.id,
+                details: { email: newUser.email, name: newUser.name },
+                ipAddress: req.socket?.remoteAddress,
+                userAgent: req.headers['user-agent']
+              })
+
+              res.statusCode = 201
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: true,
+                data: newUser,
+              }))
+            } catch (error) {
+              res.statusCode = 500
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: false,
+                error: error instanceof Error ? error.message : 'Internal server error',
+              }))
+            }
+            return
+          }
+
+          // PUT /api/users?id=123 - Update user
+          if (req.method === 'PUT' && userId) {
+            try {
+              const id = parseInt(userId)
+              const body = await parseRequestBody(req)
+              const { email, password, name, bio, avatar, isActive } = body
+
+              const updatedUser = await updateUser(id, {
+                email,
+                  password,
+                  name,
+                  bio,
+                  avatar,
+                  isActive
+              })
+
+              // Audit log
+              await createAuditLog({
+                userId: authenticatedUser.userId,
+                action: 'update',
+                resource: 'user',
+                resourceId: id,
+                details: body,
+                ipAddress: req.socket?.remoteAddress,
+                userAgent: req.headers['user-agent']
+              })
+
+              res.statusCode = 200
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: true,
+                data: updatedUser,
+              }))
+            } catch (error) {
+              res.statusCode = 500
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({
+                success: false,
+                error: error instanceof Error ? error.message : 'Internal server error',
+              }))
+            }
             return
           }
 
@@ -1178,7 +1145,7 @@ function apiPlugin() {
 
           // POST /api/roles - Create role or handle special actions
           if (req.method === 'POST') {
-            let body = ''
+            const chunks: any[] = []
             req.on('data', chunk => {
               body += chunk.toString()
             })
@@ -1336,7 +1303,7 @@ function apiPlugin() {
 
           // PUT /api/roles?id=123 - Update role
           if (req.method === 'PUT' && roleId) {
-            let body = ''
+            const chunks: any[] = []
             req.on('data', chunk => {
               body += chunk.toString()
             })
@@ -1486,7 +1453,7 @@ function apiPlugin() {
 
           // POST /api/permissions - Create permission
           if (req.method === 'POST') {
-            let body = ''
+            const chunks: any[] = []
             req.on('data', chunk => {
               body += chunk.toString()
             })
@@ -1537,7 +1504,7 @@ function apiPlugin() {
 
           // PUT /api/permissions?id=123 - Update permission
           if (req.method === 'PUT' && permissionId) {
-            let body = ''
+            const chunks: any[] = []
             req.on('data', chunk => {
               body += chunk.toString()
             })

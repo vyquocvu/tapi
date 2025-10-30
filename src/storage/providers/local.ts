@@ -125,23 +125,23 @@ export class LocalStorageProvider implements StorageProvider {
     
     try {
       const files = await fs.readdir(searchDir)
-      const mediaFiles: MediaFile[] = []
-
-      for (const file of files) {
-        // Skip metadata files
-        if (file.endsWith('.meta.json')) continue
-
+      
+      // Filter out metadata files first
+      const actualFiles = files.filter(file => !file.endsWith('.meta.json'))
+      
+      // Batch read all metadata files in parallel for better performance
+      const metadataPromises = actualFiles.map(async (file) => {
         try {
           const metadata = await this.getMetadata(file)
           if (metadata) {
-            mediaFiles.push(metadata)
+            return metadata
           }
         } catch {
           // If no metadata, create basic metadata
           const filePath = path.join(searchDir, file)
           const stats = await fs.stat(filePath)
           
-          mediaFiles.push({
+          return {
             id: file,
             name: file,
             originalName: file,
@@ -151,11 +151,15 @@ export class LocalStorageProvider implements StorageProvider {
             provider: this.name,
             createdAt: stats.birthtime,
             updatedAt: stats.mtime,
-          })
+          }
         }
-      }
+      })
 
-      return mediaFiles
+      // Execute all reads in parallel
+      const mediaFiles = await Promise.all(metadataPromises)
+      
+      // Filter out any null/undefined results
+      return mediaFiles.filter((file): file is MediaFile => file !== null && file !== undefined)
     } catch (error) {
       console.error('Error listing files:', error)
       return []
