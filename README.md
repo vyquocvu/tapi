@@ -59,6 +59,11 @@ See [MEDIA_MANAGER.md](./MEDIA_MANAGER.md) for detailed configuration.
   - **Content Relations** - Generic relationships between any content items
 - **Enhanced REST API** - Comprehensive REST API with validation, standardized responses, and error handling
 - **API Controller Dashboard** - Comprehensive REST API management and monitoring interface
+- **Plugin System** - Extensible plugin architecture for customizing and extending core functionality
+  - **Lifecycle Hooks** - onRegister, onBeforeRequest, onAfterRequest, onError hooks
+  - **Middleware Support** - Express-style middleware with priority-based execution
+  - **Route Matching** - Apply plugins to specific routes with wildcard support
+  - **Example Plugins** - Logger, performance monitor, request ID, response transformer
 - **JWT Authentication** - Secure authentication with JSON Web Tokens
 - **Input Validation** - Robust validation middleware for all API endpoints
 - **Rate Limiting** - Built-in rate limiting support for API protection
@@ -108,13 +113,27 @@ See [MEDIA_MANAGER.md](./MEDIA_MANAGER.md) for detailed configuration.
 │   │       └── gcs.ts       # Google Cloud Storage provider
 │   ├── middleware/
 │   │   ├── validation.ts    # Input validation utilities
-│   │   └── rateLimit.ts     # Rate limiting middleware
-│   ├── utils/
-│   │   └── apiResponse.ts   # Standardized API response helpers
-│   └── lib/
-│       ├── types.ts         # Shared TypeScript types
-│       ├── http.ts          # HTTP client utility
-│       └── queryClient.ts   # TanStack Query client config
+│   │   ├── rateLimit.ts     # Rate limiting middleware
+│   │   ├── authorization.ts # Authorization middleware
+│   │   └── permissionEnforcement.ts # Permission enforcement
+│   ├── lib/
+│   │   ├── types.ts         # Shared TypeScript types
+│   │   ├── http.ts          # HTTP client utility
+│   │   ├── queryClient.ts   # TanStack Query client config
+│   │   └── plugin-system/   # Extensible plugin system
+│   │       ├── types.ts     # Plugin type definitions
+│   │       ├── registry.ts  # Plugin registration & management
+│   │       ├── executor.ts  # Plugin execution engine
+│   │       └── index.ts     # Main export
+│   ├── plugins/
+│   │   ├── examples/        # Example plugins
+│   │   │   ├── logger.ts              # Request logging plugin
+│   │   │   ├── request-id.ts          # Request ID plugin
+│   │   │   ├── performance-monitor.ts # Performance monitoring
+│   │   │   └── response-transformer.ts # Response transformation
+│   │   └── templates/       # Plugin & middleware templates
+│   │       ├── plugin-template.ts     # Plugin starter template
+│   │       └── middleware-template.ts # Middleware starter template
 ├── api/
 │   ├── content.ts           # Content Manager API endpoints
 │   ├── content-types.ts     # Content Type Builder endpoints
@@ -122,8 +141,14 @@ See [MEDIA_MANAGER.md](./MEDIA_MANAGER.md) for detailed configuration.
 │   ├── login.ts             # Authentication endpoint
 │   └── api-dashboard.ts     # API Dashboard endpoints
 ├── docs/
-│   ├── CMS_DATABASE_STRUCTURE.md  # Complete CMS database reference
-│   └── CMS_IMPROVEMENTS.md        # CMS features and usage guide
+│   ├── CMS_DATABASE_STRUCTURE.md       # Complete CMS database reference
+│   ├── CMS_IMPROVEMENTS.md             # CMS features and usage guide
+│   ├── PLUGIN_SYSTEM_ARCHITECTURE.md   # Plugin system architecture
+│   ├── PLUGIN_DEVELOPMENT_GUIDE.md     # How to create plugins
+│   ├── MIDDLEWARE_GUIDE.md             # Middleware development guide
+│   └── PLUGIN_API_REFERENCE.md         # Complete API reference
+├── examples/
+│   └── plugin-integration-example.ts   # Plugin integration examples
 ├── tests/
 │   └── api-validation.test.ts  # API validation tests
 ├── .env.example             # Environment variables template
@@ -492,6 +517,47 @@ Business logic is separated into service modules:
 - `postService.ts` - Post CRUD operations
 
 This keeps routes and components clean and focused on presentation.
+
+### 9. Plugin System & Extensibility
+
+The plugin system provides a powerful way to extend and customize core functionality:
+
+**Key Features:**
+- **Lifecycle Hooks**: Intercept requests at multiple points (onRegister, onBeforeRequest, onAfterRequest, onError)
+- **Middleware Support**: Express-style middleware with priority-based execution
+- **Route Matching**: Apply plugins to specific routes with wildcard patterns
+- **State Management**: Share data between plugin hooks via context
+- **Error Handling**: Graceful error handling with dedicated error hooks
+
+**Quick Example:**
+```typescript
+import { pluginManager } from '@/lib/plugin-system'
+import { requestLoggerPlugin } from '@/plugins/examples/logger'
+
+// Register a plugin
+await pluginManager.register(requestLoggerPlugin, {
+  priority: 20,
+  routes: ['/api/*'],
+  excludeRoutes: ['/api/health'],
+  options: {
+    logHeaders: false,
+    logResponse: false,
+  }
+})
+```
+
+**Built-in Example Plugins:**
+- **Request Logger**: Logs all API requests with timing information
+- **Request ID**: Adds unique IDs to requests for tracing
+- **Performance Monitor**: Tracks slow requests and memory usage
+- **Response Transformer**: Standardizes API response formats
+
+**Documentation:**
+- [Plugin System Architecture](./docs/PLUGIN_SYSTEM_ARCHITECTURE.md) - Complete architectural overview
+- [Plugin Development Guide](./docs/PLUGIN_DEVELOPMENT_GUIDE.md) - How to create custom plugins
+- [Middleware Guide](./docs/MIDDLEWARE_GUIDE.md) - Middleware development patterns
+- [API Reference](./docs/PLUGIN_API_REFERENCE.md) - Complete API documentation
+- [Integration Examples](./examples/plugin-integration-example.ts) - Real-world usage examples
 
 ## 🧪 Testing the Application
 
