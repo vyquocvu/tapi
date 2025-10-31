@@ -64,7 +64,7 @@ export async function executeBeforeRequest(
   req: Connect.IncomingMessage,
   res: any,
   user?: any
-): Promise<PluginExecutionResult> {
+): Promise<PluginExecutionResult & { context?: PluginContext }> {
   const route = req.url || '/'
   const plugins = pluginManager.getPluginsForRoute(route)
   const context = createPluginContext(req, res, user)
@@ -72,6 +72,11 @@ export async function executeBeforeRequest(
   try {
     for (const { plugin, config } of plugins) {
       if (!config.enabled || !plugin.onBeforeRequest) continue
+
+      // Pass plugin options to context
+      if (config.options) {
+        context.state.set('options', config.options)
+      }
 
       const result = await plugin.onBeforeRequest(context)
       
@@ -87,6 +92,7 @@ export async function executeBeforeRequest(
     return {
       success: true,
       shouldContinue: true,
+      context, // Return context for reuse
     }
   } catch (error) {
     return {
@@ -104,17 +110,23 @@ export async function executeAfterRequest(
   req: Connect.IncomingMessage,
   res: any,
   response: any,
-  user?: any
+  user?: any,
+  existingContext?: PluginContext
 ): Promise<any> {
   const route = req.url || '/'
   const plugins = pluginManager.getPluginsForRoute(route)
-  const context = createPluginContext(req, res, user)
+  const context = existingContext || createPluginContext(req, res, user)
 
   let modifiedResponse = response
 
   try {
     for (const { plugin, config } of plugins) {
       if (!config.enabled || !plugin.onAfterRequest) continue
+
+      // Pass plugin options to context
+      if (config.options) {
+        context.state.set('options', config.options)
+      }
 
       const result = await plugin.onAfterRequest(context, modifiedResponse)
       if (result !== undefined) {
@@ -136,11 +148,12 @@ export async function executeOnError(
   req: Connect.IncomingMessage,
   res: any,
   error: Error,
-  user?: any
+  user?: any,
+  existingContext?: PluginContext
 ): Promise<void> {
   const route = req.url || '/'
   const plugins = pluginManager.getPluginsForRoute(route)
-  const context = createPluginContext(req, res, user)
+  const context = existingContext || createPluginContext(req, res, user)
 
   for (const { plugin, config } of plugins) {
     if (!config.enabled || !plugin.onError) continue
@@ -161,6 +174,8 @@ export function withPlugins(
   handler: (req: Connect.IncomingMessage, res: any) => Promise<void>
 ) {
   return async (req: Connect.IncomingMessage, res: any) => {
+    let sharedContext: PluginContext | undefined
+    
     try {
       // Execute middleware
       const middlewareResult = await executeMiddleware(req, res)
@@ -174,6 +189,9 @@ export function withPlugins(
         throw beforeResult.error
       }
 
+      // Store context for reuse
+      sharedContext = beforeResult.context
+
       if (!beforeResult.shouldContinue) {
         // Plugin stopped the request
         return
@@ -182,8 +200,8 @@ export function withPlugins(
       // Execute the actual handler
       await handler(req, res)
     } catch (error) {
-      // Execute error hooks
-      await executeOnError(req, res, error instanceof Error ? error : new Error(String(error)))
+      // Execute error hooks with shared context
+      await executeOnError(req, res, error instanceof Error ? error : new Error(String(error)), undefined, sharedContext)
       
       // If error wasn't already sent, send it now
       if (!res.writableEnded) {

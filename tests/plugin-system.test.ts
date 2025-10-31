@@ -140,7 +140,7 @@ async function runTests() {
 }
 
 // Run tests if executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url.includes(process.argv[1])) {
   runTests()
 }
 
