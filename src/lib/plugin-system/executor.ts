@@ -48,12 +48,15 @@ export async function executeMiddleware(
  * Create plugin context for request
  */
 function createPluginContext(req: Connect.IncomingMessage, res: any, user?: any): PluginContext {
+  // Reuse existing request ID if available
+  const existingRequestId = req.headers['x-request-id'] as string
+  
   return {
     req,
     res,
     state: new Map(),
     user,
-    requestId: randomUUID(),
+    requestId: existingRequestId || randomUUID(),
   }
 }
 

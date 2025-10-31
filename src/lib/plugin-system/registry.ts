@@ -162,8 +162,11 @@ class PluginManager {
     
     // Wildcard match
     if (pattern.includes('*')) {
-      const regexPattern = pattern.replace(/\*/g, '.*')
-      const regex = new RegExp(`^${regexPattern}$`)
+      // Escape special regex characters except *
+      const escapedPattern = pattern
+        .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+        .replace(/\*/g, '.*')
+      const regex = new RegExp(`^${escapedPattern}$`)
       return regex.test(route)
     }
     

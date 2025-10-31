@@ -58,9 +58,12 @@ export const performanceMonitorPlugin: Plugin = {
       if (options.trackMemory) {
         const startMemory = context.state.get('perfStartMemory') as NodeJS.MemoryUsage
         const endMemory = process.memoryUsage()
+        const heapDelta = endMemory.heapUsed - startMemory.heapUsed
+        const externalDelta = endMemory.external - startMemory.external
+        
         logData.memoryDelta = {
-          heapUsed: `${((endMemory.heapUsed - startMemory.heapUsed) / 1024 / 1024).toFixed(2)}MB`,
-          external: `${((endMemory.external - startMemory.external) / 1024 / 1024).toFixed(2)}MB`,
+          heapUsed: `${(Math.abs(heapDelta) / 1024 / 1024).toFixed(2)}MB${heapDelta < 0 ? ' freed' : ''}`,
+          external: `${(Math.abs(externalDelta) / 1024 / 1024).toFixed(2)}MB${externalDelta < 0 ? ' freed' : ''}`,
         }
       }
       
