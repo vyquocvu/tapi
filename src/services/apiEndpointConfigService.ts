@@ -16,6 +16,20 @@ export interface EndpointConfig {
 }
 
 /**
+ * Safely parse JSON with fallback to default value
+ */
+function safeJSONParse<T>(jsonString: string | null, defaultValue: T): T {
+  if (!jsonString) return defaultValue
+  
+  try {
+    return JSON.parse(jsonString) as T
+  } catch (error) {
+    console.error('Failed to parse JSON:', error)
+    return defaultValue
+  }
+}
+
+/**
  * Get endpoint configuration for a specific content type
  * Loads from database if exists, otherwise returns defaults
  */
@@ -36,7 +50,7 @@ export async function getEndpointConfig(contentTypeUid: string): Promise<Endpoin
       uid: dbConfig.uid,
       path: `/api/content?contentType=${dbConfig.uid}`,
       isPublic: dbConfig.isPublic,
-      allowedRoles: dbConfig.allowedRoles ? JSON.parse(dbConfig.allowedRoles) : ['authenticated'],
+      allowedRoles: safeJSONParse(dbConfig.allowedRoles, ['authenticated']),
       rateLimit: dbConfig.rateLimit || 100,
       description: dbConfig.description || `CRUD endpoints for ${contentType.displayName}`
     }
@@ -71,7 +85,7 @@ export async function getAllEndpointConfigs(): Promise<EndpointConfig[]> {
         uid: dbConfig.uid,
         path: `/api/content?contentType=${dbConfig.uid}`,
         isPublic: dbConfig.isPublic,
-        allowedRoles: dbConfig.allowedRoles ? JSON.parse(dbConfig.allowedRoles) : ['authenticated'],
+        allowedRoles: safeJSONParse(dbConfig.allowedRoles, ['authenticated']),
         rateLimit: dbConfig.rateLimit || 100,
         description: dbConfig.description || `CRUD endpoints for ${ct.displayName}`
       }
@@ -138,7 +152,7 @@ export async function updateEndpointConfig(
     uid: dbConfig.uid,
     path: `/api/content?contentType=${dbConfig.uid}`,
     isPublic: dbConfig.isPublic,
-    allowedRoles: dbConfig.allowedRoles ? JSON.parse(dbConfig.allowedRoles) : ['authenticated'],
+    allowedRoles: safeJSONParse(dbConfig.allowedRoles, ['authenticated']),
     rateLimit: dbConfig.rateLimit || 100,
     description: dbConfig.description || `CRUD endpoints for ${contentType.displayName}`
   }
