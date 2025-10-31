@@ -4,6 +4,7 @@
  */
 
 import { getContentType, getAllContentTypes } from './contentTypeService.js'
+import prisma from '../db/prisma.js'
 
 export interface EndpointConfig {
   uid: string // For dynamic content endpoints
@@ -16,12 +17,29 @@ export interface EndpointConfig {
 
 /**
  * Get endpoint configuration for a specific content type
- * In a real implementation, this would be stored in a database
+ * Loads from database if exists, otherwise returns defaults
  */
 export async function getEndpointConfig(contentTypeUid: string): Promise<EndpointConfig | null> {
   const contentType = await getContentType(contentTypeUid)
   if (!contentType) {
     return null
+  }
+  
+  // Try to load from database
+  const dbConfig = await prisma.endpointConfiguration.findUnique({
+    where: { uid: contentTypeUid }
+  })
+  
+  // If found in database, use those settings
+  if (dbConfig) {
+    return {
+      uid: dbConfig.uid,
+      path: `/api/content?contentType=${dbConfig.uid}`,
+      isPublic: dbConfig.isPublic,
+      allowedRoles: dbConfig.allowedRoles ? JSON.parse(dbConfig.allowedRoles) : ['authenticated'],
+      rateLimit: dbConfig.rateLimit || 100,
+      description: dbConfig.description || `CRUD endpoints for ${contentType.displayName}`
+    }
   }
   
   // Default configuration - all endpoints are private by default
@@ -41,19 +59,39 @@ export async function getEndpointConfig(contentTypeUid: string): Promise<Endpoin
 export async function getAllEndpointConfigs(): Promise<EndpointConfig[]> {
   const contentTypes = await getAllContentTypes()
   
-  return Object.values(contentTypes).map(ct => ({
-    uid: ct.uid,
-    path: `/api/content?contentType=${ct.uid}`,
-    isPublic: false,
-    allowedRoles: ['authenticated'],
-    rateLimit: 100,
-    description: `CRUD endpoints for ${ct.displayName}`
-  }))
+  // Load all configurations from database
+  const dbConfigs = await prisma.endpointConfiguration.findMany()
+  const configMap = new Map(dbConfigs.map(c => [c.uid, c]))
+  
+  return Object.values(contentTypes).map(ct => {
+    const dbConfig = configMap.get(ct.uid)
+    
+    if (dbConfig) {
+      return {
+        uid: dbConfig.uid,
+        path: `/api/content?contentType=${dbConfig.uid}`,
+        isPublic: dbConfig.isPublic,
+        allowedRoles: dbConfig.allowedRoles ? JSON.parse(dbConfig.allowedRoles) : ['authenticated'],
+        rateLimit: dbConfig.rateLimit || 100,
+        description: dbConfig.description || `CRUD endpoints for ${ct.displayName}`
+      }
+    }
+    
+    // Default configuration
+    return {
+      uid: ct.uid,
+      path: `/api/content?contentType=${ct.uid}`,
+      isPublic: false,
+      allowedRoles: ['authenticated'],
+      rateLimit: 100,
+      description: `CRUD endpoints for ${ct.displayName}`
+    }
+  })
 }
 
 /**
  * Update endpoint configuration
- * In a real implementation, this would update the database
+ * Persists changes to database
  */
 export async function updateEndpointConfig(
   contentTypeUid: string,
@@ -64,15 +102,45 @@ export async function updateEndpointConfig(
     throw new Error(`Content type '${contentTypeUid}' not found`)
   }
   
-  // In production, this would update the database
-  // For now, return the updated config
+  // Prepare data for database
+  const updateData: any = {}
+  
+  if (config.isPublic !== undefined) {
+    updateData.isPublic = config.isPublic
+  }
+  
+  if (config.allowedRoles !== undefined) {
+    updateData.allowedRoles = JSON.stringify(config.allowedRoles)
+  }
+  
+  if (config.rateLimit !== undefined) {
+    updateData.rateLimit = config.rateLimit
+  }
+  
+  if (config.description !== undefined) {
+    updateData.description = config.description
+  }
+  
+  // Upsert to database
+  const dbConfig = await prisma.endpointConfiguration.upsert({
+    where: { uid: contentTypeUid },
+    update: updateData,
+    create: {
+      uid: contentTypeUid,
+      isPublic: config.isPublic ?? false,
+      allowedRoles: config.allowedRoles ? JSON.stringify(config.allowedRoles) : JSON.stringify(['authenticated']),
+      rateLimit: config.rateLimit ?? 100,
+      description: config.description ?? `CRUD endpoints for ${contentType.displayName}`
+    }
+  })
+  
   return {
-    uid: contentTypeUid,
-    path: `/api/content?contentType=${contentTypeUid}`,
-    isPublic: config.isPublic ?? false,
-    allowedRoles: config.allowedRoles ?? ['authenticated'],
-    rateLimit: config.rateLimit ?? 100,
-    description: config.description ?? `CRUD endpoints for ${contentType.displayName}`
+    uid: dbConfig.uid,
+    path: `/api/content?contentType=${dbConfig.uid}`,
+    isPublic: dbConfig.isPublic,
+    allowedRoles: dbConfig.allowedRoles ? JSON.parse(dbConfig.allowedRoles) : ['authenticated'],
+    rateLimit: dbConfig.rateLimit || 100,
+    description: dbConfig.description || `CRUD endpoints for ${contentType.displayName}`
   }
 }
 
@@ -84,6 +152,10 @@ export async function generateAPIDocumentation(contentTypeUid: string): Promise<
   if (!contentType) {
     throw new Error(`Content type '${contentTypeUid}' not found`)
   }
+  
+  // Get endpoint configuration to include access level
+  const endpointConfig = await getEndpointConfig(contentTypeUid)
+  const accessLevel = endpointConfig?.isPublic ? '**Public** (no authentication required)' : '**Private** (authentication required)'
   
   const { displayName, singularName, pluralName, description, fields } = contentType
   
@@ -98,6 +170,7 @@ export async function generateAPIDocumentation(contentTypeUid: string): Promise<
 
 **Content Type UID**: \`${contentTypeUid}\`
 **Description**: ${description || 'No description provided'}
+**Access Level**: ${accessLevel}
 
 ## Endpoints
 
@@ -148,10 +221,12 @@ ${fieldDocs}
 
 ## Authentication
 
-All endpoints require JWT authentication:
+${endpointConfig?.isPublic 
+  ? 'These endpoints are **public** and do not require authentication.' 
+  : `All endpoints require JWT authentication:
 \`\`\`
 Authorization: Bearer <your-jwt-token>
-\`\`\`
+\`\`\``}
 `.trim()
 }
 
