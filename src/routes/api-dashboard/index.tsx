@@ -1,20 +1,25 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { requireAuth } from '@/lib/auth-utils'
 import {
   fetchEndpointConfigs,
   fetchDashboardOverview,
   fetchEndpointDocumentation,
   generateContentTypeDocumentation,
+  updateEndpointConfiguration,
   type APIStatistics,
   type ActivityLog,
+  type EndpointConfig,
 } from '@/services/queryFunctions'
 import { queryKeys } from '@/services/queryKeys'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/api-dashboard/')({
   beforeLoad: () => requireAuth('/api-dashboard'),
@@ -25,6 +30,7 @@ function APIDashboardComponent() {
   const [selectedTab, setSelectedTab] = useState<'overview' | 'endpoints' | 'content-types'>('overview')
   const [selectedContentType, setSelectedContentType] = useState<string | null>(null)
   const [generatedDocs, setGeneratedDocs] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
   // Fetch dashboard data
   const { data: overview, isLoading: overviewLoading, error: overviewError } = useQuery({
@@ -55,9 +61,31 @@ function APIDashboardComponent() {
     },
   })
 
+  // Update endpoint configuration mutation
+  const updateConfigMutation = useMutation({
+    mutationFn: ({ contentType, config }: { contentType: string; config: Partial<EndpointConfig> }) =>
+      updateEndpointConfiguration(contentType, config),
+    onSuccess: () => {
+      // Invalidate and refetch configs
+      queryClient.invalidateQueries({ queryKey: queryKeys.apiDashboard.configs() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.apiDashboard.overview() })
+      toast.success('Endpoint configuration updated successfully')
+    },
+    onError: (error) => {
+      toast.error(`Failed to update configuration: ${error.message}`)
+    },
+  })
+
   const handleGenerateDocs = (contentType: string) => {
     setSelectedContentType(contentType)
     generateDocsMutation.mutate(contentType)
+  }
+
+  const handleTogglePublic = (contentType: string, currentValue: boolean) => {
+    updateConfigMutation.mutate({
+      contentType,
+      config: { isPublic: !currentValue },
+    })
   }
 
   return (
@@ -347,16 +375,29 @@ function APIDashboardComponent() {
                     <Card key={config.uid}>
                       <CardHeader>
                         <div className="flex items-start justify-between">
-                          <div>
+                          <div className="flex-1">
                             <CardTitle className="text-base">{config.uid}</CardTitle>
                             <CardDescription>{config.description}</CardDescription>
                           </div>
-                          <div className="flex items-center gap-2">
-                            {config.isPublic ? (
-                              <Badge variant="success">Public</Badge>
-                            ) : (
-                              <Badge variant="warning">Private</Badge>
-                            )}
+                          <div className="flex flex-col items-end gap-2">
+                            <div className="flex items-center gap-2">
+                              {config.isPublic ? (
+                                <Badge variant="success">Public</Badge>
+                              ) : (
+                                <Badge variant="warning">Private</Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Label htmlFor={`toggle-${config.uid}`} className="text-sm cursor-pointer">
+                                Public Access
+                              </Label>
+                              <Switch
+                                id={`toggle-${config.uid}`}
+                                checked={config.isPublic}
+                                onCheckedChange={() => handleTogglePublic(config.uid, config.isPublic)}
+                                disabled={updateConfigMutation.isPending}
+                              />
+                            </div>
                           </div>
                         </div>
                       </CardHeader>
@@ -370,15 +411,17 @@ function APIDashboardComponent() {
                             Rate limit: {config.rateLimit}/min
                           </span>
                         </div>
-                        <Button
-                          onClick={() => handleGenerateDocs(config.uid)}
-                          disabled={generateDocsMutation.isPending}
-                          size="sm"
-                        >
-                          {generateDocsMutation.isPending && selectedContentType === config.uid
-                            ? 'Generating...'
-                            : 'Generate Docs'}
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => handleGenerateDocs(config.uid)}
+                            disabled={generateDocsMutation.isPending}
+                            size="sm"
+                          >
+                            {generateDocsMutation.isPending && selectedContentType === config.uid
+                              ? 'Generating...'
+                              : 'Generate Docs'}
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}

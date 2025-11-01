@@ -438,3 +438,30 @@ export async function generateContentTypeDocumentation(contentType: string): Pro
   )
   return result.markdown
 }
+
+export async function updateEndpointConfiguration(
+  contentType: string,
+  config: Partial<EndpointConfig>
+): Promise<EndpointConfig> {
+  const response = await fetch(
+    `/api/api-dashboard?contentType=${encodeURIComponent(contentType)}`,
+    {
+      method: 'PUT',
+      headers: createHeaders(),
+      body: JSON.stringify(config),
+    }
+  )
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: response.statusText }))
+    throw new Error(error.error || `HTTP error! status: ${response.status}`)
+  }
+
+  const result: ApiResponse<EndpointConfig> = await response.json()
+  
+  if (!result.success) {
+    throw new Error(result.error || 'Failed to update endpoint configuration')
+  }
+
+  return result.data as EndpointConfig
+}
