@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -28,23 +28,11 @@ model User {
   updatedAt DateTime @updatedAt
   
   // Relations
-  articles           Article[]
   createdRevisions   ContentRevision[] @relation("RevisionCreator")
   createdMetadata    ContentMetadata[] @relation("MetadataCreator")
   userRoles          UserRole[]
   userPermissions    UserPermission[]
   auditLogs          AuditLog[]
-}
-
-model Post {
-  id        Int      @id @default(autoincrement())
-  title     String
-  body      String
-  published Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  authorId  Int
-  author    User     @relation(fields: [authorId], references: [id])
 }
 
 // =============================================================================
