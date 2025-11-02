@@ -42,6 +42,7 @@ function PermissionsComponent() {
   const [selectedActions, setSelectedActions] = useState<Set<string>>(new Set())
   const [expandedResources, setExpandedResources] = useState<Set<string>>(new Set())
   const [selectedResourceActions, setSelectedResourceActions] = useState<Map<string, Set<string>>>(new Map())
+  const [selectedResource, setSelectedResource] = useState<string | null>(null)
   const [formData, setFormData] = useState<PermissionFormData>({
     name: '',
     resource: '',
@@ -280,6 +281,12 @@ function PermissionsComponent() {
     return acc
   }, {} as Record<string, Permission[]>)
 
+  // Auto-select first resource if none selected
+  const sortedResources = groupedPermissions ? Object.keys(groupedPermissions).sort() : []
+  if (!selectedResource && sortedResources.length > 0) {
+    setSelectedResource(sortedResources[0])
+  }
+
   return (
     <div className="container mx-auto py-8">
       <div className="mb-8 flex items-center justify-between">
@@ -481,17 +488,19 @@ function PermissionsComponent() {
         <div className="grid grid-cols-12 gap-6">
           {/* Left sidebar - Resource list */}
           <div className="col-span-3">
-            <Card className="p-4 sticky top-4">
+            <Card className="p-4 sticky top-20 self-start">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <Shield className="h-5 w-5 text-primary" />
                 Resources
               </h2>
-              <nav className="space-y-1">
+              <nav className="space-y-1 max-h-[calc(100vh-12rem)] overflow-y-auto">
                 {Object.keys(groupedPermissions).sort().map((resource) => (
-                  <a
+                  <button
                     key={resource}
-                    href={`#resource-${resource}`}
-                    className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors capitalize"
+                    onClick={() => setSelectedResource(resource)}
+                    className={`w-full text-left block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors capitalize ${
+                      selectedResource === resource ? 'bg-muted font-semibold' : ''
+                    }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-medium">{resource}</span>
@@ -499,7 +508,7 @@ function PermissionsComponent() {
                         {groupedPermissions[resource].length}
                       </span>
                     </div>
-                  </a>
+                  </button>
                 ))}
               </nav>
             </Card>
@@ -507,63 +516,61 @@ function PermissionsComponent() {
 
           {/* Right content - Permissions */}
           <div className="col-span-9 space-y-6">
-            {Object.entries(groupedPermissions)
-              .sort(([a], [b]) => a.localeCompare(b))
-              .map(([resource, perms]) => (
-                <Card key={resource} id={`resource-${resource}`} className="p-6 scroll-mt-4">
-                  <h2 className="text-xl font-semibold mb-4 capitalize flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-primary" />
-                    {resource}
-                  </h2>
-                  <div className="space-y-3">
-                    {perms.map((permission) => (
-                      <div
-                        key={permission.id}
-                        className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50"
-                      >
-                        <div className="space-y-1 flex-1">
-                          <div className="flex items-center gap-2">
-                            <code className="text-sm font-semibold bg-muted px-2 py-1 rounded">
-                              {permission.name}
-                            </code>
-                            <span className="text-xs text-muted-foreground">
-                              ({permission.action})
-                            </span>
-                          </div>
-                          {permission.description && (
-                            <p className="text-sm text-muted-foreground">
-                              {permission.description}
-                            </p>
-                          )}
-                          <div className="flex gap-4 text-xs text-muted-foreground">
-                            <span>ID: {permission.id}</span>
-                            <span>
-                              Created: {new Date(permission.createdAt).toLocaleDateString()}
-                            </span>
-                          </div>
+            {selectedResource && groupedPermissions[selectedResource] && (
+              <Card key={selectedResource} id={`resource-${selectedResource}`} className="p-6">
+                <h2 className="text-xl font-semibold mb-4 capitalize flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-primary" />
+                  {selectedResource}
+                </h2>
+                <div className="space-y-3">
+                  {groupedPermissions[selectedResource].map((permission) => (
+                    <div
+                      key={permission.id}
+                      className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50"
+                    >
+                      <div className="space-y-1 flex-1">
+                        <div className="flex items-center gap-2">
+                          <code className="text-sm font-semibold bg-muted px-2 py-1 rounded">
+                            {permission.name}
+                          </code>
+                          <span className="text-xs text-muted-foreground">
+                            ({permission.action})
+                          </span>
                         </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => startEdit(permission)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleDelete(permission)}
-                            disabled={deleteMutation.isPending}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                        {permission.description && (
+                          <p className="text-sm text-muted-foreground">
+                            {permission.description}
+                          </p>
+                        )}
+                        <div className="flex gap-4 text-xs text-muted-foreground">
+                          <span>ID: {permission.id}</span>
+                          <span>
+                            Created: {new Date(permission.createdAt).toLocaleDateString()}
+                          </span>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </Card>
-              ))}
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => startEdit(permission)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete(permission)}
+                          disabled={deleteMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
           </div>
         </div>
       ) : (
