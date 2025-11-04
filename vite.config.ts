@@ -49,7 +49,8 @@ export default defineConfig({
     fs: {
       // Allow serving files from uploads directory
       allow: ['.', './uploads'],
-      // Deny serving from api directory (Vercel functions only)
+      // Deny serving from api directory to prevent Vite from serving Vercel serverless 
+      // functions as ES modules during development. Dev mode uses src/server/api/* instead.
       deny: ['api'],
     },
   },

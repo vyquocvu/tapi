@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -19,32 +19,20 @@ datasource db {
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
-  password  String   // Hashed password
+  password  String // Hashed password
   name      String
-  bio       String?  // User biography
-  avatar    String?  // Avatar image URL
+  bio       String? // User biography
+  avatar    String? // Avatar image URL
   isActive  Boolean  @default(true) // Account status
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  // Relations
-  articles           Article[]
-  createdRevisions   ContentRevision[] @relation("RevisionCreator")
-  createdMetadata    ContentMetadata[] @relation("MetadataCreator")
-  userRoles          UserRole[]
-  userPermissions    UserPermission[]
-  auditLogs          AuditLog[]
-}
 
-model Post {
-  id        Int      @id @default(autoincrement())
-  title     String
-  body      String
-  published Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  authorId  Int
-  author    User     @relation(fields: [authorId], references: [id])
+  // Relations
+  createdRevisions ContentRevision[] @relation("RevisionCreator")
+  createdMetadata  ContentMetadata[] @relation("MetadataCreator")
+  userRoles        UserRole[]
+  userPermissions  UserPermission[]
+  auditLogs        AuditLog[]
 }
 
 // =============================================================================
@@ -54,27 +42,27 @@ model Post {
 
 // ContentMetadata: SEO and metadata for any content type
 model ContentMetadata {
-  id            Int      @id @default(autoincrement())
-  contentType   String   // e.g., "api::article.article", "api::product.product"
-  contentId     Int      // ID of the actual content record
-  
+  id          Int    @id @default(autoincrement())
+  contentType String // e.g., "api::article.article", "api::product.product"
+  contentId   Int // ID of the actual content record
+
   // SEO fields
-  metaTitle     String?
+  metaTitle       String?
   metaDescription String?
-  metaKeywords  String?
-  ogTitle       String?  // Open Graph title
-  ogDescription String?  // Open Graph description
-  ogImage       String?  // Open Graph image URL
-  
+  metaKeywords    String?
+  ogTitle         String? // Open Graph title
+  ogDescription   String? // Open Graph description
+  ogImage         String? // Open Graph image URL
+
   // Additional metadata (stored as JSON for flexibility)
-  customData    String?  // JSON string for SQLite compatibility
-  
+  customData String? // JSON string for SQLite compatibility
+
   // Tracking
-  createdById   Int
-  createdBy     User     @relation("MetadataCreator", fields: [createdById], references: [id])
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
+  createdById Int
+  createdBy   User     @relation("MetadataCreator", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
   // Unique constraint: one metadata record per content item
   @@unique([contentType, contentId])
   @@index([contentType])
@@ -83,20 +71,20 @@ model ContentMetadata {
 
 // ContentRevision: Audit trail and version history for any content type
 model ContentRevision {
-  id            Int      @id @default(autoincrement())
-  contentType   String   // e.g., "api::article.article"
-  contentId     Int      // ID of the actual content record
-  
+  id          Int    @id @default(autoincrement())
+  contentType String // e.g., "api::article.article"
+  contentId   Int // ID of the actual content record
+
   // Revision data
-  revisionNumber Int     // Sequential version number for this content
-  data          String   // Full snapshot as JSON string for SQLite compatibility
-  changeLog     String?  // Optional description of what changed
-  
+  revisionNumber Int // Sequential version number for this content
+  data           String // Full snapshot as JSON string for SQLite compatibility
+  changeLog      String? // Optional description of what changed
+
   // Tracking
-  createdById   Int
-  createdBy     User     @relation("RevisionCreator", fields: [createdById], references: [id])
-  createdAt     DateTime @default(now())
-  
+  createdById Int
+  createdBy   User     @relation("RevisionCreator", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+
   @@unique([contentType, contentId, revisionNumber])
   @@index([contentType, contentId])
   @@index([createdAt])
@@ -104,30 +92,30 @@ model ContentRevision {
 
 // ContentTag: Flexible tagging system for any content type
 model ContentTag {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique // Tag name (e.g., "featured", "urgent", "beginner")
-  slug        String   @unique // URL-friendly version
-  description String?  // Optional tag description
-  color       String?  // Optional color for UI display (e.g., "#FF5733")
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  id          Int     @id @default(autoincrement())
+  name        String  @unique // Tag name (e.g., "featured", "urgent", "beginner")
+  slug        String  @unique // URL-friendly version
+  description String? // Optional tag description
+  color       String? // Optional color for UI display (e.g., "#FF5733")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
   taggedContent ContentTagRelation[]
 }
 
 // ContentTagRelation: Many-to-many relation between tags and any content
 model ContentTagRelation {
-  id          Int      @id @default(autoincrement())
+  id          Int    @id @default(autoincrement())
   tagId       Int
-  contentType String   // e.g., "api::article.article"
-  contentId   Int      // ID of the actual content record
-  
-  tag         ContentTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
-  
-  createdAt   DateTime @default(now())
-  
+  contentType String // e.g., "api::article.article"
+  contentId   Int // ID of the actual content record
+
+  tag ContentTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
   @@unique([tagId, contentType, contentId])
   @@index([contentType, contentId])
   @@index([tagId])
@@ -136,15 +124,15 @@ model ContentTagRelation {
 // ContentRelation: Generic relationship between any two content items
 // Useful for features like "related articles", "recommended products", etc.
 model ContentRelation {
-  id               Int      @id @default(autoincrement())
-  sourceType       String   // Content type of the source
-  sourceId         Int      // ID of the source content
-  targetType       String   // Content type of the target
-  targetId         Int      // ID of the target content
-  relationType     String   // Type of relation (e.g., "related", "parent", "child")
-  
-  createdAt        DateTime @default(now())
-  
+  id           Int    @id @default(autoincrement())
+  sourceType   String // Content type of the source
+  sourceId     Int // ID of the source content
+  targetType   String // Content type of the target
+  targetId     Int // ID of the target content
+  relationType String // Type of relation (e.g., "related", "parent", "child")
+
+  createdAt DateTime @default(now())
+
   @@unique([sourceType, sourceId, targetType, targetId, relationType])
   @@index([sourceType, sourceId])
   @@index([targetType, targetId])
@@ -158,10 +146,10 @@ model ContentRelation {
 model Role {
   id          Int      @id @default(autoincrement())
   name        String   @unique // e.g., "Admin", "Editor", "Viewer"
-  description String?  // Description of the role
+  description String? // Description of the role
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   // Relations
   userRoles       UserRole[]
   rolePermissions RolePermission[]
@@ -171,16 +159,16 @@ model Role {
 model Permission {
   id          Int      @id @default(autoincrement())
   name        String   @unique // e.g., "users:create", "posts:edit", "content:delete"
-  resource    String   // Resource type: "users", "posts", "content", "roles", "permissions"
-  action      String   // Action: "create", "read", "update", "delete", "manage"
-  description String?  // Description of the permission
+  resource    String // Resource type: "users", "posts", "content", "roles", "permissions"
+  action      String // Action: "create", "read", "update", "delete", "manage"
+  description String? // Description of the permission
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   // Relations
   rolePermissions RolePermission[]
   userPermissions UserPermission[]
-  
+
   @@index([resource])
   @@index([action])
 }
@@ -191,11 +179,11 @@ model UserRole {
   userId     Int
   roleId     Int
   assignedAt DateTime @default(now())
-  assignedBy Int?     // User ID who assigned this role
-  
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  
+  assignedBy Int? // User ID who assigned this role
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
   @@unique([userId, roleId])
   @@index([userId])
   @@index([roleId])
@@ -203,14 +191,14 @@ model UserRole {
 
 // RolePermission: Many-to-many relationship between roles and permissions
 model RolePermission {
-  id           Int        @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   roleId       Int
   permissionId Int
-  assignedAt   DateTime   @default(now())
-  
-  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-  
+  assignedAt   DateTime @default(now())
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
   @@unique([roleId, permissionId])
   @@index([roleId])
   @@index([permissionId])
@@ -218,15 +206,15 @@ model RolePermission {
 
 // UserPermission: Direct permissions assigned to users (overrides role permissions)
 model UserPermission {
-  id           Int        @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   userId       Int
   permissionId Int
-  assignedAt   DateTime   @default(now())
-  assignedBy   Int?       // User ID who assigned this permission
-  
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-  
+  assignedAt   DateTime @default(now())
+  assignedBy   Int? // User ID who assigned this permission
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
   @@unique([userId, permissionId])
   @@index([userId])
   @@index([permissionId])
@@ -234,21 +222,36 @@ model UserPermission {
 
 // AuditLog: Tracks all changes to users, roles, and permissions
 model AuditLog {
-  id          Int      @id @default(autoincrement())
-  userId      Int?     // User who performed the action
-  action      String   // Action performed: "create", "update", "delete", "assign", "revoke"
-  resource    String   // Resource affected: "user", "role", "permission", "user_role", etc.
-  resourceId  Int?     // ID of the affected resource
-  details     String?  // Additional details about the change (JSON string for SQLite compatibility)
-  ipAddress   String?  // IP address of the user
-  userAgent   String?  // User agent string
-  createdAt   DateTime @default(now())
-  
-  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  
+  id         Int      @id @default(autoincrement())
+  userId     Int? // User who performed the action
+  action     String // Action performed: "create", "update", "delete", "assign", "revoke"
+  resource   String // Resource affected: "user", "role", "permission", "user_role", etc.
+  resourceId Int? // ID of the affected resource
+  details    String? // Additional details about the change (JSON string for SQLite compatibility)
+  ipAddress  String? // IP address of the user
+  userAgent  String? // User agent string
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
   @@index([userId])
   @@index([resource])
   @@index([createdAt])
+}
+
+// EndpointConfiguration: API endpoint visibility and access control
+model EndpointConfiguration {
+  id           Int      @id @default(autoincrement())
+  uid          String   @unique // Content type UID
+  isPublic     Boolean  @default(false) // Whether endpoint is publicly accessible
+  allowedRoles String? // JSON array of allowed role names
+  rateLimit    Int?     @default(100) // Requests per minute
+  description  String? // Description of the endpoint
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([uid])
+  @@index([isPublic])
 }
 
 // =============================================================================
@@ -256,42 +259,40 @@ model AuditLog {
 // =============================================================================
 
 model Article {
-  id        Int      @id @default(autoincrement())
-  title  String
-  slug  String @unique
-  content  String
-  excerpt  String?
-  published  Boolean? @default(false)
-  publishedAt  DateTime?
-  viewCount  Int? @default(0)
-  status  ArticleStatus? @default(draft)
-  authorId  Int?
-  categoryId Int?
-  category   Category? @relation(fields: [categoryId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id          Int            @id @default(autoincrement())
+  title       String
+  slug        String         @unique
+  content     String
+  excerpt     String?
+  published   Boolean?       @default(false)
+  publishedAt DateTime?
+  viewCount   Int?           @default(0)
+  status      ArticleStatus? @default(draft)
+  authorId    Int?
+  categoryId  Int?
+  category    Category?      @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 }
 
 model Category {
-  id        Int      @id @default(autoincrement())
-  name  String
-  slug  String @unique
-  description  String?
-  articles   Article[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id          Int       @id @default(autoincrement())
+  name        String
+  slug        String    @unique
+  description String?
+  articles    Article[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model City {
   id        Int      @id @default(autoincrement())
-  name  String
-  contry  String
+  name      String
+  contry    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
 }
+
 enum ArticleStatus {
   draft
   published
