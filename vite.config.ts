@@ -13,7 +13,20 @@ function apiPlugin() {
   return {
     name: 'api-middleware',
     configureServer(server) {
-      server.middlewares.use('/api', async (req, res, next) => {
+      server.middlewares.use(async (req, res, next) => {
+        // Only handle /api routes
+        if (!req.url?.startsWith('/api/')) {
+          return next()
+        }
+        
+        console.log('[API Middleware] Request:', req.method, req.url)
+        
+        // Skip requests for static files/modules (Vite dev server trying to load TS files)
+        if (req.url?.includes('.ts') || req.url?.includes('.js') || req.url?.includes('/@') || req.headers.accept?.includes('text/javascript')) {
+          console.log('[API Middleware] Skipping module/static request')
+          return next()
+        }
+        
         // Dynamically import the API router
         const { apiRouter } = await import('./src/server/api/router.js')
         await apiRouter(req, res, next)
@@ -36,6 +49,8 @@ export default defineConfig({
     fs: {
       // Allow serving files from uploads directory
       allow: ['.', './uploads'],
+      // Deny serving from api directory (Vercel functions only)
+      deny: ['api'],
     },
   },
   publicDir: 'uploads',

@@ -5,7 +5,6 @@ import {
   uploadFile,
   deleteFile,
   listFiles,
-  getFileMetadata,
   getProviderInfo
 } from '../../../services/mediaService.js'
 
