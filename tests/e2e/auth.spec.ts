@@ -33,8 +33,8 @@ test.describe('Authentication Flow', () => {
     await page.goto('/login')
     
     // Fill in valid credentials (using test user from seed)
-    await page.getByLabel(/email/i).fill('test@example.com')
-    await page.getByLabel(/password/i).fill('password123')
+    await page.getByLabel(/email/i).fill('demo@user.com')
+    await page.getByLabel(/password/i).fill('password')
     
     // Click login button
     await page.getByRole('button', { name: /log in/i }).click()
@@ -54,8 +54,8 @@ test.describe('Authentication Flow', () => {
   test('should logout successfully', async ({ page, context }) => {
     // Login first
     await page.goto('/login')
-    await page.getByLabel(/email/i).fill('test@example.com')
-    await page.getByLabel(/password/i).fill('password123')
+    await page.getByLabel(/email/i).fill('demo@user.com')
+    await page.getByLabel(/password/i).fill('password')
     await page.getByRole('button', { name: /log in/i }).click()
     
     // Wait for dashboard to load
@@ -75,8 +75,8 @@ test.describe('Authentication Flow', () => {
   test('should maintain session across page reloads', async ({ page }) => {
     // Login
     await page.goto('/login')
-    await page.getByLabel(/email/i).fill('test@example.com')
-    await page.getByLabel(/password/i).fill('password123')
+    await page.getByLabel(/email/i).fill('demo@user.com')
+    await page.getByLabel(/password/i).fill('password')
     await page.getByRole('button', { name: /log in/i }).click()
     
     // Wait for dashboard

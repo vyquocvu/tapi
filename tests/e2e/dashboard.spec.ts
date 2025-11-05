@@ -7,8 +7,8 @@ test.describe('Dashboard', () => {
     await page.goto('/login')
     
     // Login with test credentials
-    await page.getByLabel(/email/i).fill('test@example.com')
-    await page.getByLabel(/password/i).fill('password123')
+    await page.getByLabel(/email/i).fill('demo@user.com')
+    await page.getByLabel(/password/i).fill('password')
     await page.getByRole('button', { name: /log in/i }).click()
     
     // Wait for dashboard to load
@@ -25,13 +25,13 @@ test.describe('Dashboard', () => {
     const welcomeText = page.locator('text=/welcome/i')
     await expect(welcomeText).toBeVisible()
     
-    // User name should be displayed (Test User from seed data)
-    await expect(page.locator('text=/Test User/i')).toBeVisible()
+    // User name should be displayed (Demo User from seed data)
+    await expect(page.locator('text=/Demo User/i')).toBeVisible()
   })
 
   test('should display user email', async ({ page }) => {
     // User email should be visible
-    await expect(page.locator('text=test@example.com')).toBeVisible()
+    await expect(page.locator('text=demo@user.com')).toBeVisible()
   })
 
   test('should display protected route information', async ({ page }) => {
