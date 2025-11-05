@@ -787,8 +787,6 @@ The frontend is served as a static site with client-side routing via TanStack Ro
 
 **📖 For detailed deployment instructions, see [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md)**
 
-**📊 For architecture diagrams and flow charts, see [ARCHITECTURE_VERCEL.md](./ARCHITECTURE_VERCEL.md)**
-
 
 
 ### Deploy to Any Cloud (Node.js Server)
@@ -938,6 +936,34 @@ No token? → Redirect to /login
 - Teams wanting rapid development
 - Projects needing built-in features
 - Full SSR/SSG from the start
+
+## 📚 Documentation
+
+### Core Documentation
+- **[Architecture](./ARCHITECTURE.md)** - System architecture and design patterns
+- **[Content Manager](./CONTENT_MANAGER.md)** - Dynamic CRUD API documentation
+- **[Content Type Builder](./CONTENT_TYPE_BUILDER.md)** - Content type definition system
+- **[Media Manager](./MEDIA_MANAGER.md)** - Multi-provider file storage
+- **[API Reference](./API_REFERENCE.md)** - Complete REST API documentation
+- **[Run Environments](./RUN_ENVIRONMENTS.md)** - Multi-environment configuration
+- **[Vercel Deployment](./VERCEL_DEPLOYMENT.md)** - Serverless deployment guide
+
+### Advanced Features
+- **[API Dashboard](./API_DASHBOARD.md)** - API management interface
+- **[API Enhancements](./API_ENHANCEMENTS.md)** - REST API improvements
+- **[RBAC Implementation](./RBAC_IMPLEMENTATION.md)** - Role-based access control
+- **[Permissions Guide](./PERMISSIONS_GUIDE.md)** - Permission system
+- **[Performance Improvements](./PERFORMANCE_IMPROVEMENTS.md)** - Optimization guide
+
+### Technical Documentation
+For detailed technical documentation, see the **[docs/](./docs/)** directory:
+- Plugin System (Architecture, Development, API Reference)
+- Query System (Functions Guide, Migration Guide)
+- CMS Database Structure
+- UI Enhancements
+- Storage Providers
+
+**[📖 Complete Documentation Index](./docs/README.md)**
 
 ## 🤝 Contributing
 
