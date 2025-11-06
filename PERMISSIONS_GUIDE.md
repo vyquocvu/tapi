@@ -1,7 +1,7 @@
 # Permission System Documentation
 
 ## Overview
-This document explains how to use the Role-Based Access Control (RBAC) system implemented in vstack.
+This document explains how to use the Role-Based Access Control (RBAC) system implemented in tapi.
 
 ## Roles and Permissions
 

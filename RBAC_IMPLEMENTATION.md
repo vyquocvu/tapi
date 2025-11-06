@@ -1,7 +1,7 @@
 # RBAC Implementation Summary
 
 ## Overview
-This implementation adds a comprehensive Role-Based Access Control (RBAC) system to the vstack CMS, enabling fine-grained permission management for users.
+This implementation adds a comprehensive Role-Based Access Control (RBAC) system to the tapi CMS, enabling fine-grained permission management for users.
 
 ## Database Schema
 
@@ -274,7 +274,7 @@ curl http://localhost:5174/api/roles \
 ## File Structure
 
 ```
-/home/runner/work/vstack/vstack/
+/home/runner/work/tapi/tapi/
 ├── prisma/
 │   ├── schema.prisma (updated with RBAC tables)
 │   ├── schema.original.prisma (updated with RBAC tables)
@@ -302,4 +302,4 @@ curl http://localhost:5174/api/roles \
 
 ## Conclusion
 
-This RBAC implementation provides a solid foundation for access control in the vstack CMS. It follows best practices for security, uses proper database design patterns, and provides a clean API interface for both backend and frontend components.
+This RBAC implementation provides a solid foundation for access control in the tapi CMS. It follows best practices for security, uses proper database design patterns, and provides a clean API interface for both backend and frontend components.

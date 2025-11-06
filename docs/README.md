@@ -1,6 +1,6 @@
 # Documentation Index
 
-Complete documentation for the vStack CMS platform.
+Complete documentation for the tapi CMS platform.
 
 ## Core Features
 
