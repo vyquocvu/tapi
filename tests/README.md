@@ -1,6 +1,6 @@
 # Test Suite Documentation
 
-This directory contains the test suite for vstack, including unit tests for services and end-to-end (E2E) tests for the application.
+This directory contains the test suite for tapi, including unit tests for services and end-to-end (E2E) tests for the application.
 
 ## Test Structure
 

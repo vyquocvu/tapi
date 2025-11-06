@@ -28,7 +28,7 @@ A modular, extensible content type builder for defining database models with aut
 
 ## Installation
 
-The content type builder is included in the vstack project. No additional installation required.
+The content type builder is included in the tapi project. No additional installation required.
 
 ## Quick Start
 

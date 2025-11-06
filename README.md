@@ -1,4 +1,4 @@
-# vstack
+# tapi
 
 A serverless CMS and fullstack web application built with **TanStack Start**, **TanStack Router**, **TanStack Query**, **Prisma**, and **SQLite**, demonstrating modern React development with type-safe routing, efficient data fetching, JWT-based authentication, and a Strapi-inspired content type builder.
 
@@ -77,7 +77,7 @@ See [MEDIA_MANAGER.md](./MEDIA_MANAGER.md) for detailed configuration.
 ## 📁 Project Structure
 
 ```
-/vstack
+/tapi
 ├── prisma/
 │   ├── schema.prisma        # Database schema (auto-generated from content types)
 │   ├── schema.original.prisma # Base system schema (User, Post, CMS tables)
@@ -180,14 +180,14 @@ See [MEDIA_MANAGER.md](./MEDIA_MANAGER.md) for detailed configuration.
 
 ### Prerequisites
 - Node.js 18+ 
-- npm, yarn, or pnpm
+- npm (package manager)
 
 ### Setup Steps
 
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd vstack
+   cd tapi
    ```
 
 2. **Install dependencies**
@@ -335,7 +335,7 @@ export const Route = createFileRoute('/dashboard/')({
 
 ### 4. Enhanced CMS Features
 
-The vstack CMS provides a complete content management system with enterprise-grade features:
+The tapi CMS provides a complete content management system with enterprise-grade features:
 
 #### Content Type Builder
 

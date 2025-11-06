@@ -1,6 +1,6 @@
 # shadcn/ui Implementation Guide
 
-This document provides guidance on using shadcn/ui components in the vstack project.
+This document provides guidance on using shadcn/ui components in the tapi project.
 
 ## Overview
 

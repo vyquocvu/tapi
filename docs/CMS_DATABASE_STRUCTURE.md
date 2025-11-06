@@ -1,6 +1,6 @@
 # CMS Database Structure
 
-This document describes the enhanced database structure for the vstack CMS feature, including system tables, CMS metadata tables, and custom content types.
+This document describes the enhanced database structure for the tapi CMS feature, including system tables, CMS metadata tables, and custom content types.
 
 ## Overview
 

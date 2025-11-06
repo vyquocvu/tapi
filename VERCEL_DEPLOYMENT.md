@@ -1,10 +1,10 @@
 # Vercel Deployment Guide
 
-This guide provides detailed instructions for deploying the vstack application to Vercel.
+This guide provides detailed instructions for deploying the tapi application to Vercel.
 
 ## Overview
 
-The vstack application is a full-stack React application with:
+The tapi application is a full-stack React application with:
 - **Frontend**: React + TanStack Router (static site)
 - **Backend**: Serverless API functions in `/api` directory
 - **Database**: Prisma ORM with PostgreSQL (production)

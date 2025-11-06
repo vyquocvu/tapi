@@ -28,7 +28,7 @@ A fullstack web application demonstrating modern React development with TanStack
 ## Folder Structure
 
 ```
-/vstack
+/tapi
 ├── prisma/
 │   ├── schema.prisma        # Database schema (User, Post models)
 │   ├── seed.ts              # Database seeding script

@@ -1,6 +1,6 @@
 # CMS Feature Improvements
 
-This document describes the recent improvements to the vstack CMS feature, focusing on the enhanced database structure that provides a complete content management system.
+This document describes the recent improvements to the tapi CMS feature, focusing on the enhanced database structure that provides a complete content management system.
 
 ## Overview
 
@@ -370,4 +370,4 @@ For questions or issues:
 
 ---
 
-**Built with ❤️ using Prisma, TypeScript, and vstack**
+**Built with ❤️ using Prisma, TypeScript, and tapi**

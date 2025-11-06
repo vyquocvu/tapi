@@ -1,7 +1,7 @@
-# Copilot Instructions for vstack
+# Copilot Instructions for tapi
 
 ## Project Overview
-vstack is a fullstack web application showcasing the TanStack ecosystem (Router, Query) with Prisma ORM, JWT authentication, and a Content Type Builder inspired by Strapi. It supports multiple runtime environments: development (Vite), Node.js server, and Vercel serverless.
+tapi is a fullstack web application showcasing the TanStack ecosystem (Router, Query) with Prisma ORM, JWT authentication, and a Content Type Builder inspired by Strapi. It supports multiple runtime environments: development (Vite), Node.js server, and Vercel serverless.
 
 ## Key Architecture Patterns
 
