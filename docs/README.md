@@ -2,6 +2,12 @@
 
 Complete documentation for the tapi CMS platform.
 
+## Quick Start
+
+- **[Getting Started Guide](../GETTING_STARTED.md)** - Installation, setup, and basic usage
+- **[Features Guide](../FEATURES.md)** - Comprehensive feature documentation
+- **[Deployment Guide](../DEPLOYMENT.md)** - Deploy to Vercel, AWS, Azure, GCP, or VPS
+
 ## Core Features
 
 ### Content Management System
@@ -41,15 +47,6 @@ Additional feature documentation is available in the root directory:
 - **[Media Manager](../MEDIA_MANAGER.md)** - Multi-provider file storage
 - **[Architecture](../ARCHITECTURE.md)** - System architecture overview
 - **[API Reference](../API_REFERENCE.md)** - REST API documentation
-- **[API Dashboard](../API_DASHBOARD.md)** - API management interface
-- **[API Enhancements](../API_ENHANCEMENTS.md)** - REST API improvements
-- **[API Router Guide](../API_ROUTER_GUIDE.md)** - Express-style routing
-- **[RBAC Implementation](../RBAC_IMPLEMENTATION.md)** - Role-based access control
-- **[Permissions Guide](../PERMISSIONS_GUIDE.md)** - Permission system documentation
-- **[Performance Improvements](../PERFORMANCE_IMPROVEMENTS.md)** - Performance optimization guide
-- **[Run Environments](../RUN_ENVIRONMENTS.md)** - Multi-environment configuration
-- **[Vercel Deployment](../VERCEL_DEPLOYMENT.md)** - Vercel deployment guide
-- **[shadcn/ui Guide](../SHADCN_UI_GUIDE.md)** - UI component library
 
 ## Contributing
 

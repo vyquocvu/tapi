@@ -623,7 +623,7 @@ await fetch(`/api/content?contentType=api::article.article&id=${article.id}`, {
 
 For issues or questions:
 - Open an issue on GitHub
-- Check the [API Dashboard](./API_DASHBOARD.md) for interactive documentation
+- See the API management features in [FEATURES.md](./FEATURES.md) for more details
 - Review the [Content Manager Documentation](./CONTENT_MANAGER.md)
 
 ## Changelog
