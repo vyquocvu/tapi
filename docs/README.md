@@ -2,6 +2,12 @@
 
 Complete documentation for the tapi CMS platform.
 
+## Quick Start
+
+- **[Getting Started Guide](../GETTING_STARTED.md)** - Installation, setup, and basic usage
+- **[Features Guide](../FEATURES.md)** - Comprehensive feature documentation
+- **[Deployment Guide](../DEPLOYMENT.md)** - Deploy to Vercel, AWS, Azure, GCP, or VPS
+
 ## Core Features
 
 ### Content Management System
