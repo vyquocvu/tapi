@@ -77,8 +77,6 @@ Visit **http://localhost:5173** and log in with `demo@user.com` / `password`
 
 ## Project Structure
 
-## Project Structure
-
 ```
 /tapi
 ├── src/
