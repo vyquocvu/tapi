@@ -361,8 +361,6 @@ Access the API management dashboard at `/api-dashboard` (requires login).
 ### Documentation
 
 - [API_REFERENCE.md](./API_REFERENCE.md) - Complete API reference
-- [API_DASHBOARD.md](./API_DASHBOARD.md) - Dashboard documentation
-- [API_ENHANCEMENTS.md](./API_ENHANCEMENTS.md) - API improvements guide
 
 ## Plugin System
 

@@ -291,7 +291,7 @@ Then run:
 npm start
 ```
 
-For detailed information about runtime environments, see [RUN_ENVIRONMENTS.md](./RUN_ENVIRONMENTS.md).
+For detailed deployment options, see [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 ## Next Steps
 

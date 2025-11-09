@@ -68,9 +68,6 @@ Visit **http://localhost:5173** and log in with `demo@user.com` / `password`
 
 ### Advanced Topics
 - **[Plugin System](./docs/PLUGIN_SYSTEM_ARCHITECTURE.md)** - Extensibility and plugins
-- **[Run Environments](./RUN_ENVIRONMENTS.md)** - Multi-environment configuration
-- **[RBAC Implementation](./RBAC_IMPLEMENTATION.md)** - Role-based access control
-- **[Performance](./PERFORMANCE_IMPROVEMENTS.md)** - Optimization guide
 
 📖 **[Complete Documentation Index](./docs/README.md)**
 

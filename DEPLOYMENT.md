@@ -46,7 +46,7 @@ Set in your `.env` file:
 RUNTIME=node  # or dev, or vercel
 ```
 
-For detailed runtime documentation, see [RUN_ENVIRONMENTS.md](./RUN_ENVIRONMENTS.md).
+Runtime configuration is covered in the sections above.
 
 ## Deploy to Vercel (Serverless)
 
@@ -243,7 +243,7 @@ vercel logs <deployment-url>
 # Project > Deployments > [Your Deployment] > Logs
 ```
 
-For more details, see [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md).
+All Vercel deployment details are covered above.
 
 ## Deploy to Node.js Server
 
@@ -785,10 +785,9 @@ jobs:
 
 ## Additional Resources
 
-- [RUN_ENVIRONMENTS.md](./RUN_ENVIRONMENTS.md) - Runtime configuration details
-- [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) - Vercel-specific guide
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - System architecture
 - [API_REFERENCE.md](./API_REFERENCE.md) - API documentation
+- [FEATURES.md](./FEATURES.md) - Feature documentation
 
 ## Getting Help
 
