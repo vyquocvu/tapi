@@ -10,6 +10,7 @@ import { mediaHandler } from './routes/media.js'
 import { usersHandler } from './routes/users.js'
 import { rolesHandler } from './routes/roles.js'
 import { permissionsHandler } from './routes/permissions.js'
+import { sheetsHandler } from './routes/sheets.js'
 
 interface RouteDefinition {
   path: string
@@ -27,6 +28,7 @@ const routes: RouteDefinition[] = [
   { path: '/users', handler: usersHandler },
   { path: '/roles', handler: rolesHandler },
   { path: '/permissions', handler: permissionsHandler },
+  { path: '/sheets', handler: sheetsHandler },
 ]
 
 /**
