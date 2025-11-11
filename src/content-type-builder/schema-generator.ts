@@ -83,7 +83,7 @@ model User {
   updatedAt DateTime @updatedAt
   
   // Relations
-  articles           Article[]
+  posts              Post[]
   createdRevisions   ContentRevision[] @relation("RevisionCreator")
   createdMetadata    ContentMetadata[] @relation("MetadataCreator")
   userRoles          UserRole[]
@@ -303,6 +303,48 @@ model AuditLog {
   
   @@index([userId])
   @@index([resource])
+  @@index([createdAt])
+}
+
+// EndpointConfiguration: API endpoint visibility and access control
+model EndpointConfiguration {
+  id           Int      @id @default(autoincrement())
+  uid          String   @unique // Content type UID
+  isPublic     Boolean  @default(false) // Whether endpoint is publicly accessible
+  allowedRoles String?  // JSON array of allowed role names
+  rateLimit    Int?     @default(100) // Requests per minute
+  description  String?  // Description of the endpoint
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([uid])
+  @@index([isPublic])
+}
+
+// =============================================================================
+// SHEETS TABLES - Spreadsheet/Grid data management
+// =============================================================================
+
+// Sheet: Represents a spreadsheet/grid with structured data
+model Sheet {
+  id          Int      @id @default(autoincrement())
+  title       String   // Sheet title
+  description String?  // Optional description
+  
+  // Sheet structure and data
+  columns     String   // JSON string: Array of column definitions [{name: string, type: string, ...}]
+  rows        String   // JSON string: Array of row data [[cell1, cell2, ...], ...]
+  
+  // Access control
+  ownerId     Int?     // Owner user ID
+  isPublic    Boolean  @default(false) // Public access flag
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([ownerId])
+  @@index([isPublic])
   @@index([createdAt])
 }
 
