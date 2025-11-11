@@ -13,6 +13,7 @@ Comprehensive REST API reference for the vStack CMS platform.
 - [Content API](#content-api)
 - [Content Type Builder API](#content-type-builder-api)
 - [Authentication API](#authentication-api)
+- [Sheets API](./SHEETS_API.md) - Spreadsheet data management
 - [API Dashboard](#api-dashboard)
 
 ## Overview
