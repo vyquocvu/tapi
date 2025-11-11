@@ -1,4 +1,4 @@
-import { ArrowLeft, Plus, Trash2, Edit } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Edit, Download } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -29,6 +29,7 @@ interface EntriesListProps {
   onBulkDelete: () => void
   onToggleSelection: (id: number) => void
   onToggleSelectAll: () => void
+  onExport: (format: 'csv' | 'xlsx') => void
 }
 
 export function EntriesList({
@@ -44,6 +45,7 @@ export function EntriesList({
   onBulkDelete,
   onToggleSelection,
   onToggleSelectAll,
+  onExport,
 }: EntriesListProps) {
   const getStatusBadge = (entry: ContentEntry) => {
     if (entry.status) {
@@ -81,6 +83,18 @@ export function EntriesList({
               <Trash2 className="mr-2 h-4 w-4" />
               Delete Selected ({selectedEntries.size})
             </Button>
+          )}
+          {entries && entries.length > 0 && (
+            <>
+              <Button onClick={() => onExport('csv')} variant="outline">
+                <Download className="mr-2 h-4 w-4" />
+                Export CSV
+              </Button>
+              <Button onClick={() => onExport('xlsx')} variant="outline">
+                <Download className="mr-2 h-4 w-4" />
+                Export XLSX
+              </Button>
+            </>
           )}
           <Button onClick={onCreate}>
             <Plus className="mr-2 h-4 w-4" />

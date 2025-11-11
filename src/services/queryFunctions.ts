@@ -216,6 +216,36 @@ export async function deleteContentEntry(
   )
 }
 
+/**
+ * Export content entries to file format
+ */
+export async function exportContentEntries(
+  contentType: string,
+  format: 'csv' | 'xlsx',
+  ids?: number[]
+): Promise<Blob> {
+  const idsParam = ids && ids.length > 0 ? `&ids=${ids.join(',')}` : ''
+  const url = `/api/export?contentType=${encodeURIComponent(contentType)}&format=${format}${idsParam}`
+  
+  const token = getAuthToken()
+  const headers: Record<string, string> = {}
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers,
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ message: 'Export failed' }))
+    throw new Error(errorData.message || 'Export failed')
+  }
+
+  return response.blob()
+}
+
 // ============================================================================
 // USERS
 // ============================================================================

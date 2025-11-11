@@ -3,12 +3,14 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent } from '@/components/ui/card'
 import { queryKeys } from '@/lib/queryKeys'
+import { toast } from 'sonner'
 import {
   fetchContentTypesArray,
   fetchContentEntries,
   createContentEntry,
   updateContentEntry,
   deleteContentEntry,
+  exportContentEntries,
   type ContentEntry,
 } from '@/services/queryFunctions'
 import { ContentTypeSelector, EntriesList, EntryForm } from '@/components/content-manager'
@@ -164,6 +166,32 @@ function ContentManagerComponent() {
     setFormData({ ...formData, [fieldName]: value })
   }
 
+  const handleExport = async (format: 'csv' | 'xlsx') => {
+    if (!selectedContentType) return
+
+    try {
+      const idsToExport = selectedEntries.size > 0 ? Array.from(selectedEntries) : undefined
+      const blob = await exportContentEntries(selectedContentType, format, idsToExport)
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
+      a.download = `${selectedContentType}_${timestamp}.${format}`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(url)
+
+      const count = selectedEntries.size > 0 ? selectedEntries.size : entries?.length || 0
+      toast.success(`Exported ${count} entries to ${format.toUpperCase()}`)
+    } catch (error) {
+      console.error('Export error:', error)
+      toast.error(error instanceof Error ? error.message : 'Export failed')
+    }
+  }
+
   if (typesLoading) {
     return (
       <Card>
@@ -201,6 +229,7 @@ function ContentManagerComponent() {
           onBulkDelete={handleBulkDelete}
           onToggleSelection={toggleEntrySelection}
           onToggleSelectAll={toggleSelectAll}
+          onExport={handleExport}
         />
       )}
 
