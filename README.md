@@ -33,6 +33,7 @@ Visit **http://localhost:5173** and log in with `demo@user.com` / `password`
 - 📝 **Content Type Builder** - Define database models with JSON (like Strapi)
 - 🔄 **Content Manager** - Dynamic CRUD API for all content types
 - 📁 **Media Manager** - Multi-provider storage (Local, S3, GCS)
+- 📊 **Sheets API** - Spreadsheet-like data management with custom columns and rows
 - 🚀 **REST API** - Enterprise-grade API with validation and error handling
 - 🔌 **Plugin System** - Extensible architecture with lifecycle hooks
 
@@ -65,6 +66,7 @@ Visit **http://localhost:5173** and log in with `demo@user.com` / `password`
 - **[Content Type Builder](./CONTENT_TYPE_BUILDER.md)** - Define and generate database schemas
 - **[Content Manager](./CONTENT_MANAGER.md)** - Dynamic CRUD API documentation
 - **[Media Manager](./MEDIA_MANAGER.md)** - Multi-provider file storage
+- **[Sheets API](./SHEETS_API.md)** - Spreadsheet data management ([Quick Start](./SHEETS_QUICKSTART.md))
 
 ### Advanced Topics
 - **[Plugin System](./docs/PLUGIN_SYSTEM_ARCHITECTURE.md)** - Extensibility and plugins
