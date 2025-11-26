@@ -198,10 +198,9 @@ export function validateContentTypeUID(uid: string): ValidationResult {
  */
 export function validateId(id: string | number): ValidationResult {
   const errors: ValidationError[] = []
-  
-  const numId = typeof id === 'string' ? parseInt(id, 10) : id
-  
-  if (isNaN(numId) || numId <= 0) {
+  const idStr = String(id)
+
+  if (!/^\d+$/.test(idStr) || parseInt(idStr, 10) <= 0) {
     errors.push({
       field: 'id',
       message: 'ID must be a positive integer',

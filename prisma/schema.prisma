@@ -3,12 +3,11 @@
 // System tables are defined in prisma/schema.original.prisma
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
 }
 
 // =============================================================================
