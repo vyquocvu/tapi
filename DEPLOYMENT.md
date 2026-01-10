@@ -1,64 +1,73 @@
 # Deployment Guide
 
-tapi is designed to run anywhere - from serverless platforms to traditional servers. This guide covers all deployment options.
+tapi is a **serverless-first CMS platform** designed to run without server management. This guide covers serverless deployment (recommended) and traditional hosting options.
 
 ## Table of Contents
 
 - [Quick Start](#quick-start)
+- [Serverless Deployment (Recommended)](#serverless-deployment-recommended)
+- [Traditional Hosting (Optional)](#traditional-hosting-optional)
 - [Runtime Configuration](#runtime-configuration)
-- [Deploy to Vercel (Serverless)](#deploy-to-vercel-serverless)
-- [Deploy to Node.js Server](#deploy-to-nodejs-server)
 - [Environment Variables](#environment-variables)
 - [Database Setup](#database-setup)
 - [Troubleshooting](#troubleshooting)
 
 ## Quick Start
 
-The fastest way to deploy tapi is by setting the `RUNTIME` environment variable:
+### Serverless Deployment (Recommended)
+
+Deploy to serverless platforms with zero infrastructure management:
 
 ```bash
-# For Vercel (serverless)
+# Vercel (one command)
 npm run start:vercel
 
-# For Node.js server (AWS, Azure, GCP, DigitalOcean, etc.)
-npm run start:node
+# Or use Vercel CLI
+vercel --prod
 ```
 
-Or configure `RUNTIME` in your `.env` and use:
+### Traditional Hosting (When Needed)
+
+For traditional server environments:
 
 ```bash
-npm start
+# Node.js server (EC2, App Service, VPS, etc.)
+npm run start:node
 ```
 
 ## Runtime Configuration
 
-tapi supports multiple runtime environments configured via the `RUNTIME` environment variable:
+tapi supports multiple runtime environments. Choose based on your needs:
 
-| Runtime | Value | Use Case |
-|---------|-------|----------|
-| **Development** | `dev` | Local development with Vite hot reload |
-| **Node.js Server** | `node` | Traditional hosting (AWS, Azure, GCP, VPS) |
-| **Vercel Serverless** | `vercel` | Serverless deployment on Vercel |
+| Runtime | Best For | Configuration |
+|---------|----------|---------------|
+| **Serverless (Vercel)** | Production deployments, auto-scaling | `RUNTIME=vercel` (automatic on Vercel) |
+| **Serverless (AWS/Azure/GCP)** | Enterprise cloud platforms | Deploy with serverless framework |
+| **Node.js Server** | Traditional hosting, custom infrastructure | `RUNTIME=node` |
+| **Development** | Local development with hot reload | `RUNTIME=dev` |
 
-Set in your `.env` file:
+### Why Serverless-First?
 
-```env
-RUNTIME=node  # or dev, or vercel
-```
+- ✅ **Zero Infrastructure**: No servers to provision or maintain
+- ✅ **Auto-Scaling**: Handles traffic spikes automatically
+- ✅ **Cost-Effective**: Pay only for actual usage
+- ✅ **Global Distribution**: Edge network for fast response times
+- ✅ **Zero Downtime**: Built-in redundancy and failover
 
-Runtime configuration is covered in the sections above.
+## Serverless Deployment (Recommended)
 
-## Deploy to Vercel (Serverless)
+### Vercel (Easiest)
 
-Vercel provides a serverless platform optimized for modern web applications.
+Vercel provides the simplest serverless deployment experience for tapi.
 
 ### Prerequisites
 
-1. A [Vercel account](https://vercel.com) (free tier available)
-2. A production database - PostgreSQL recommended:
-   - [Neon](https://neon.tech) - Serverless PostgreSQL
-   - [Supabase](https://supabase.com) - PostgreSQL with additional features
-   - [Vercel Postgres](https://vercel.com/storage/postgres) - Integrated PostgreSQL
+1. **Vercel Account** - Free tier available at [vercel.com](https://vercel.com)
+2. **PostgreSQL Database** - Required for production (SQLite not recommended for serverless):
+   - **[Neon](https://neon.tech)** - Serverless PostgreSQL (recommended)
+   - **[Supabase](https://supabase.com)** - PostgreSQL with additional features
+   - **[Vercel Postgres](https://vercel.com/storage/postgres)** - Integrated PostgreSQL
+   - **[Railway](https://railway.app)** - Simple PostgreSQL hosting
 
 ### Step 1: Prepare Your Database
 
@@ -171,19 +180,28 @@ vercel env pull .env.production
 DATABASE_URL="$(grep DATABASE_URL .env.production | cut -d '=' -f2-)" npx prisma migrate deploy
 ```
 
-### How It Works
+### How Serverless Works on Vercel
 
-Vercel uses serverless functions for API routes:
+Vercel automatically converts your API routes into serverless functions:
 
-- `/api/login.ts` - Authentication endpoint
-- `/api/content.ts` - Content Manager API
-- `/api/content-types.ts` - Content Type Builder API
-- `/api/media.ts` - Media Manager API
-- `/api/posts.ts` - Posts API
-- `/api/me.ts` - User info endpoint
-- `/api/health.ts` - Health check
+```
+/api directory → Serverless Functions
+├── login.ts → /api/login endpoint
+├── content.ts → /api/content endpoint
+├── content-types.ts → /api/content-types endpoint
+├── media.ts → /api/media endpoint
+└── me.ts → /api/me endpoint
+```
 
-The frontend is served as a static site with client-side routing.
+**Frontend**: Served as static files with client-side routing via Vercel's global CDN
+
+**Backend**: Serverless functions that auto-scale based on traffic
+
+**Benefits**:
+- Zero cold start optimization built-in
+- Automatic HTTPS and CDN
+- Built-in DDoS protection
+- Edge network for global performance
 
 ### Vercel Configuration
 
@@ -243,23 +261,60 @@ vercel logs <deployment-url>
 # Project > Deployments > [Your Deployment] > Logs
 ```
 
+### AWS Lambda / Serverless Framework
+
+Deploy tapi to AWS Lambda using the Serverless Framework:
+
+1. Install Serverless Framework: `npm install -g serverless`
+2. Create `serverless.yml` configuration
+3. Deploy: `serverless deploy`
+
+See [AWS Lambda deployment guide](https://www.serverless.com/framework/docs/) for details.
+
+### Azure Functions
+
+Deploy to Azure Functions for Microsoft Azure serverless:
+
+1. Install Azure Functions Core Tools
+2. Configure `host.json` for Azure
+3. Deploy using Azure CLI or VS Code
+
+### Google Cloud Functions
+
+Deploy to GCP Cloud Functions:
+
+1. Install Google Cloud SDK
+2. Configure `cloudbuild.yaml`
+3. Deploy: `gcloud functions deploy`
+
 All Vercel deployment details are covered above.
 
-## Deploy to Node.js Server
+## Traditional Hosting (Optional)
 
-Run tapi on any cloud provider or VPS using the built-in Express server.
+Use traditional Node.js hosting when you need full server control or specific infrastructure requirements.
+
+### When to Use Traditional Hosting
+
+Consider Node.js hosting when:
+- You need full control over server configuration
+- You have existing infrastructure investments
+- You require specific server-side customizations
+- Your deployment platform doesn't support serverless
 
 ### Supported Platforms
 
-- **AWS** - EC2, Elastic Beanstalk, ECS
-- **Azure** - App Service, Container Instances
-- **Google Cloud** - Compute Engine, App Engine, Cloud Run
-- **DigitalOcean** - Droplets, App Platform
-- **Heroku** - Dynos
-- **Railway** - Railway apps
-- **Fly.io** - Fly apps
+**Cloud Platforms:**
+- **AWS EC2, ECS, Elastic Beanstalk** - Amazon Web Services
+- **Azure App Service, Container Instances** - Microsoft Azure
+- **Google Compute Engine, App Engine, Cloud Run** - Google Cloud Platform
+- **DigitalOcean Droplets, App Platform** - Developer-friendly hosting
+- **Heroku** - Simple PaaS hosting
+- **Railway** - Modern platform-as-a-service
+
+**Self-Hosted:**
 - **Any VPS** - Ubuntu, Debian, CentOS, etc.
-- **Docker** - Containerized deployment
+- **Docker** - Container deployment anywhere
+- **Kubernetes** - Orchestrated container deployment
 
 ### Prerequisites
 

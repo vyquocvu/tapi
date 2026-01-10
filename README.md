@@ -1,8 +1,8 @@
 # tapi
 
-A modern, full-stack CMS platform built with the TanStack ecosystem, Prisma, and PostgreSQL. Features a Strapi-inspired Content Type Builder, dynamic CRUD APIs, JWT authentication, and multi-provider media storage.
+A production-ready, serverless CMS platform built with the TanStack ecosystem, Prisma, and PostgreSQL. Delivers full-featured CMS capabilities like Strapi, but with a serverless-first architecture - no server infrastructure to manage.
 
-**✨ Deploy anywhere!** Run on Vercel (serverless), AWS, Azure, GCP, or your own Node.js server.
+**✨ True Serverless CMS!** Deploy to Vercel (serverless), AWS Lambda, or run on Node.js - your choice. No dedicated servers required.
 
 ## Quick Start
 
@@ -28,27 +28,30 @@ Visit **http://localhost:5173** and log in with `demo@user.com` / `password`
 
 ## Features
 
-### Core Features
-- 🔐 **JWT Authentication** - Secure token-based authentication
-- 📝 **Content Type Builder** - Define database models with JSON (like Strapi)
+### Core CMS Features
+- 🔐 **JWT Authentication** - Secure, stateless token-based authentication
+- 📝 **Content Type Builder** - Define database models with JSON (Strapi-inspired)
 - 🔄 **Content Manager** - Dynamic CRUD API for all content types
-- 📁 **Media Manager** - Multi-provider storage (Local, S3, GCS)
-- 🚀 **REST API** - Enterprise-grade API with validation and error handling
+- 📁 **Media Manager** - Multi-provider storage (Local, S3, GCS, Vercel Blob)
+- 🚀 **REST API** - Production-grade API with validation and error handling
 - 🔌 **Plugin System** - Extensible architecture with lifecycle hooks
+- ☁️ **Serverless-First** - Deploy without managing servers
 
-### CMS Features
-- **Content Metadata** - SEO and Open Graph metadata
+### Enterprise CMS Features
+- **Content Metadata** - SEO and Open Graph metadata support
 - **Content Revisions** - Full version history and audit trail
-- **Content Tags** - Flexible tagging system
-- **Content Relations** - Generic relationships between any content
-- **API Dashboard** - Management interface with analytics
+- **Content Tags** - Flexible tagging system for categorization
+- **Content Relations** - Generic relationships between any content types
+- **API Dashboard** - Management interface with analytics and documentation
+- **Multi-Provider Storage** - Seamlessly switch between storage providers
 
-### Tech Highlights
-- ⚡ **TanStack Router** - Type-safe file-based routing
-- 🔍 **TanStack Query** - Powerful data fetching and caching
-- 🗄️ **Prisma + PostgreSQL** - Type-safe database access
-- 🎨 **React 18 + TypeScript** - Modern UI with full type safety
-- ⚙️ **Vite** - Lightning-fast development
+### Tech Stack Highlights
+- ⚡ **TanStack Router** - Type-safe, file-based routing
+- 🔍 **TanStack Query** - Advanced data fetching and caching
+- 🗄️ **Prisma + PostgreSQL** - Type-safe, production-grade database
+- 🎨 **React 18 + TypeScript** - Modern UI with complete type safety
+- ⚙️ **Vite** - Lightning-fast development and builds
+- ☁️ **Multi-Runtime** - Serverless (Vercel) or Node.js, your choice
 
 📖 **[Explore All Features](./FEATURES.md)**
 
@@ -151,46 +154,58 @@ curl http://localhost:5173/api/content?contentType=api::article.article \
 
 ## Deployment
 
-### Quick Deploy
+### Serverless Deployment (Recommended)
+
+Deploy to serverless platforms with zero server management:
 
 ```bash
-# Vercel (serverless)
+# Vercel (one-click deployment)
 npm run start:vercel
 
-# Node.js server (AWS, Azure, GCP, etc.)
+# AWS Lambda, Azure Functions, GCP Cloud Functions
+# See deployment guide for setup
+```
+
+### Traditional Hosting (Optional)
+
+Run on Node.js when you need traditional hosting:
+
+```bash
+# Node.js server (AWS EC2, Azure, GCP, VPS, etc.)
 npm run start:node
 ```
 
 ### Supported Platforms
-- ☁️ **Vercel** - Serverless with edge functions
-- 🚀 **AWS** - EC2, ECS, Elastic Beanstalk
-- 🌐 **Azure** - App Service, Container Instances
-- 🔷 **Google Cloud** - Compute Engine, App Engine, Cloud Run
-- 💧 **DigitalOcean** - Droplets, App Platform
-- 🐳 **Docker** - Any container platform
-- 📦 **Any VPS** - Ubuntu, Debian, CentOS
+- ☁️ **Vercel** - Serverless with edge functions (recommended)
+- 🚀 **AWS Lambda** - Serverless compute
+- 🌐 **Azure Functions** - Serverless on Azure
+- 🔷 **Google Cloud Functions** - Serverless on GCP
+- 📦 **Node.js Hosting** - EC2, App Service, Compute Engine, DigitalOcean, any VPS
+- 🐳 **Docker** - Container deployment anywhere
 
 📖 **[Complete Deployment Guide](./DEPLOYMENT.md)**
 
 ## Tech Stack
 
 ### Frontend
-- React 18 + TypeScript
-- TanStack Router (type-safe routing)
-- TanStack Query (data fetching)
-- Vite (build tool)
+- **React 18** - Modern UI library with latest features
+- **TypeScript** - Full type safety across the stack
+- **TanStack Router** - Type-safe, file-based routing
+- **TanStack Query** - Advanced data fetching, caching, and state management
+- **Vite** - Lightning-fast builds and HMR
 
-### Backend
-- Prisma ORM (PostgreSQL/MySQL/SQLite)
-- JWT authentication
-- Express.js (Node.js runtime)
-- Multi-provider storage (S3, GCS, Local)
+### Backend & CMS
+- **Prisma ORM** - Type-safe database operations
+- **PostgreSQL** - Production database (MySQL/SQLite also supported)
+- **JWT Authentication** - Secure, stateless authentication
+- **Multi-Runtime** - Serverless functions or Node.js Express
+- **Multi-Provider Storage** - S3, GCS, Local, Vercel Blob
 
-### Development
-- TypeScript (full type safety)
-- Vitest (testing)
-- Playwright (E2E testing)
-- ESLint + Prettier
+### Development & Testing
+- **TypeScript** - Complete type safety and IntelliSense
+- **Vitest** - Fast unit and integration testing
+- **Playwright** - Reliable E2E testing
+- **ESLint + Prettier** - Code quality and formatting
 
 ## Contributing
 

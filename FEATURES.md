@@ -1,9 +1,10 @@
 # Features Guide
 
-tapi is a modern, full-stack CMS platform with enterprise-grade features. This guide provides an overview of all major features and how to use them.
+tapi is a production-ready serverless CMS platform with enterprise-grade features. This guide provides a comprehensive overview of all capabilities.
 
 ## Table of Contents
 
+- [Serverless Architecture](#serverless-architecture)
 - [Authentication & Security](#authentication--security)
 - [Content Type Builder](#content-type-builder)
 - [Content Manager](#content-manager)
@@ -13,11 +14,42 @@ tapi is a modern, full-stack CMS platform with enterprise-grade features. This g
 - [Plugin System](#plugin-system)
 - [Type Safety](#type-safety)
 
+## Serverless Architecture
+
+### Zero Server Management
+
+tapi is designed serverless-first - deploy and scale without managing infrastructure:
+
+**Serverless Platforms:**
+- **Vercel** - Deploy with one command, auto-scaling included
+- **AWS Lambda** - Serverless compute on AWS
+- **Azure Functions** - Microsoft Azure serverless
+- **Google Cloud Functions** - GCP serverless platform
+
+**Traditional Hosting (Optional):**
+- Node.js Express server for AWS EC2, Azure VMs, GCP Compute, DigitalOcean, or any VPS
+
+### Multi-Runtime Architecture
+
+The same codebase runs on multiple platforms:
+
+```env
+RUNTIME=dev      # Development with Vite + hot reload
+RUNTIME=vercel   # Serverless functions (auto-scaling)
+RUNTIME=node     # Traditional Node.js server
+```
+
+**Key Benefits:**
+- 📦 **Same Code**: Write once, deploy anywhere
+- 🔄 **No Lock-in**: Switch platforms without code changes
+- 🚀 **Optimized**: Each runtime uses platform-specific features
+- 💰 **Cost-Effective**: Serverless pricing or traditional hosting - your choice
+
 ## Authentication & Security
 
 ### JWT-Based Authentication
 
-tapi uses JSON Web Tokens (JWT) for secure, stateless authentication.
+Production-grade, stateless authentication with JWT tokens.
 
 **Authentication Flow:**
 1. User submits credentials via login form
@@ -66,7 +98,7 @@ curl http://localhost:5173/api/posts \
 
 ## Content Type Builder
 
-Create database models using JSON or TypeScript definitions - just like Strapi!
+Define database models using JSON or TypeScript - just like Strapi, but serverless!
 
 ### Key Features
 
@@ -162,9 +194,10 @@ Multi-provider file storage system with support for local storage, AWS S3, and G
 
 ### Supported Providers
 
-- **Local** - File system storage for development
-- **AWS S3** - Scalable cloud storage
-- **Google Cloud Storage** - Google Cloud Platform storage
+- **Local** - File system storage (development and small deployments)
+- **AWS S3** - Scalable cloud storage with global CDN
+- **Google Cloud Storage** - Enterprise-grade GCP storage
+- **Vercel Blob** - Serverless file storage optimized for Vercel
 
 ### Configuration
 
@@ -176,18 +209,22 @@ STORAGE_PROVIDER=local
 LOCAL_UPLOAD_DIR=./uploads
 LOCAL_BASE_URL=http://localhost:5173
 
-# AWS S3
+# AWS S3 (production recommended)
 STORAGE_PROVIDER=s3
 AWS_REGION=us-east-1
 AWS_ACCESS_KEY_ID=your-access-key
 AWS_SECRET_ACCESS_KEY=your-secret-key
 AWS_S3_BUCKET=your-bucket-name
 
-# Google Cloud Storage
+# Google Cloud Storage (production)
 STORAGE_PROVIDER=gcs
 GCS_PROJECT_ID=your-project-id
 GCS_BUCKET=your-bucket-name
 GCS_KEY_FILE=/path/to/keyfile.json
+
+# Vercel Blob (serverless-optimized)
+STORAGE_PROVIDER=vercel-blob
+BLOB_READ_WRITE_TOKEN=your-vercel-token
 ```
 
 ### Features

@@ -1,17 +1,18 @@
 # Documentation Index
 
-Complete documentation for the tapi CMS platform.
+Complete documentation for the tapi serverless CMS platform.
 
 ## Quick Start
 
-- **[Getting Started Guide](../GETTING_STARTED.md)** - Installation, setup, and basic usage
+- **[Getting Started Guide](../GETTING_STARTED.md)** - Installation, setup, and deployment
 - **[Features Guide](../FEATURES.md)** - Comprehensive feature documentation
-- **[Deployment Guide](../DEPLOYMENT.md)** - Deploy to Vercel, AWS, Azure, GCP, or VPS
+- **[Deployment Guide](../DEPLOYMENT.md)** - Deploy serverless or traditional hosting
 
 ## Core Features
 
-### Content Management System
-- **[CMS Improvements](./CMS_IMPROVEMENTS.md)** - Overview of CMS features and capabilities
+### Serverless CMS Platform
+- **[Architecture Overview](../ARCHITECTURE.md)** - Serverless-first architecture and design patterns
+- **[CMS Improvements](./CMS_IMPROVEMENTS.md)** - Enterprise CMS features and capabilities
 - **[CMS Database Structure](./CMS_DATABASE_STRUCTURE.md)** - Complete database schema reference
 
 ### Plugin System

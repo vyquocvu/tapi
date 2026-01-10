@@ -1,22 +1,24 @@
 # Media Manager
 
-The Media Manager is a comprehensive file management system that supports multiple storage providers including local filesystem, Amazon S3, and Google Cloud Storage.
+The Media Manager is a production-ready, multi-provider file management system with support for local filesystem, Amazon S3, Google Cloud Storage, and Vercel Blob. Built for serverless CMS deployments.
 
 ## Features
 
-- 📤 **File Upload** - Upload files with drag-and-drop support
-- 🗑️ **File Deletion** - Delete files with confirmation
-- 👁️ **File Preview** - Preview images and view file details
-- 📊 **File Information** - Display file size, type, and upload date
+- 📤 **File Upload** - Enterprise-grade upload with drag-and-drop support
+- 🗑️ **File Deletion** - Secure deletion with confirmation
+- 👁️ **File Preview** - Preview images and view comprehensive file details
+- 📊 **File Information** - Complete metadata including size, type, upload date
 - 🔄 **Multiple Storage Providers** - Seamlessly switch between storage backends
-- 🔒 **Secure** - Protected routes requiring authentication
-- 🎨 **Modern UI** - Clean interface with shadcn/ui components
+- 🔒 **Secure** - JWT authentication on all endpoints
+- 🎨 **Modern UI** - Professional interface with shadcn/ui components
+- ☁️ **Serverless-Compatible** - Optimized for serverless deployments
+- 🌍 **CDN Support** - Built-in CDN integration for S3 and GCS
 
 ## Storage Providers
 
-### Local Filesystem (Default)
+### Local Filesystem
 
-Stores files in the local filesystem. Ideal for development and small deployments.
+Stores files in the local filesystem. Suitable for development and small deployments.
 
 **Environment Variables:**
 ```bash
@@ -25,19 +27,19 @@ LOCAL_UPLOAD_DIR=./uploads          # Directory for storing files
 LOCAL_BASE_URL=http://localhost:5173 # Base URL for serving files
 ```
 
-**Pros:**
-- No external dependencies
-- Fast and simple
-- No additional costs
+**Best For:**
+- Development and testing
+- Small-scale deployments
+- Single-server applications
 
-**Cons:**
-- Not scalable for multi-server deployments
-- Limited to single server instance
+**Limitations:**
+- Not recommended for serverless deployments
+- Not scalable for multi-instance deployments
 - No built-in CDN support
 
-### Amazon S3
+### Amazon S3 (Recommended for Production)
 
-Stores files in Amazon S3 buckets. Ideal for production deployments.
+Stores files in Amazon S3 buckets with global CDN distribution.
 
 **Environment Variables:**
 ```bash

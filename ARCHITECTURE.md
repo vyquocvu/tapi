@@ -2,7 +2,7 @@
 
 ## Overview
 
-A fullstack web application demonstrating modern React development with TanStack ecosystem, Prisma ORM, SQLite database, and JWT-based authentication.
+tapi is a production-ready serverless CMS platform built with the TanStack ecosystem, Prisma ORM, and JWT authentication. Unlike traditional CMS platforms that require dedicated servers, tapi operates entirely serverless - deployable to Vercel, AWS, Azure, GCP, or any Node.js environment without server infrastructure management.
 
 ## Tech Stack
 
@@ -14,11 +14,12 @@ A fullstack web application demonstrating modern React development with TanStack
 - **Vite** - Build tool and dev server
 
 ### Backend
-- **Prisma** - Type-safe ORM
-- **SQLite** - Database (local development)
+- **Prisma** - Type-safe ORM with PostgreSQL/MySQL/SQLite support
+- **PostgreSQL** - Production database (SQLite for local development)
 - **JWT** - JSON Web Token authentication
 - **bcryptjs** - Password hashing
-- **Vite Middleware** - API routes without separate server
+- **Serverless Architecture** - No dedicated server required
+- **Multi-Runtime Support** - Vite dev server, Vercel serverless, Node.js Express
 
 ### DevTools
 - **TanStack Router DevTools** - Debug routing
@@ -30,17 +31,23 @@ A fullstack web application demonstrating modern React development with TanStack
 ```
 /tapi
 ├── prisma/
-│   ├── schema.prisma        # Database schema (User, Post models)
+│   ├── schema.prisma        # Database schema (auto-generated from content types)
 │   ├── seed.ts              # Database seeding script
 │   └── migrations/          # Database migration history
+├── api/                     # Vercel serverless functions (production)
+│   ├── login.ts             # Authentication endpoint
+│   ├── content.ts           # Content Manager API
+│   ├── content-types.ts     # Content Type Builder API
+│   ├── media.ts             # Media Manager API
+│   └── me.ts                # User info endpoint
+├── server/
+│   └── index.ts             # Node.js Express server (optional traditional hosting)
 ├── src/
 │   ├── routes/
 │   │   ├── __root.tsx       # Root layout with providers
 │   │   ├── index.tsx        # Home page
-│   │   ├── about.tsx        # About page
 │   │   ├── login.tsx        # Login page
-│   │   └── dashboard/
-│   │       └── index.tsx    # Protected dashboard route
+│   │   └── dashboard/       # Protected CMS dashboard
 │   ├── contexts/
 │   │   └── AuthContext.tsx  # Authentication state management
 │   ├── db/
@@ -49,16 +56,28 @@ A fullstack web application demonstrating modern React development with TanStack
 │   │   ├── auth.ts          # JWT helpers (generate, verify tokens)
 │   │   └── context.ts       # Request context helpers
 │   ├── services/
-│   │   ├── authService.ts   # Authentication business logic
-│   │   └── postService.ts   # Post CRUD operations
+│   │   ├── authService.ts           # Authentication business logic
+│   │   ├── contentManagerService.ts # Dynamic CRUD for all content
+│   │   ├── contentTypeService.ts    # Content type management
+│   │   └── mediaService.ts          # Multi-provider media storage
+│   ├── storage/             # Storage provider implementations
+│   │   ├── local.ts         # Local file storage
+│   │   ├── s3.ts            # AWS S3 storage
+│   │   └── gcs.ts           # Google Cloud Storage
+│   ├── middleware/          # API middleware (validation, auth)
+│   ├── plugins/             # Plugin system and extensions
 │   └── lib/
 │       ├── types.ts         # Shared TypeScript types
 │       ├── http.ts          # HTTP client with auth headers
 │       └── queryClient.ts   # TanStack Query configuration
+├── content-types/
+│   ├── definitions.json     # Content type definitions (like Strapi)
+│   ├── examples/            # Example content types
+│   └── migrations/          # Content type migration history
 ├── .env.example             # Environment variables template
-├── vite.config.ts           # Vite config with API middleware
-├── package.json             # Dependencies and scripts
-└── tsconfig.json            # TypeScript configuration
+├── vite.config.ts           # Vite config with dev API middleware
+├── vercel.json              # Vercel serverless configuration
+└── package.json             # Dependencies and scripts
 ```
 
 ## Architecture Layers
@@ -91,21 +110,28 @@ export const Route = createFileRoute('/dashboard/')({
 - Login/logout functionality
 - User information
 
-### 3. API Layer
+### 3. API Layer (Multi-Runtime)
 
-**Location:** `vite.config.ts` (Vite middleware)
+**Locations:** 
+- `vite.config.ts` - Development middleware
+- `api/` - Vercel serverless functions
+- `server/index.ts` - Node.js Express server
 
-API endpoints are implemented as Vite middleware:
+API endpoints available across all runtime environments:
 
 - `POST /api/login` - User authentication
-- `GET /api/posts` - Fetch all posts
-- `GET /api/me` - Get current user (protected)
+- `GET /api/content` - Dynamic content manager (CRUD for all content types)
+- `GET /api/content-types` - Content type definitions
+- `POST /api/media` - Multi-provider media upload
+- `GET /api/posts` - Posts API
+- `GET /api/me` - Current user info (protected)
 - `GET /api/health` - Health check
 
-**Why Vite Middleware?**
-- No separate server needed for development
-- Fast hot module replacement
-- Easy to migrate to dedicated server later
+**Why Multi-Runtime?**
+- **Serverless-First**: Deploy without servers (Vercel, AWS Lambda)
+- **Flexibility**: Traditional hosting available when needed
+- **Development Speed**: Vite HMR for rapid development
+- **Production-Ready**: Battle-tested across all major platforms
 
 ### 4. Service Layer
 
@@ -268,26 +294,32 @@ model Post {
 
 ## Key Design Decisions
 
-### Why SQLite for Development?
+### Why Multiple Database Support?
 
-- **Zero configuration**: No database server to install
-- **Fast setup**: File-based database
-- **Easy migration**: Switch to PostgreSQL/MySQL for production
-- **Version control friendly**: Can commit schema easily
+- **SQLite for Development**: Zero configuration, fast setup, file-based
+- **PostgreSQL for Production**: Robust, scalable, serverless-compatible (Neon, Supabase, Vercel Postgres)
+- **MySQL Support**: Enterprise compatibility
+- **Seamless Migration**: Switch databases without code changes
+- **Serverless-Optimized**: Connection pooling and efficient resource usage
 
-### Why Vite Middleware for API?
+### Why Serverless-First Architecture?
 
-- **Simplicity**: No separate server process
-- **Development speed**: HMR for API changes
-- **Easy migration**: Can extract to Express/Fastify later
-- **Type sharing**: Use same TypeScript types for client and server
+- **No Server Management**: Deploy without infrastructure setup
+- **Auto-Scaling**: Automatically handles traffic spikes
+- **Cost-Efficient**: Pay only for actual usage
+- **Multiple Runtime Options**: 
+  - Vite middleware (development)
+  - Vercel serverless functions (production serverless)
+  - Node.js Express (traditional hosting if needed)
+- **Type Sharing**: Same TypeScript types across all runtimes
 
 ### Why Service Layer?
 
-- **Separation of concerns**: Business logic separate from routes
-- **Reusability**: Services can be used by multiple endpoints
-- **Testability**: Easier to unit test business logic
-- **Maintainability**: Clear organization of code
+- **Runtime Independence**: Same business logic across Vite, Vercel, and Node.js
+- **Separation of Concerns**: Business logic isolated from API routing
+- **Reusability**: Services shared across multiple endpoints and runtimes
+- **Testability**: Comprehensive unit testing of core functionality
+- **Maintainability**: Clear, organized, production-grade code structure
 
 ### Why TanStack Router over React Router?
 
@@ -348,53 +380,63 @@ export async function myService() {
 
 ## Testing Strategy
 
-### Manual Testing
-- Use Prisma Studio to inspect database
-- Use TanStack DevTools to debug queries
-- Use Router DevTools to inspect routes
-- Test API with curl or Postman
+### Automated Testing
+- **Unit Tests**: Service layer and utility functions
+- **Integration Tests**: API endpoint testing
+- **E2E Tests**: Full user flow validation with Playwright
+- **Type Checking**: Compile-time validation with TypeScript
 
-### Future Improvements
-- Add unit tests for services
-- Add integration tests for API endpoints
-- Add E2E tests with Playwright
-- Add test database setup
+### Development Tools
+- **Prisma Studio**: Database inspection and management
+- **TanStack DevTools**: Query and route debugging
+- **Vitest**: Fast unit and integration testing
+- **Playwright**: Reliable E2E testing
 
-## Deployment Considerations
+## Deployment Architecture
 
-### Development (Current)
-- SQLite database
-- Vite middleware for API
-- Development mode secrets
+### Development (Local)
+- **Database**: SQLite for fast local development
+- **Runtime**: Vite dev server with API middleware
+- **Hot Reload**: Instant updates for code changes
+- **DevTools**: Full debugging capabilities
 
-### Production (Recommendations)
-- **Database**: Switch to PostgreSQL or MySQL
-- **Server**: Extract API to Express/Fastify
-- **Secrets**: Use environment variables
-- **Hosting**: Vercel, Netlify, or Node server
-- **SSL/TLS**: Enable HTTPS
-- **CORS**: Configure for production domains
+### Production (Serverless - Vercel)
+- **Database**: PostgreSQL (Neon, Supabase, Vercel Postgres)
+- **Runtime**: Vercel serverless functions
+- **Auto-Scaling**: Automatic traffic handling
+- **Edge Network**: Global CDN distribution
+- **Zero Config**: No server setup required
 
-## Migration Path to TanStack Start
+### Production (Node.js Server)
+- **Database**: PostgreSQL or MySQL
+- **Runtime**: Express.js server
+- **Hosting**: AWS, Azure, GCP, DigitalOcean, any VPS
+- **Process Management**: PM2 or systemd
+- **Flexible**: Traditional hosting when needed
 
-This project uses TanStack Router (client-side) but can be migrated to TanStack Start (SSR framework) when stable:
+## Future Extensibility
 
-1. Install `@tanstack/start`
-2. Move API routes to `src/api/` directory
-3. Add SSR configuration
-4. Update build scripts
-5. Add server-side rendering logic
+### Framework Compatibility
 
-The current architecture (services, Prisma, auth) will work seamlessly with TanStack Start.
+tapi's service layer architecture ensures compatibility with future frameworks:
+
+- **Current**: TanStack Router with multiple runtime options
+- **Future-Ready**: Architecture supports migration to TanStack Start (SSR) when needed
+- **Framework Agnostic**: Core services work with any frontend or backend framework
+- **API Standards**: RESTful APIs work with any client technology
 
 ## Conclusion
 
-This architecture provides:
-- ✅ Type safety throughout the stack
-- ✅ Clear separation of concerns
-- ✅ Scalable folder structure
-- ✅ Security best practices
-- ✅ Developer-friendly tooling
-- ✅ Production-ready patterns
+This serverless CMS architecture provides:
+- ✅ **Production-Ready**: Enterprise-grade CMS platform
+- ✅ **Serverless-First**: No server infrastructure to manage
+- ✅ **Type Safety**: Full TypeScript throughout the stack
+- ✅ **Scalable**: Auto-scaling serverless architecture
+- ✅ **Secure**: JWT authentication, bcrypt hashing, input validation
+- ✅ **Flexible**: Deploy anywhere - Vercel, AWS, Azure, GCP, or Node.js
+- ✅ **Developer Experience**: Hot reload, DevTools, comprehensive tooling
+- ✅ **CMS Features**: Content Type Builder, Content Manager, Media Manager
+- ✅ **API-First**: RESTful API with complete CRUD operations
+- ✅ **Extensible**: Plugin system for custom functionality
 
-The project demonstrates a complete fullstack application while remaining simple enough for learning and experimentation.
+tapi delivers the full power of a headless CMS like Strapi, without the complexity of managing servers.

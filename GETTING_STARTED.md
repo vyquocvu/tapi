@@ -1,12 +1,13 @@
 # Getting Started with tapi
 
-This guide will help you set up and run the tapi CMS on your local machine.
+This guide will help you set up and run the tapi serverless CMS platform on your local machine and deploy to production.
 
 ## Prerequisites
 
 - **Node.js 18+** - [Download Node.js](https://nodejs.org/)
 - **npm** - Comes with Node.js
 - **Git** - For cloning the repository
+- **PostgreSQL** (for production) - [Neon](https://neon.tech), [Supabase](https://supabase.com), or [Vercel Postgres](https://vercel.com/storage/postgres)
 
 ## Installation
 
@@ -38,7 +39,7 @@ Edit `.env` and configure the following variables:
 DATABASE_URL="file:./dev.db"
 DATABASE_PROVIDER=sqlite
 
-# Authentication
+# Authentication (Generate a secure secret for production)
 JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
 
 # Server Configuration
@@ -51,13 +52,19 @@ STORAGE_PROVIDER=local
 LOCAL_UPLOAD_DIR=./uploads
 LOCAL_BASE_URL=http://localhost:5173
 
-# Optional: AWS S3 Configuration
+# Production: Use PostgreSQL
+# DATABASE_URL="postgresql://user:password@host:5432/tapi?schema=public"
+# DATABASE_PROVIDER=postgresql
+
+# Production: AWS S3 Configuration
+# STORAGE_PROVIDER=s3
 # AWS_REGION=us-east-1
 # AWS_ACCESS_KEY_ID=your-access-key
 # AWS_SECRET_ACCESS_KEY=your-secret-key
 # AWS_S3_BUCKET=your-bucket-name
 
-# Optional: Google Cloud Storage Configuration
+# Production: Google Cloud Storage Configuration
+# STORAGE_PROVIDER=gcs
 # GCS_PROJECT_ID=your-project-id
 # GCS_BUCKET=your-bucket-name
 # GCS_KEY_FILE=/path/to/keyfile.json
@@ -117,10 +124,10 @@ Start the production server:
 npm start
 ```
 
-The `RUNTIME` environment variable in your `.env` file determines how the application runs:
-- `dev` - Vite development server (default)
-- `node` - Node.js Express server
-- `vercel` - Vercel serverless functions
+The `RUNTIME` environment variable in your `.env` file determines deployment mode:
+- `dev` - Vite development server with hot reload (default)
+- `node` - Node.js Express server for traditional hosting
+- `vercel` - Vercel serverless functions (set automatically on Vercel)
 
 ## Available Scripts
 
@@ -273,35 +280,40 @@ See [CONTENT_TYPE_BUILDER.md](./CONTENT_TYPE_BUILDER.md) for detailed documentat
 
 ## Runtime Environments
 
-The application supports multiple runtime environments:
+tapi supports multiple deployment modes to fit your needs:
 
-- **Development** (`RUNTIME=dev`) - Vite dev server with hot reload and API middleware
-- **Node.js Server** (`RUNTIME=node`) - Express server for traditional hosting
-- **Vercel Serverless** (`RUNTIME=vercel`) - Serverless functions on Vercel
+### Development Mode (`RUNTIME=dev`)
+- **Use Case**: Local development with hot module replacement
+- **Database**: SQLite (file-based, zero config)
+- **API**: Vite middleware
+- **Start**: `npm run dev`
 
-Configure your environment in `.env`:
+### Serverless Mode (`RUNTIME=vercel`)
+- **Use Case**: Production serverless deployment (recommended)
+- **Database**: PostgreSQL (Neon, Supabase, Vercel Postgres)
+- **API**: Serverless functions in `/api` directory
+- **Platforms**: Vercel, AWS Lambda, Azure Functions, GCP Cloud Functions
+- **Benefits**: Auto-scaling, no server management, cost-efficient
 
-```env
-RUNTIME=dev
-```
-
-Then run:
-
-```bash
-npm start
-```
+### Node.js Server Mode (`RUNTIME=node`)
+- **Use Case**: Traditional server hosting when needed
+- **Database**: PostgreSQL or MySQL
+- **API**: Express.js server
+- **Platforms**: AWS EC2, Azure App Service, GCP Compute, DigitalOcean, VPS
+- **Benefits**: Full control, custom infrastructure
 
 For detailed deployment options, see [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 ## Next Steps
 
-Now that you have the application running:
+Now that you have tapi running locally:
 
-1. **Explore the Dashboard** - Log in and explore the demo content
-2. **Try the Content Type Builder** - Create custom content types
-3. **Read the API Documentation** - [API_REFERENCE.md](./API_REFERENCE.md)
-4. **Learn about CMS Features** - [FEATURES.md](./FEATURES.md)
-5. **Deploy to Production** - [DEPLOYMENT.md](./DEPLOYMENT.md)
+1. **Explore the CMS Dashboard** - Log in and explore the content management interface
+2. **Create Custom Content Types** - Use the Content Type Builder to define your data models
+3. **Use the REST API** - See [API_REFERENCE.md](./API_REFERENCE.md) for complete API docs
+4. **Configure Media Storage** - Set up S3, GCS, or Vercel Blob for production
+5. **Deploy to Production** - See [DEPLOYMENT.md](./DEPLOYMENT.md) for serverless deployment
+6. **Learn CMS Features** - Read [FEATURES.md](./FEATURES.md) for all capabilities
 
 ## Troubleshooting
 
