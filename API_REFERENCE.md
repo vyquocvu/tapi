@@ -1,6 +1,6 @@
 # REST API Documentation
 
-Comprehensive REST API reference for the vStack CMS platform.
+Complete REST API reference for the tapi serverless CMS platform.
 
 ## Table of Contents
 
@@ -17,10 +17,14 @@ Comprehensive REST API reference for the vStack CMS platform.
 
 ## Overview
 
-The vStack REST API provides programmatic access to manage content, content types, and system resources. All endpoints follow RESTful conventions and return JSON responses.
+The tapi REST API provides production-grade programmatic access to manage content, content types, and system resources. All endpoints follow RESTful conventions and return JSON responses.
 
-**Base URL (Development)**: `http://localhost:5173/api`
-**Base URL (Production)**: `https://your-domain.com/api`
+**Architecture**: Serverless-first with multi-runtime support (Vercel, AWS Lambda, Node.js)
+
+**Base URLs:**
+- Development: `http://localhost:5173/api`
+- Production (Serverless): `https://your-app.vercel.app/api`
+- Production (Node.js): `https://your-domain.com/api`
 
 ## Authentication
 

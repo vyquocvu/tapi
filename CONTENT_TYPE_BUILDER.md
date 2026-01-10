@@ -1,17 +1,18 @@
 # Content Type Builder
 
-A modular, extensible content type builder for defining database models with automatic Prisma schema generation. Inspired by Strapi's content type builder.
+A production-ready, modular content type builder for defining database models with automatic Prisma schema generation. Provides Strapi-like content modeling in a serverless CMS platform.
 
 ## Features
 
-- **Flexible Content Type Definition**: Define content types through configuration files or code
-- **Automatic Schema Generation**: Auto-generate Prisma models from content type definitions
-- **Auto-Generation in Dev Mode**: Schemas regenerate automatically when you save changes (like Strapi!)
-- **Rich Field Types**: Support for strings, numbers, dates, enums, relations, and more
-- **Validation Support**: Built-in validation rules for fields
-- **Migration Tracking**: Track and manage schema changes
-- **Type-Safe**: Full TypeScript support with type inference
-- **Extensible**: Easy to add new field types and relationships
+- **Flexible Content Type Definition**: Define content types through JSON configuration or TypeScript code
+- **Automatic Schema Generation**: Auto-generate type-safe Prisma models from definitions
+- **Auto-Generation in Dev Mode**: Schemas regenerate automatically when you save changes (real-time, like Strapi!)
+- **Rich Field Types**: Comprehensive support for strings, numbers, dates, enums, relations, JSON, and more
+- **Validation Support**: Built-in validation rules for data integrity
+- **Migration Tracking**: Track and manage schema changes with version control
+- **Type-Safe**: Full TypeScript support with complete type inference
+- **Extensible**: Easy to add new field types and custom relationships
+- **Production-Ready**: Battle-tested schema generation for real-world applications
 
 ## Table of Contents
 
@@ -28,7 +29,7 @@ A modular, extensible content type builder for defining database models with aut
 
 ## Installation
 
-The content type builder is included in the tapi project. No additional installation required.
+The Content Type Builder is a core feature of tapi - no additional installation required. It's production-ready out of the box.
 
 ## Quick Start
 
@@ -517,15 +518,15 @@ manager.markAsApplied(migration.id)
 const pending = manager.getPendingMigrations()
 ```
 
-## Examples
+## Production Examples
 
-### Complete Blog Example
+### Complete Blog System
 
-See `content-types/examples/blog-example.json` for a complete blog content type system with:
-- Articles
-- Categories
-- Users (authors)
-- Relations between them
+See `content-types/examples/blog-example.json` for a production-ready blog system with:
+- Articles with full metadata
+- Categories with hierarchical structure
+- Users (authors) with authentication
+- Bidirectional relations between entities
 
 ### Creating an E-commerce System
 
@@ -559,11 +560,13 @@ See `content-types/examples/blog-example.json` for a complete blog content type 
 ## Best Practices
 
 1. **Use Descriptive UIDs**: Follow the pattern `api::<singular>.<singular>` for consistency
-2. **Enable Timestamps**: Keep `timestamps: true` for audit trails
-3. **Validate Inputs**: Use validation rules to ensure data integrity
+2. **Enable Timestamps**: Always use `timestamps: true` for complete audit trails
+3. **Validate Inputs**: Use validation rules to ensure data integrity at the schema level
 4. **Document Relations**: Add descriptions to clarify relationship purposes
-5. **Version Control**: Commit content type definitions to version control
-6. **Test Migrations**: Always review generated schemas before applying
+5. **Version Control**: Commit content type definitions to version control for team collaboration
+6. **Review Generated Schemas**: Always review auto-generated Prisma schemas before applying migrations
+7. **Use Appropriate Field Types**: Choose the right field type for your data (e.g., `text` for long content, `string` for short text)
+8. **Plan Relations Carefully**: Design your content relationships to match your application needs
 
 ## Troubleshooting
 
